@@ -1,0 +1,66 @@
+<svg viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#06071A"/>
+
+  <!-- Grid pattern -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(233,161,35,0.08)" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="glow" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(233,161,35,0.15);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:transparent;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#grid)"/>
+
+  <!-- Glow effect -->
+  <ellipse cx="600" cy="315" rx="400" ry="300" fill="url(#glow)"/>
+
+  <!-- Logo dot -->
+  <circle cx="150" cy="100" r="12" fill="#E9A123"/>
+  <filter id="glow-filter">
+    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+    <feMerge>
+      <feMergeNode in="coloredBlur"/>
+      <feMergeNode in="SourceGraphic"/>
+    </feMerge>
+  </filter>
+  <circle cx="150" cy="100" r="12" fill="#E9A123" filter="url(#glow-filter)" opacity="0.6"/>
+
+  <!-- Logo text -->
+  <text x="175" y="115" font-family="'Syne', sans-serif" font-size="32" font-weight="800" fill="#EAEDF5" letter-spacing="-1">
+    The <tspan fill="#E9A123">KPI</tspan> Hub
+  </text>
+
+  <!-- Main headline -->
+  <text x="600" y="260" font-family="'Cormorant Garamond', serif" font-size="72" font-weight="700" fill="#EAEDF5" text-anchor="middle" letter-spacing="-1.5">
+    Get My KPI Audit
+  </text>
+
+  <!-- Subheadline -->
+  <text x="600" y="340" font-family="'DM Sans', sans-serif" font-size="36" font-weight="300" fill="rgba(234,237,245,0.8)" text-anchor="middle">
+    Find Your Revenue Leaks in 48 Hours
+  </text>
+
+  <!-- Price highlight -->
+  <rect x="400" y="380" width="400" height="80" rx="12" fill="rgba(233,161,35,0.1)" stroke="#E9A123" stroke-width="2"/>
+  <text x="600" y="420" font-family="'Cormorant Garamond', serif" font-size="56" font-weight="700" fill="#E9A123" text-anchor="middle">
+    ₹2,999
+  </text>
+  <text x="600" y="455" font-family="'DM Sans', sans-serif" font-size="18" font-weight="400" fill="rgba(234,237,245,0.7)" text-anchor="middle">
+    One-time comprehensive audit
+  </text>
+
+  <!-- Bottom tagline -->
+  <text x="600" y="560" font-family="'DM Sans', sans-serif" font-size="24" font-weight="500" fill="rgba(234,237,245,0.6)" text-anchor="middle">
+    Decision-Grade Intelligence. Zero Fluff.
+  </text>
+
+  <!-- Decorative elements -->
+  <circle cx="100" cy="550" r="3" fill="#00C9A7" opacity="0.6"/>
+  <circle cx="150" cy="570" r="2" fill="#E9A123" opacity="0.4"/>
+  <circle cx="1100" cy="80" r="4" fill="#00C9A7" opacity="0.5"/>
+  <circle cx="1050" cy="150" r="2.5" fill="#E9A123" opacity="0.6"/>
+</svg>

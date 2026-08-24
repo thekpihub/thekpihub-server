@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="yRGmgTNjIHFmLom_ZrczRQpmaJkf2SpAZWR75g3g71k">
+
+  <!-- ====== KPI Hub Analytics: GA4 ====== -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-DZPCCPEP1J', {
+      page_title: document.title,
+      page_location: window.location.href,
+      send_page_view: true
+    });
+
+    // ── Custom KPI Hub Event Tracking ──
+    document.addEventListener('DOMContentLoaded', function () {
+
+      // Track Early Access / Waitlist CTA clicks
+      document.querySelectorAll('a[href="get-audit.html"], .waitlist-btn, [data-cta="waitlist"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          gtag('event', 'waitlist_click', {
+            event_category: 'CTA',
+            event_label: 'Waitlist Button',
+            value: 1
+          });
+        });
+      });
+
+      // Track pricing page visits
+      document.querySelectorAll('a[href*="pricing"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          gtag('event', 'pricing_interest', {
+            event_category: 'Navigation',
+            event_label: 'Pricing Click'
+          });
+        });
+      });
+
+      // Track outbound links
+      document.querySelectorAll('a[href^="http"]').forEach(function(el) {
+        if (!el.href.includes('thekpihub.com')) {
+          el.addEventListener('click', function() {
+            gtag('event', 'outbound_click', {
+              event_category: 'Outbound',
+              event_label: el.href
+            });
+          });
+        }
+      });
+
+      // Track scroll depth (25%, 50%, 75%, 100%)
+      var scrollDepths = [25, 50, 75, 100];
+      var fired = {};
+      window.addEventListener('scroll', function() {
+        var scrollPct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+        scrollDepths.forEach(function(depth) {
+          if (scrollPct >= depth && !fired[depth]) {
+            fired[depth] = true;
+            gtag('event', 'scroll_depth', {
+              event_category: 'Engagement',
+              event_label: depth + '%',
+              value: depth
+            });
+          }
+        });
+      });
+    });
+  </script>
+  <!-- ====== End Analytics ====== -->
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SaaS Stack Scorer — Find Overlap and Wasted Spend</title>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thekpihub.com/stack-scorer.html">
+    <meta property="og:title" content="SaaS Stack Scorer — Find Overlap and Wasted Spend">
+    <meta property="og:description" content="Score your SaaS stack for compatibility, overlap and cost. Select your tools and surface what you are paying for twice.">
+    <meta property="og:image" content="https://thekpihub.com/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SaaS Stack Scorer — Find Overlap and Wasted Spend">
+    <meta name="twitter:description" content="Score your SaaS stack for compatibility, overlap and cost. Select your tools and surface what you are paying for twice.">
+    <meta name="twitter:image" content="https://thekpihub.com/og-image.png">
+    <meta name="description" content="Score your SaaS stack for compatibility, overlap and cost. Select your tools and surface what you are paying for twice.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080d1a;--s1:#0d1428;--s2:#111c35;--amber:#f59e0b;--amber2:#fbbf24;--teal:#14b8a6;--red:#ef4444;--green:#22c55e;--blue:#3b82f6;--txt:#e2e8f0;--txd:#94a3b8;--txm:#475569;--bdr:#1e2d4a;--bdr2:#243350}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+nav{background:rgba(8,13,26,.95);border-bottom:1px solid var(--bdr);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+.nav-brand{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:var(--txt);text-decoration:none}.nav-brand span{color:var(--amber)}
+.nav-cta{background:var(--amber);color:#000;padding:7px 18px;border-radius:6px;font-size:.8rem;font-weight:700;text-decoration:none;font-family:'Syne',sans-serif}
+.nav-links{display:flex;gap:24px;list-style:none}
+.nav-links a{color:var(--txd);text-decoration:none;font-size:.82rem;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--amber)}
+.hero{padding:52px 24px 32px;text-align:center;max-width:620px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:20px;padding:4px 14px;font-size:.73rem;color:var(--amber);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:18px}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(1.7rem,4vw,2.6rem);font-weight:800;line-height:1.15;margin-bottom:10px}
+.hero h1 em{color:var(--amber);font-style:normal}
+.hero p{color:var(--txd);font-size:.88rem}
+.container{max-width:1000px;margin:0 auto;padding:0 24px 80px}
+/* STACK BUILDER */
+.stack-builder{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:24px;margin-bottom:20px}
+.section-title{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:14px}
+.tool-categories{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.tool-cat{background:var(--s2);border:1px solid var(--bdr2);border-radius:10px;padding:14px}
+.cat-label{font-size:.72rem;font-weight:700;color:var(--txd);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.cat-select{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bdr2);border-radius:6px;padding:8px 10px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none}
+.cat-select:focus{border-color:var(--amber)}
+.cat-select option{background:#111c35}
+.cat-price{font-size:.65rem;color:var(--txm);margin-top:4px}
+.analyze-btn{background:linear-gradient(135deg,var(--amber),var(--amber2));color:#000;border:none;padding:12px 32px;border-radius:9px;font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .3s;display:flex;align-items:center;gap:8px;margin:0 auto}
+.analyze-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(245,158,11,.25)}
+/* RESULTS */
+.results-section{display:none}
+.results-section.visible{display:block;animation:fadeIn .4s ease}
+/* SCORE */
+.score-header{background:linear-gradient(135deg,var(--s1),rgba(245,158,11,.04));border:1px solid var(--bdr);border-radius:14px;padding:24px;margin-bottom:16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.big-score{font-family:'Syne',sans-serif;font-size:3.5rem;font-weight:800;line-height:1;flex-shrink:0}
+.score-info h2{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:6px}
+.score-info p{font-size:.82rem;color:var(--txd);line-height:1.6;max-width:480px}
+.score-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.sbadge{padding:4px 12px;border-radius:20px;font-size:.7rem;font-weight:700;letter-spacing:.3px}
+.sb-green{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.sb-amber{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.sb-red{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+/* DIMENSION SCORES */
+.dim-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.dim-card{background:var(--s1);border:1px solid var(--bdr);border-radius:11px;padding:16px}
+.dim-name{font-size:.72rem;color:var(--txm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.dim-score{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;margin-bottom:6px}
+.dim-bar{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.dim-fill{height:100%;border-radius:3px;transition:width .8s ease}
+.dim-note{font-size:.7rem;color:var(--txd);margin-top:6px;line-height:1.5}
+/* ISSUES LIST */
+.issues-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:20px;margin-bottom:14px}
+.issue-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--bdr)}
+.issue-item:last-child{border-bottom:none}
+.issue-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+.issue-title{font-size:.84rem;font-weight:600;margin-bottom:3px;font-family:'Syne',sans-serif}
+.issue-desc{font-size:.78rem;color:var(--txd);line-height:1.6}
+.issue-fix{margin-top:6px;font-size:.75rem;color:var(--teal);font-weight:600}
+.issue-saving{font-size:.7rem;color:var(--green);margin-top:3px}
+/* ALTERNATIVES */
+.alts-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:20px;margin-bottom:14px}
+.alt-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bdr);gap:12px;flex-wrap:wrap}
+.alt-row:last-child{border-bottom:none}
+.alt-from{font-size:.82rem;font-weight:600}
+.alt-arrow{color:var(--txm);font-size:.8rem;flex-shrink:0}
+.alt-to{font-size:.82rem;color:var(--teal);font-weight:600}
+.alt-reason{font-size:.72rem;color:var(--txd);flex:1;min-width:160px}
+.alt-save{font-size:.72rem;color:var(--green);font-weight:700;flex-shrink:0}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:700px){.dim-grid{grid-template-columns:1fr 1fr}.tool-categories{grid-template-columns:1fr 1fr}.score-header{flex-direction:column;gap:12px}}
+@media(max-width:480px){.dim-grid{grid-template-columns:1fr}.tool-categories{grid-template-columns:1fr}}
+</style>
+<script src="api-key-modal.js?v=9814c801"></script>
+<link rel="canonical" href="https://thekpihub.com/stack-scorer.html">
+    <meta name="robots" content="index, follow">
+        <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wdshn14xgf");
+    </script>
+</head>
+<body>
+
+<nav>
+  <a href="https://thekpihub.com" class="nav-brand">The <span>KPI</span> Hub</a>
+  <ul class="nav-links">
+    <li><a href="narrative.html">Narrative</a></li>
+    <li><a href="freedom.html">Freedom</a></li>
+    <li><a href="stack-scorer.html" class="active">Stack Scorer</a></li>
+  </ul>
+  <a href="get-audit.html" class="nav-cta">Get My KPI Audit →</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">⚙ SaaS Stack Compatibility Scorer · P2 Weapon</div>
+  <h1>Is your SaaS stack <em>costing you</em> more than it should?</h1>
+  <p>Select your current tools. We'll score your stack's compatibility, surface conflicts, and find cheaper alternatives that work better together.</p>
+</div>
+
+<div class="container">
+
+  <div class="stack-builder">
+    <div class="section-title">🔧 Select Your Current Stack</div>
+    <div class="tool-categories" id="tool-cats"></div>
+    <div style="text-align:center">
+      <button class="analyze-btn" onclick="analyzeStack()">⚙ Score My Stack</button>
+    </div>
+  </div>
+
+  <div class="results-section" id="results">
+    <div class="score-header">
+      <div class="big-score" id="total-score" style="color:var(--amber)">—</div>
+      <div class="score-info">
+        <h2 id="score-label">Analyzing...</h2>
+        <p id="score-desc">—</p>
+        <div class="score-badges" id="score-badges"></div>
+      </div>
+    </div>
+    <div class="dim-grid" id="dim-grid"></div>
+    <div class="issues-card" id="issues-card"></div>
+    <div class="alts-card" id="alts-card"></div>
+  </div>
+
+</div>
+
+<script>
+const TOOLS = {
+  CRM: {label:'CRM', options: [
+    {name:'HubSpot Free', price:0, score:80, integrations:['Stripe','Slack','Notion'], conflicts:[]},
+    {name:'HubSpot Pro', price:800, score:90, integrations:['Stripe','Slack','Notion','Intercom'], conflicts:[]},
+    {name:'Salesforce', price:1500, score:75, integrations:['Stripe','Slack'], conflicts:['Notion']},
+    {name:'Pipedrive', price:200, score:82, integrations:['Stripe','Slack','Notion'], conflicts:[]},
+    {name:'Close CRM', price:300, score:85, integrations:['Stripe','Slack'], conflicts:[]},
+    {name:'None', price:0, score:40, integrations:[], conflicts:[]},
+  ]},
+  Analytics: {label:'Product Analytics', options: [
+    {name:'Mixpanel', price:200, score:90, integrations:['Stripe','HubSpot'], conflicts:[]},
+    {name:'Amplitude', price:0, score:88, integrations:['Stripe','HubSpot'], conflicts:[]},
+    {name:'PostHog', price:0, score:92, integrations:['Stripe','Notion'], conflicts:[]},
+    {name:'Google Analytics', price:0, score:60, integrations:[], conflicts:['Mixpanel']},
+    {name:'Heap', price:500, score:78, integrations:['Salesforce'], conflicts:[]},
+    {name:'None', price:0, score:30, integrations:[], conflicts:[]},
+  ]},
+  Billing: {label:'Billing & Payments', options: [
+    {name:'Stripe', price:0, score:95, integrations:['HubSpot','Mixpanel','Amplitude','Slack'], conflicts:[]},
+    {name:'Razorpay', price:0, score:85, integrations:['Slack'], conflicts:[]},
+    {name:'Paddle', price:0, score:82, integrations:['HubSpot'], conflicts:[]},
+    {name:'Chargebee', price:250, score:85, integrations:['Stripe','HubSpot','Salesforce'], conflicts:[]},
+    {name:'None', price:0, score:20, integrations:[], conflicts:[]},
+  ]},
+  Support: {label:'Customer Support', options: [
+    {name:'Intercom', price:400, score:88, integrations:['HubSpot','Stripe','Slack'], conflicts:[]},
+    {name:'Crisp', price:25, score:80, integrations:['Slack'], conflicts:[]},
+    {name:'Freshdesk', price:15, score:72, integrations:['HubSpot'], conflicts:[]},
+    {name:'Zendesk', price:200, score:78, integrations:['Salesforce','HubSpot'], conflicts:['Notion']},
+    {name:'None', price:0, score:20, integrations:[], conflicts:[]},
+  ]},
+  Email: {label:'Email Marketing', options: [
+    {name:'Customer.io', price:150, score:92, integrations:['Stripe','Mixpanel'], conflicts:[]},
+    {name:'Mailchimp', price:50, score:70, integrations:['HubSpot'], conflicts:['Customer.io']},
+    {name:'ConvertKit', price:29, score:78, integrations:['Stripe'], conflicts:[]},
+    {name:'Loops.so', price:49, score:88, integrations:['Stripe','Slack'], conflicts:[]},
+    {name:'HubSpot Email', price:0, score:75, integrations:['HubSpot'], conflicts:[]},
+    {name:'None', price:0, score:25, integrations:[], conflicts:[]},
+  ]},
+  Collab: {label:'Collaboration', options: [
+    {name:'Notion', price:16, score:88, integrations:['Slack','HubSpot'], conflicts:[]},
+    {name:'Slack', price:8, score:92, integrations:['Notion','Stripe','HubSpot','Intercom'], conflicts:[]},
+    {name:'Linear', price:10, score:90, integrations:['Notion','Slack'], conflicts:[]},
+    {name:'Asana', price:25, score:75, integrations:['Slack','HubSpot'], conflicts:['Linear']},
+    {name:'Jira', price:15, score:72, integrations:['Slack'], conflicts:['Linear','Notion']},
+    {name:'None', price:0, score:30, integrations:[], conflicts:[]},
+  ]},
+  RevOps: {label:'Revenue Analytics', options: [
+    {name:'ChartMogul', price:0, score:92, integrations:['Stripe','Razorpay','Chargebee'], conflicts:[]},
+    {name:'Baremetrics', price:99, score:85, integrations:['Stripe'], conflicts:['ChartMogul']},
+    {name:'ProfitWell', price:0, score:80, integrations:['Stripe','Chargebee'], conflicts:[]},
+    {name:'Stripe Dashboard', price:0, score:60, integrations:['Stripe'], conflicts:[]},
+    {name:'None', price:0, score:20, integrations:[], conflicts:[]},
+  ]},
+  Auth: {label:'Auth & Infra', options: [
+    {name:'Supabase', price:0, score:90, integrations:['Stripe','Notion'], conflicts:[]},
+    {name:'Firebase', price:0, score:78, integrations:['Stripe'], conflicts:['Supabase']},
+    {name:'Auth0', price:23, score:88, integrations:['Stripe','HubSpot'], conflicts:[]},
+    {name:'AWS', price:100, score:72, integrations:['Stripe'], conflicts:[]},
+    {name:'Vercel', price:20, score:92, integrations:['Supabase','Stripe'], conflicts:[]},
+    {name:'None', price:0, score:20, integrations:[], conflicts:[]},
+  ]},
+};
+
+// Build UI
+const catsHTML = Object.entries(TOOLS).map(([key, cat]) => `
+  <div class="tool-cat">
+    <div class="cat-label">${cat.label}</div>
+    <select id="sel-${key}" onchange="updatePrice('${key}')">
+      <option value="">— Not using</option>
+      ${cat.options.map(t => `<option value="${t.name}">${t.name}</option>`).join('')}
+    </select>
+    <div class="cat-price" id="price-${key}"></div>
+  </div>`).join('');
+document.getElementById('tool-cats').innerHTML = catsHTML;
+
+function updatePrice(key) {
+  const sel = document.getElementById('sel-'+key).value;
+  const tool = TOOLS[key]?.options.find(t=>t.name===sel);
+  const el = document.getElementById('price-'+key);
+  if (tool && tool.price > 0) el.textContent = `$${tool.price}/mo`;
+  else el.textContent = '';
+}
+
+function analyzeStack() {
+  const selected = {};
+  let totalCost = 0;
+  Object.keys(TOOLS).forEach(key => {
+    const sel = document.getElementById('sel-'+key).value;
+    if (sel) {
+      const tool = TOOLS[key].options.find(t=>t.name===sel);
+      if (tool) { selected[key] = tool; totalCost += tool.price; }
+    }
+  });
+  if (Object.keys(selected).length < 2) { alert('Select at least 2 tools to score your stack.'); return; }
+
+  // Score dimensions
+  const toolsSelected = Object.values(selected);
+  const avgScore = Math.round(toolsSelected.reduce((a,t)=>a+t.score,0)/toolsSelected.length);
+
+  // Integration score
+  let integrationsFound = 0, possibleIntegrations = 0;
+  Object.values(selected).forEach(tool => {
+    tool.integrations.forEach(int => {
+      possibleIntegrations++;
+      if (Object.values(selected).some(t=>t.name.includes(int)||int.includes(t.name.split(' ')[0]))) integrationsFound++;
+    });
+  });
+  const intScore = possibleIntegrations > 0 ? Math.min(100, Math.round((integrationsFound/possibleIntegrations)*100)+40) : 70;
+
+  // Conflicts
+  const conflicts = [];
+  Object.entries(selected).forEach(([key, tool]) => {
+    tool.conflicts.forEach(conflict => {
+      if (Object.values(selected).some(t=>t.name.includes(conflict)||conflict.includes(t.name.split(' ')[0]))) {
+        conflicts.push({tool: tool.name, conflict, key});
+      }
+    });
+  });
+  const conflictScore = Math.max(20, 100 - conflicts.length * 25);
+
+  // Cost score
+  const costScore = totalCost <= 100 ? 95 : totalCost <= 300 ? 80 : totalCost <= 800 ? 65 : totalCost <= 2000 ? 45 : 30;
+
+  const total = Math.round((avgScore*0.35 + intScore*0.25 + conflictScore*0.25 + costScore*0.15));
+
+  // Render
+  const scoreColor = total>=80?'var(--green)':total>=60?'var(--amber)':'var(--red)';
+  document.getElementById('total-score').textContent = total;
+  document.getElementById('total-score').style.color = scoreColor;
+  document.getElementById('score-label').textContent = total>=80?'✅ Excellent Stack':total>=65?'⚠️ Good Stack with Gaps':total>=50?'⚡ Needs Optimization':'🚨 Stack is Costing You';
+  document.getElementById('score-desc').textContent = `Your ${Object.keys(selected).length}-tool stack costs $${totalCost}/mo. ${conflicts.length > 0 ? conflicts.length+' conflicts detected. ' : 'No conflicts found. '}${total>=70?'Your integrations are working well together.':'Optimize to save cost and reduce friction.'}`;
+
+  const badges = [];
+  if (conflicts.length===0) badges.push({text:'No Conflicts',cls:'sb-green'});
+  if (totalCost<200) badges.push({text:'Lean Stack',cls:'sb-green'});
+  if (totalCost>1000) badges.push({text:'High Spend $'+totalCost+'/mo',cls:'sb-red'});
+  if (conflicts.length>0) badges.push({text:conflicts.length+' Conflicts',cls:'sb-red'});
+  if (intScore>80) badges.push({text:'Well Integrated',cls:'sb-green'});
+  document.getElementById('score-badges').innerHTML = badges.map(b=>`<span class="sbadge ${b.cls}">${b.text}</span>`).join('');
+
+  // Dimensions
+  const dims = [
+    {name:'Tool Quality',score:avgScore,note:'Average quality score of your chosen tools based on market data',color:avgScore>=80?'var(--green)':'var(--amber)'},
+    {name:'Integration Fit',score:intScore,note:'How well your tools connect and share data with each other',color:intScore>=80?'var(--green)':'var(--amber)'},
+    {name:'Conflict Score',score:conflictScore,note:'Penalizes for redundant or conflicting tools in your stack',color:conflictScore>=80?'var(--green)':'var(--red)'},
+    {name:'Cost Efficiency',score:costScore,note:'Stack cost vs. functionality delivered at your stage',color:costScore>=75?'var(--green)':'var(--amber)'},
+    {name:'Overall Score',score:total,note:'Weighted composite of all dimensions',color:scoreColor},
+  ];
+  document.getElementById('dim-grid').innerHTML = dims.map(d=>`
+    <div class="dim-card">
+      <div class="dim-name">${d.name}</div>
+      <div class="dim-score" style="color:${d.color}">${d.score}</div>
+      <div class="dim-bar"><div class="dim-fill" style="width:${d.score}%;background:${d.color}"></div></div>
+      <div class="dim-note">${d.note}</div>
+    </div>`).join('');
+
+  // Issues
+  const issues = [];
+  conflicts.forEach(c => issues.push({icon:'🔴',title:`Conflict: ${c.tool} vs ${c.conflict}`,desc:`These tools overlap or conflict, causing data inconsistency and wasted cost.`,fix:`Remove one or choose a unified alternative.`,saving:''}));
+  if (totalCost > 500) issues.push({icon:'💸',title:`High monthly spend: $${totalCost}/mo`,desc:`Your stack costs $${totalCost}/mo. At seed stage, keep tool costs under $300/mo.`,fix:`Audit each tool: if it doesn't directly generate revenue or reduce churn, cut it.`,saving:`Potential savings: $${Math.round(totalCost*0.3)}/mo`});
+  if (!selected.RevOps) issues.push({icon:'⚠️',title:'No Revenue Analytics Tool',desc:'You have no way to track MRR, churn, or LTV:CAC in real time.',fix:'Add ChartMogul (free) or Baremetrics instantly.',saving:'Free to add'});
+  if (!selected.Email) issues.push({icon:'📧',title:'No Email Marketing Tool',desc:'You are leaving activation and retention revenue on the table.',fix:'Add Loops.so ($49/mo) for behavior-triggered emails.',saving:''});
+  if (issues.length===0) issues.push({icon:'✅',title:'No Major Issues Found',desc:'Your stack is well-optimized with no conflicts or obvious gaps.',fix:'',saving:''});
+
+  document.getElementById('issues-card').innerHTML = `<div class="section-title" style="margin-bottom:12px">🚨 Issues & Fixes</div>${issues.map(i=>`
+    <div class="issue-item">
+      <div class="issue-icon">${i.icon}</div>
+      <div>
+        <div class="issue-title">${i.title}</div>
+        <div class="issue-desc">${i.desc}</div>
+        ${i.fix?`<div class="issue-fix">→ Fix: ${i.fix}</div>`:''}
+        ${i.saving?`<div class="issue-saving">💰 ${i.saving}</div>`:''}
+      </div>
+    </div>`).join('')}`;
+
+  // Alternatives
+  const alts = [];
+  if (selected.CRM?.name.includes('Salesforce')) alts.push({from:'Salesforce ($1500/mo)',to:'HubSpot Pro ($800/mo)',reason:'50% cheaper, better integrations for early-stage teams',save:'Save $700/mo'});
+  if (selected.Analytics?.name.includes('Heap')) alts.push({from:'Heap ($500/mo)',to:'PostHog (Free)',reason:'Open-source, self-host, identical features at zero cost',save:'Save $500/mo'});
+  if (selected.Support?.name.includes('Intercom')) alts.push({from:'Intercom ($400/mo)',to:'Crisp ($25/mo)',reason:'95% of features at 6% of the cost for sub-500 customer teams',save:'Save $375/mo'});
+  if (selected.Email?.name.includes('Mailchimp')) alts.push({from:'Mailchimp ($50/mo)',to:'Loops.so ($49/mo)',reason:'Purpose-built for SaaS with better behavioral triggers',save:'Same price, better fit'});
+  if (alts.length===0) alts.push({from:'Your current stack',to:'Keep it',reason:'No better alternatives found for your specific tool combination.',save:'✅ Optimized'});
+
+  document.getElementById('alts-card').innerHTML = `<div class="section-title" style="margin-bottom:12px">💡 Recommended Alternatives</div>${alts.map(a=>`
+    <div class="alt-row">
+      <div class="alt-from">${a.from}</div>
+      <div class="alt-arrow">→</div>
+      <div class="alt-to">${a.to}</div>
+      <div class="alt-reason">${a.reason}</div>
+      <div class="alt-save">${a.save}</div>
+    </div>`).join('')}`;
+
+  document.getElementById('results').classList.add('visible');
+  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+}
+</script>
+<script src="/gk-shortcut.js?v=a3bb6e13"></script>
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="yRGmgTNjIHFmLom_ZrczRQpmaJkf2SpAZWR75g3g71k">
+
+  <!-- ====== KPI Hub Analytics: GA4 ====== -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-DZPCCPEP1J', {
+      page_title: document.title,
+      page_location: window.location.href,
+      send_page_view: true
+    });
+
+    // ── Custom KPI Hub Event Tracking ──
+    document.addEventListener('DOMContentLoaded', function () {
+
+      // Track Early Access / Waitlist CTA clicks
+      document.querySelectorAll('a[href="#waitlist"], .waitlist-btn, [data-cta="waitlist"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          gtag('event', 'waitlist_click', {
+            event_category: 'CTA',
+            event_label: 'Waitlist Button',
+            value: 1
+          });
+        });
+      });
+
+      // Track pricing page visits
+      document.querySelectorAll('a[href*="pricing"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          gtag('event', 'pricing_interest', {
+            event_category: 'Navigation',
+            event_label: 'Pricing Click'
+          });
+        });
+      });
+
+      // Track outbound links
+      document.querySelectorAll('a[href^="http"]').forEach(function(el) {
+        if (!el.href.includes('thekpihub.com')) {
+          el.addEventListener('click', function() {
+            gtag('event', 'outbound_click', {
+              event_category: 'Outbound',
+              event_label: el.href
+            });
+          });
+        }
+      });
+
+      // Track scroll depth (25%, 50%, 75%, 100%)
+      var scrollDepths = [25, 50, 75, 100];
+      var fired = {};
+      window.addEventListener('scroll', function() {
+        var scrollPct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+        scrollDepths.forEach(function(depth) {
+          if (scrollPct >= depth && !fired[depth]) {
+            fired[depth] = true;
+            gtag('event', 'scroll_depth', {
+              event_category: 'Engagement',
+              event_label: depth + '%',
+              value: depth
+            });
+          }
+        });
+      });
+    });
+  </script>
+  <!-- ====== End Analytics ====== -->
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Today's Directive — The 3-5 Actions That Move the Needle</title>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thekpihub.com/today.html">
+    <meta property="og:title" content="Today's Directive — The 3-5 Actions That Move the Needle">
+    <meta property="og:description" content="Tell us where your business stands and get the exact 3-5 actions that will move the needle most today, ranked by impact.">
+    <meta property="og:image" content="https://thekpihub.com/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Today's Directive — The 3-5 Actions That Move the Needle">
+    <meta name="twitter:description" content="Tell us where your business stands and get the exact 3-5 actions that will move the needle most today, ranked by impact.">
+    <meta name="twitter:image" content="https://thekpihub.com/og-image.png">
+    <meta name="description" content="Tell us where your business stands and get the exact 3-5 actions that will move the needle most today, ranked by impact.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080d1a;--s1:#0d1428;--s2:#111c35;--amber:#f59e0b;--amber2:#fbbf24;--teal:#14b8a6;--red:#ef4444;--green:#22c55e;--purple:#a855f7;--txt:#e2e8f0;--txd:#94a3b8;--txm:#475569;--bdr:#1e2d4a;--bdr2:#243350}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+nav{background:rgba(8,13,26,.95);border-bottom:1px solid var(--bdr);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+.nav-brand{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:var(--txt);text-decoration:none}
+.nav-brand span{color:var(--amber)}
+.nav-cta{background:var(--amber);color:#000;padding:7px 18px;border-radius:6px;font-size:.8rem;font-weight:700;text-decoration:none;font-family:'Syne',sans-serif}
+.nav-links{display:flex;gap:24px;list-style:none}
+.nav-links a{color:var(--txd);text-decoration:none;font-size:.82rem;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--amber)}
+.container{max-width:760px;margin:0 auto;padding:40px 24px 80px}
+/* CLOCK / DATE */
+.date-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;padding:12px 18px;background:var(--s1);border:1px solid var(--bdr);border-radius:10px}
+.date-text{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:var(--txd)}
+.date-text strong{color:var(--amber)}
+.clock{font-family:'Syne',sans-serif;font-size:.82rem;color:var(--txm)}
+/* SETUP */
+.setup-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:28px;margin-bottom:20px}
+.setup-title{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:6px}
+.setup-sub{font-size:.8rem;color:var(--txd);margin-bottom:18px;line-height:1.6}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.field label{display:block;font-size:.72rem;color:var(--txd);margin-bottom:4px;font-weight:500}
+.field input,.field select,.field textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bdr2);border-radius:7px;padding:9px 12px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;transition:all .25s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--amber)}
+.field textarea{resize:vertical;min-height:70px}
+.gen-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--amber),var(--amber2));color:#000;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px}
+.gen-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(245,158,11,.28)}
+.gen-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+/* DIRECTIVE CARD */
+.directive-card{display:none}
+.directive-card.visible{display:block;animation:fadeUp .5s ease}
+.directive-header{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(168,85,247,.06));border:1px solid rgba(245,158,11,.2);border-radius:14px 14px 0 0;padding:24px;text-align:center}
+.directive-emoji{font-size:2.5rem;margin-bottom:8px}
+.directive-headline{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;line-height:1.2;margin-bottom:8px}
+.directive-headline em{color:var(--amber);font-style:normal}
+.directive-context{font-size:.82rem;color:var(--txd);max-width:480px;margin:0 auto}
+/* ACTION LIST */
+.action-list{background:var(--s1);border:1px solid var(--bdr);border-left:none;border-right:none;padding:4px 0}
+.action-item{display:flex;align-items:flex-start;gap:14px;padding:16px 24px;border-bottom:1px solid var(--bdr);transition:background .2s}
+.action-item:last-child{border-bottom:none}
+.action-item:hover{background:rgba(255,255,255,.02)}
+.action-check{width:28px;height:28px;border-radius:50%;border:2px solid var(--bdr2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:1px;transition:all .2s}
+.action-check:hover{border-color:var(--amber)}
+.action-check.done{background:var(--green);border-color:var(--green)}
+.action-check.done::after{content:'✓';color:#000;font-size:.7rem;font-weight:900}
+.action-priority{font-size:.62rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 7px;border-radius:4px;margin-bottom:4px;display:inline-block}
+.p-critical{background:rgba(239,68,68,.12);color:var(--red)}
+.p-high{background:rgba(245,158,11,.12);color:var(--amber)}
+.p-medium{background:rgba(20,184,166,.12);color:var(--teal)}
+.action-title{font-size:.88rem;font-weight:600;margin-bottom:3px;font-family:'Syne',sans-serif}
+.action-desc{font-size:.78rem;color:var(--txd);line-height:1.6}
+.action-time{font-size:.68rem;color:var(--txm);margin-top:4px}
+/* BOTTOM CARDS */
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mini-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:18px}
+.mini-card-title{font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+.insight-text{font-size:.8rem;color:var(--txd);line-height:1.7}
+.quote-text{font-size:.88rem;color:var(--txt);line-height:1.7;font-style:italic;border-left:2px solid var(--amber);padding-left:12px}
+.directive-footer{background:var(--s1);border:1px solid var(--bdr);border-radius:0 0 14px 14px;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.progress-bar{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin:0 14px}
+.progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--amber),var(--green));transition:width .5s ease}
+.progress-label{font-size:.72rem;color:var(--txm)}
+/* LOADER */
+.loader-state{text-align:center;padding:40px;display:none}
+.loader-state.visible{display:block}
+.spinning{width:36px;height:36px;border:3px solid var(--bdr2);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+.loader-label{font-size:.8rem;color:var(--txm)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.field-grid{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr}}
+</style>
+<link rel="canonical" href="https://thekpihub.com/today.html">
+    <meta name="robots" content="index, follow">
+        <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wdshn14xgf");
+    </script>
+</head>
+<body>
+
+<nav>
+  <a href="https://thekpihub.com" class="nav-brand">The <span>KPI</span> Hub</a>
+  <ul class="nav-links">
+    <li><a href="narrative.html">Narrative</a></li>
+    <li><a href="freedom.html">Freedom</a></li>
+    <li><a href="today.html" class="active">Today's Directive</a></li>
+  </ul>
+  <a href="get-audit.html" class="nav-cta">Get My KPI Audit →</a>
+</nav>
+
+<div class="container">
+
+  <div class="date-bar">
+    <div class="date-text">⚡ Daily Directive · <strong id="today-date">—</strong></div>
+    <div class="clock" id="clock">—</div>
+  </div>
+
+  <!-- SETUP -->
+  <div class="setup-card" id="setup-card">
+    <div class="setup-title">⚡ What Should I Do Today?</div>
+    <div class="setup-sub">Tell us where your business stands. We'll tell you the exact 3–5 actions that will move the needle most today — prioritized, time-boxed, and specific.</div>
+    <div class="field-grid">
+      <div class="field"><label>Your MRR This Month</label><input type="number" id="t-mrr" placeholder="85000"></div>
+      <div class="field"><label>MRR Last Month</label><input type="number" id="t-mrr-prev" placeholder="76000"></div>
+      <div class="field"><label>Customers Churned This Month</label><input type="number" id="t-churned" placeholder="2"></div>
+      <div class="field"><label>New Customers This Month</label><input type="number" id="t-new" placeholder="5"></div>
+      <div class="field"><label>Stage</label>
+        <select id="t-stage"><option value="bootstrap">Bootstrapped</option><option value="seed">Seed</option><option value="series-a">Series A</option><option value="growth">Growth</option></select>
+      </div>
+      <div class="field"><label>Your Role</label>
+        <select id="t-role"><option value="founder-solo">Solo Founder</option><option value="ceo">CEO / Co-Founder</option><option value="cto">CTO</option><option value="cmo">CMO / Growth</option><option value="csm">Customer Success</option></select>
+      </div>
+    </div>
+    <div class="field"><label>What's your biggest worry right now? (1–2 sentences)</label><textarea id="t-worry" placeholder="e.g. Churn is creeping up and I don't know why. Lost 2 customers to a competitor last week..."></textarea></div>
+    <div class="field" style="margin-top:12px"><label>What did you accomplish yesterday?</label><input type="text" id="t-yesterday" placeholder="e.g. Shipped new onboarding flow, had 3 sales calls"></div>
+    <button class="gen-btn" id="gen-btn" onclick="generateDirective()">⚡ Generate Today's Directive</button>
+  </div>
+
+  <!-- LOADER -->
+  <div class="loader-state" id="loader">
+    <div class="spinning"></div>
+    <div class="loader-label">Analyzing your business context and generating your directive...</div>
+  </div>
+
+  <!-- DIRECTIVE OUTPUT -->
+  <div class="directive-card" id="directive-card">
+    <div class="directive-header">
+      <div class="directive-emoji" id="dir-emoji">⚡</div>
+      <div class="directive-headline" id="dir-headline">Loading...</div>
+      <div class="directive-context" id="dir-context">Loading...</div>
+    </div>
+    <div class="action-list" id="action-list"></div>
+    <div class="directive-footer">
+      <div class="progress-label" id="progress-label">0 / 0 done</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <button onclick="resetDirective()" style="background:none;border:none;color:var(--txm);font-size:.75rem;cursor:pointer;font-family:'DM Sans',sans-serif">↩ New Directive</button>
+    </div>
+    <div class="bottom-grid" style="margin-top:0">
+      <div class="mini-card">
+        <div class="mini-card-title">📊 Business Signal</div>
+        <div class="insight-text" id="biz-signal">—</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-card-title">💬 Founder Focus</div>
+        <div class="quote-text" id="founder-quote">—</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Clock
+function updateClock() {
+  const now = new Date();
+  document.getElementById('today-date').textContent = now.toLocaleDateString('en-IN', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  document.getElementById('clock').textContent = now.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'}) + ' IST';
+}
+updateClock(); setInterval(updateClock, 1000);
+
+let actions = [], doneSet = new Set();
+
+function updateProgress() {
+  const done = doneSet.size;
+  const total = actions.length;
+  document.getElementById('progress-label').textContent = `${done} / ${total} done`;
+  document.getElementById('progress-fill').style.width = total ? (done/total*100)+'%' : '0%';
+}
+
+function toggleDone(i) {
+  if (doneSet.has(i)) doneSet.delete(i);
+  else doneSet.add(i);
+  const chk = document.getElementById('chk-'+i);
+  chk.classList.toggle('done', doneSet.has(i));
+  updateProgress();
+}
+
+async function generateDirective() {
+  const mrr = parseFloat(document.getElementById('t-mrr').value) || 0;
+  const mrrPrev = parseFloat(document.getElementById('t-mrr-prev').value) || 0;
+  const churned = parseFloat(document.getElementById('t-churned').value) || 0;
+  const newCust = parseFloat(document.getElementById('t-new').value) || 0;
+  const stage = document.getElementById('t-stage').value;
+  const role = document.getElementById('t-role').value;
+  const worry = document.getElementById('t-worry').value;
+  const yesterday = document.getElementById('t-yesterday').value;
+
+  if (!mrr) { alert('Enter your current MRR to generate a directive.'); return; }
+
+  const growth = mrrPrev ? (((mrr-mrrPrev)/mrrPrev)*100).toFixed(1) : 'unknown';
+
+  document.getElementById('gen-btn').disabled = true;
+  document.getElementById('setup-card').style.opacity = '.5';
+  document.getElementById('loader').classList.add('visible');
+
+  const prompt = `You are an elite SaaS advisor. A ${stage} founder (role: ${role}) needs their daily directive.
+
+Business data today:
+- MRR: ₹${mrr} (${growth}% growth vs last month)
+- New customers: ${newCust}, Churned: ${churned}
+- Biggest worry: "${worry || 'Not specified'}"
+- Yesterday: "${yesterday || 'Not specified'}"
+
+Generate a DAILY DIRECTIVE as JSON with this exact structure:
+{
+  "emoji": "<single emoji that captures the day's energy>",
+  "headline": "Today you must <bold action phrase>",
+  "context": "<1-2 sentences explaining why today is the day to focus on this, based on their data>",
+  "actions": [
+    {
+      "priority": "CRITICAL|HIGH|MEDIUM",
+      "title": "<specific action title>",
+      "description": "<exactly what to do, with specifics — no vague advice>",
+      "time": "<realistic time estimate e.g. 30 min, 2 hours>"
+    }
+  ],
+  "business_signal": "<2-3 sentences of honest analysis of what their metrics signal about the business right now>",
+  "founder_quote": "<an original, real insight about their situation — not a generic quote. Something a great mentor would say specifically to them.>"
+}
+
+Rules: 3-5 actions. Be brutally specific. No generic advice. If churn > new customers, that's the priority. Return valid JSON only.`;
+
+  try {
+    // Best-effort: reuse an existing Supabase session if the user is logged in,
+    // so the server-side AI gateway can grant plan-appropriate model access.
+    let authHeaders = {};
+    try {
+      const sbKey = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+      if (sbKey) {
+        const session = JSON.parse(localStorage.getItem(sbKey));
+        if (session && session.access_token) authHeaders = { 'Authorization': 'Bearer ' + session.access_token };
+      }
+    } catch (_) { /* no session available, proceed unauthenticated */ }
+
+    const response = await fetch('/pages/api/ai-gateway.php', {
+      method: 'POST',
+      headers: Object.assign({ 'Content-Type': 'application/json' }, authHeaders),
+      body: JSON.stringify({
+        model: 'auto',
+        system: 'You are an elite SaaS advisor. Return only valid JSON, no markdown.',
+        prompt: prompt
+      })
+    });
+    if (!response.ok) throw new Error('gateway_unavailable_' + response.status);
+    const data = await response.json();
+    const raw = (data.text || '').replace(/```json|```/g,'').trim();
+    renderDirective(JSON.parse(raw));
+  } catch(err) {
+    renderDirective(buildFallback(mrr, mrrPrev, churned, newCust, worry, stage));
+  }
+
+  document.getElementById('loader').classList.remove('visible');
+  document.getElementById('setup-card').style.display = 'none';
+}
+
+function buildFallback(mrr, mrrPrev, churned, newCust, worry, stage) {
+  const growth = mrrPrev ? ((mrr-mrrPrev)/mrrPrev*100).toFixed(1) : 10;
+  const churnAlert = churned > newCust;
+  return {
+    emoji: churnAlert ? '🚨' : '🚀',
+    headline: churnAlert ? 'Stop the bleed — talk to every churned customer today' : 'Close your next deal before sundown',
+    context: churnAlert ? `You lost ${churned} customers while gaining ${newCust} this month. Net negative. Every day you don't fix this compounds the problem.` : `MRR grew ${growth}% — keep the momentum. Today's job is to convert pipeline into signed contracts.`,
+    actions: [
+      {priority: churnAlert ? 'CRITICAL' : 'HIGH', title: churnAlert ? 'Call every churned customer' : 'Follow up with top 3 prospects', description: churnAlert ? 'Send a personal email to each churned customer: "I noticed you left — can I get 10 minutes to understand why? No pitch, just honest feedback." Aim for 2 responses today.' : 'Open your CRM. Find the 3 prospects who went silent. Send a 3-sentence value-bump email referencing their specific pain point.', time: churnAlert ? '1 hour' : '30 min'},
+      {priority: 'HIGH', title: 'Review your onboarding drop-off', description: 'Check which step most users abandon your product. Fix the #1 friction point today. Even a small improvement compounds over months.', time: '45 min'},
+      {priority: 'MEDIUM', title: 'Write one LinkedIn post about a customer win', description: 'Share a specific result a customer got using your product. Tag them if possible. This generates inbound leads passively while you work.', time: '20 min'},
+    ],
+    business_signal: `At ${stage} stage with ${growth}% MoM growth, your trajectory is ${parseFloat(growth) >= 10 ? 'healthy' : 'below benchmark — focus on growth levers'}. ${churnAlert ? 'Churn exceeding new customer acquisition is the single biggest threat to your business right now.' : 'Keep acquisition strong and focus on retention to compound MRR.'}`,
+    founder_quote: `The best founders I know spend 40% of their time talking to customers. Not about features — about their world, their problems, their wins. Do that today.`
+  };
+}
+
+function renderDirective(d) {
+  actions = d.actions || [];
+  doneSet = new Set();
+
+  document.getElementById('dir-emoji').textContent = d.emoji || '⚡';
+  document.getElementById('dir-headline').innerHTML = d.headline?.replace(/([A-Z][^.!?]*(?:[.!?]|$))/g, '$1') || '—';
+  document.getElementById('dir-context').textContent = d.context || '';
+
+  const priorityClass = {CRITICAL:'p-critical', HIGH:'p-high', MEDIUM:'p-medium'};
+  document.getElementById('action-list').innerHTML = actions.map((a, i) => `
+    <div class="action-item">
+      <div class="action-check" id="chk-${i}" onclick="toggleDone(${i})"></div>
+      <div style="flex:1">
+        <div class="action-priority ${priorityClass[a.priority]||'p-medium'}">${a.priority}</div>
+        <div class="action-title">${a.title}</div>
+        <div class="action-desc">${a.description}</div>
+        <div class="action-time">⏱ ${a.time}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('biz-signal').textContent = d.business_signal || '';
+  document.getElementById('founder-quote').textContent = d.founder_quote || '';
+  document.getElementById('directive-card').classList.add('visible');
+  updateProgress();
+}
+
+function resetDirective() {
+  document.getElementById('directive-card').classList.remove('visible');
+  document.getElementById('setup-card').style.display = 'block';
+  document.getElementById('setup-card').style.opacity = '1';
+  document.getElementById('gen-btn').disabled = false;
+}
+</script>
+<script src="/gk-shortcut.js?v=a3bb6e13"></script>
+</body>
+</html>

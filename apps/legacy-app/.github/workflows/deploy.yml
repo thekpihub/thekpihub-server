@@ -1,0 +1,57 @@
+name: Deploy (gated)
+
+# Continuous deployment for thekpihub-app.
+#
+# SAFETY: this workflow is MANUAL-ONLY and DORMANT until you opt in.
+#   1. It runs only when triggered by hand (Actions > Deploy > Run workflow).
+#      There is intentionally no push trigger, so merges to main never auto-deploy.
+#   2. Even when triggered, the deploy jobs run only if the repository variable
+#      DEPLOY_ENABLED == 'true' (Settings > Variables) — your arm/disarm switch.
+# (Required-reviewer environment protection needs a paid plan for private repos,
+#  so the manual trigger + DEPLOY_ENABLED is the gate. See docs/CICD.md.)
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-app-production
+  cancel-in-progress: false
+
+jobs:
+  deploy-frontend:
+    name: Frontend -> Vercel
+    if: ${{ vars.DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          npm i -g vercel@latest
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+          vercel build --prod --token="$VERCEL_TOKEN"
+          vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+
+  deploy-backend:
+    name: Backend -> Railway
+    if: ${{ vars.DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
+        run: |
+          npm i -g @railway/cli
+          railway up --service "$RAILWAY_SERVICE_ID" --detach

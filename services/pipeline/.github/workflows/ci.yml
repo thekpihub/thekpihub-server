@@ -1,0 +1,34 @@
+name: CI
+
+# Lightweight integration check for the content pipeline.
+# Does NOT run the pipeline (that's the scheduled pipeline.yml) — it only
+# verifies dependencies install and the code compiles/imports cleanly, so a
+# broken commit can't reach the 4x/day cron.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Install & compile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Byte-compile (syntax check)
+        run: python -m compileall -q pipeline.py
+      - name: Lint (non-blocking)
+        run: |
+          pip install ruff
+          ruff check . || true

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:24px;background:var(--bg);color:var(--text);width:700px;box-sizing:border-box;display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+  .badge{display:inline-flex;align-items:center;gap:9px;padding:8px 20px;border-radius:100px;font-family:var(--font-head);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
+  .gold{border:1px solid rgba(233,161,35,0.28);background:rgba(233,161,35,0.18);color:var(--gold);}
+  .teal{border:1px solid rgba(0,201,167,0.28);background:rgba(0,201,167,0.12);color:var(--teal);}
+  .dot{width:6px;height:6px;border-radius:50%;}
+  .dot-gold{background:var(--gold);}
+  .dot-teal{background:var(--teal);animation:blink 1.5s ease infinite;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+  .pill{padding:5px 14px;border-radius:100px;border:1px solid rgba(233,161,35,0.3);background:rgba(233,161,35,0.06);color:rgba(234,237,245,0.7);font-family:var(--font-head);font-size:10px;font-weight:600;}
+</style></head><body>
+  <span class="badge gold"><span class="dot dot-teal"></span>AI-Powered SaaS Intelligence</span>
+  <span class="badge teal">Early Access</span>
+  <span class="pill">Pricing</span>
+  <span class="pill">Pipeline</span>
+</body></html>

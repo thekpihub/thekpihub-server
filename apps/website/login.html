@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In · The KPI Hub</title>
+    <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="assets/favicon-new.svg?v=d6470a38" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0d1117;
+      --surface:     #161b22;
+      --border:      #30363d;
+      --text:        #e6edf3;
+      --muted:       #8b949e;
+      --accent:      #0ea5e9;
+      --accent-h:    #38bdf8;
+      --danger:      #f85149;
+      --success:     #3fb950;
+      --radius:      10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+    .logo-mark {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 18px; color: #fff;
+    }
+    .logo-text { font-size: 18px; font-weight: 700; }
+
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+
+    .field { margin-bottom: 18px; }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .input-wrap { position: relative; }
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      transition: border-color .2s;
+      outline: none;
+    }
+    input:focus { border-color: var(--accent); }
+    input.error-field { border-color: var(--danger); }
+
+    .pw-toggle {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--muted);
+      padding: 0; line-height: 1;
+    }
+    .pw-toggle:hover { color: var(--text); }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+      gap: 12px;
+    }
+    .check-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: var(--muted); cursor: pointer;
+    }
+    .check-label input[type="checkbox"] { accent-color: var(--accent); }
+    .forgot { font-size: 13px; color: var(--accent); text-decoration: none; }
+    .forgot:hover { color: var(--accent-h); }
+
+    .btn {
+      width: 100%;
+      padding: 11px;
+      border-radius: var(--radius);
+      border: none;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s, opacity .2s;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--accent-h); }
+    .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+
+    .divider {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 20px 0;
+      position: relative;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      position: absolute; top: 50%;
+      width: calc(50% - 24px);
+      height: 1px;
+      background: var(--border);
+    }
+    .divider::before { left: 0; }
+    .divider::after { right: 0; }
+
+    .register-link {
+      text-align: center;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .register-link a { color: var(--accent); text-decoration: none; }
+    .register-link a:hover { color: var(--accent-h); }
+
+    .alert {
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      font-size: 13px;
+      margin-bottom: 18px;
+      display: none;
+    }
+    .alert.error   { background: rgba(248,81,73,.12); border: 1px solid rgba(248,81,73,.4); color: #fca5a5; }
+    .alert.success { background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.4); color: #86efac; }
+    .alert.show    { display: block; }
+
+    /* Reset password overlay */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.7);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+      padding: 24px;
+      display: none;
+    }
+    .overlay.show { display: flex; }
+    .overlay-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%; max-width: 380px;
+    }
+    .overlay-card h2 { font-size: 18px; margin-bottom: 6px; }
+    .overlay-card p  { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+    .overlay-actions { display: flex; gap: 10px; margin-top: 16px; }
+    .btn-ghost {
+      flex: 1; padding: 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: none; color: var(--text);
+      font-family: inherit; font-size: 14px;
+      font-weight: 500; cursor: pointer;
+    }
+    .btn-ghost:hover { background: var(--border); }
+    .btn-sm { flex: 1; padding: 10px; font-size: 14px; }
+
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-DZPCCPEP1J");
+  </script>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-mark">K</div>
+    <span class="logo-text">The KPI Hub</span>
+  </div>
+
+  <h1>Welcome back</h1>
+  <p class="subtitle">Sign in to your account to continue</p>
+
+  <div class="alert error" id="errorAlert"></div>
+  <div class="alert success" id="successAlert"></div>
+
+  <form id="loginForm" novalidate>
+    <div class="field">
+      <label for="email">Email address</label>
+      <input type="email" id="email" name="email" placeholder="you@company.com" autocomplete="email" required>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <div class="input-wrap">
+        <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+        <button type="button" class="pw-toggle" id="pwToggle" aria-label="Toggle password visibility">
+          <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="row">
+      <label class="check-label">
+        <input type="checkbox" id="remember"> Remember me
+      </label>
+      <a href="#" class="forgot" id="forgotLink">Forgot password?</a>
+    </div>
+
+    <button type="submit" class="btn btn-primary" id="submitBtn">Sign In</button>
+  </form>
+
+  <div class="divider">or</div>
+
+  <div class="register-link">
+    Don't have an account? <a href="register.html">Create one free</a>
+  </div>
+
+  <div style="margin-top:24px; text-align:center; display:flex; justify-content:center; gap:20px;">
+    <a href="updates.html" style="font-size:12px; color:#8b949e; text-decoration:none;">Updates</a>
+    <a href="sitemap.html" style="font-size:12px; color:#8b949e; text-decoration:none;">Sitemap</a>
+  </div>
+</div>
+
+<!-- Forgot password overlay -->
+<div class="overlay" id="resetOverlay">
+  <div class="overlay-card">
+    <h2>Reset your password</h2>
+    <p>Enter your email and we'll send you a link to reset your password.</p>
+    <div class="alert error" id="resetError"></div>
+    <div class="alert success" id="resetSuccess"></div>
+    <div class="field">
+      <label for="resetEmail">Email address</label>
+      <input type="email" id="resetEmail" placeholder="you@company.com">
+    </div>
+    <div class="overlay-actions">
+      <button class="btn-ghost" id="cancelReset">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="sendResetBtn">Send Link</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+  const { createClient } = supabase;
+  const sb = createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+
+  // Redirect if already signed in
+  (async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) window.location.href = CONFIG.app.dashboardUrl;
+  })();
+
+  // Helpers
+  const $ = id => document.getElementById(id);
+  function showError(msg) {
+    const el = $('errorAlert');
+    el.textContent = msg;
+    el.className = 'alert error show';
+    $('successAlert').className = 'alert success';
+  }
+  function showSuccess(msg) {
+    const el = $('successAlert');
+    el.textContent = msg;
+    el.className = 'alert success show';
+    $('errorAlert').className = 'alert error';
+  }
+  function clearAlerts() {
+    $('errorAlert').className = 'alert error';
+    $('successAlert').className = 'alert success';
+  }
+
+  // Password toggle
+  $('pwToggle').addEventListener('click', () => {
+    const pw = $('password');
+    pw.type = pw.type === 'password' ? 'text' : 'password';
+  });
+
+  // Login form
+  $('loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    clearAlerts();
+    const email    = $('email').value.trim();
+    const password = $('password').value;
+
+    if (!email || !password) { showError('Please fill in all fields.'); return; }
+
+    const btn = $('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Signing in…';
+
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      showError(error.message === 'Invalid login credentials'
+        ? 'Incorrect email or password. Please try again.'
+        : error.message);
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    } else {
+      showSuccess('Signed in! Redirecting…');
+      setTimeout(() => window.location.href = CONFIG.app.dashboardUrl, 800);
+    }
+  });
+
+  // Forgot password
+  $('forgotLink').addEventListener('click', e => {
+    e.preventDefault();
+    $('resetEmail').value = $('email').value;
+    $('resetOverlay').className = 'overlay show';
+  });
+  $('cancelReset').addEventListener('click', () => {
+    $('resetOverlay').className = 'overlay';
+    $('resetError').className = 'alert error';
+    $('resetSuccess').className = 'alert success';
+  });
+  $('resetOverlay').addEventListener('click', e => {
+    if (e.target === $('resetOverlay')) $('cancelReset').click();
+  });
+
+  $('sendResetBtn').addEventListener('click', async () => {
+    const email = $('resetEmail').value.trim();
+    if (!email) { $('resetError').textContent = 'Please enter your email.'; $('resetError').className = 'alert error show'; return; }
+
+    $('sendResetBtn').disabled = true;
+    $('sendResetBtn').innerHTML = '<span class="spinner"></span>Sending…';
+
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: CONFIG.app.url + '/login.html'
+    });
+
+    if (error) {
+      $('resetError').textContent = error.message;
+      $('resetError').className = 'alert error show';
+    } else {
+      $('resetError').className = 'alert error';
+      $('resetSuccess').textContent = 'Reset link sent! Check your inbox.';
+      $('resetSuccess').className = 'alert success show';
+      $('sendResetBtn').textContent = 'Sent';
+    }
+    $('sendResetBtn').disabled = false;
+  });
+</script>
+</body>
+</html>

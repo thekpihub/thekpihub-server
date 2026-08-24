@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard · The KPI Hub</title>
+    <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="assets/favicon-new.svg?v=d6470a38" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d1117;
+      --surface:   #161b22;
+      --surface-2: #21262d;
+      --border:    #30363d;
+      --text:      #e6edf3;
+      --muted:     #8b949e;
+      --accent:    #0ea5e9;
+      --success:   #3fb950;
+      --danger:    #f85149;
+      --warning:   #d29922;
+      --radius:    10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 0;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: sticky;
+      top: 0;
+      max-height: 100vh;
+      overflow-y: auto;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 16px; color: #fff;
+    }
+    .logo-text { font-size: 16px; font-weight: 700; }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      transition: background .2s, color .2s;
+    }
+    .nav-item:hover { background: var(--surface-2); color: var(--text); }
+    .nav-item.active { background: var(--accent); color: #fff; }
+
+    .nav-label {
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 12px 12px 6px;
+      margin-top: 6px;
+    }
+
+    .upgrade-banner {
+      background: linear-gradient(135deg, rgba(14,165,233,.15), rgba(99,102,241,.15));
+      border: 1px solid rgba(14,165,233,.3);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-top: auto;
+    }
+    .upgrade-banner.hide { display: none; }
+    .upgrade-text { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .upgrade-btn {
+      width: 100%;
+      padding: 8px;
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .upgrade-btn:hover { background: #38bdf8; }
+
+    .user-block {
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .user-name { font-size: 13px; font-weight: 600; }
+    .user-plan { font-size: 11px; color: var(--muted); }
+    .logout-btn {
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      font-size: 12px; font-weight: 500;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+    }
+    .logout-btn:hover { background: var(--surface-2); color: var(--text); }
+
+    /* ── Main ── */
+    .main {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-left { flex: 1; }
+    .greeting { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .date-time { font-size: 13px; color: var(--muted); }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .plan-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .badge-starter    { background: rgba(99,102,241,.2); color: #a5b4fc; }
+    .badge-growth     { background: rgba(14,165,233,.2); color: #7dd3fc; }
+    .badge-enterprise { background: rgba(168,85,247,.2); color: #d8b4fe; }
+
+    .content {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+    }
+
+    /* Sections */
+    .section {
+      display: none;
+    }
+    .section.active { display: block; }
+
+    .section-title {
+      font-size: 18px; font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .card-title {
+      font-size: 13px; font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      letter-spacing: .5px;
+    }
+
+    .kpi-value {
+      font-size: 28px; font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .kpi-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .trend { margin-top: 12px; }
+    .trend.up   { color: var(--success); }
+    .trend.down { color: var(--danger); }
+
+    .chart-card {
+      grid-column: span 2;
+    }
+    .chart-container { position: relative; height: 250px; }
+
+    /* Gated content */
+    .gate {
+      background: var(--surface-2);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      text-align: center;
+      opacity: .6;
+      cursor: not-allowed;
+    }
+    .gate-icon { font-size: 32px; margin-bottom: 12px; }
+    .gate-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .gate-copy {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      line-height: 1.6;
+      max-width: 340px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .gate-btn {
+      display: inline-block;
+      padding: 8px 16px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: var(--radius);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .gate-btn:hover { background: #38bdf8; }
+
+    /* Role-specific */
+    .role-content { display: none; }
+    .role-content.visible { display: block; }
+
+    .no-access {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 1024px) {
+      .container { grid-template-columns: 1fr; }
+      .sidebar { grid-column: 1 / -1; }
+      .chart-card { grid-column: span 1; }
+    }
+
+    @media (max-width: 768px) {
+      .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .content { padding: 16px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── WingCommander Section ────────────────────────────────────────── */
+    .wing-hero {
+      background: linear-gradient(135deg, #06071A 0%, #0c1520 60%, #06140a 100%);
+      border: 1px solid rgba(233,161,35,.3);
+      border-radius: 16px;
+      padding: 48px 40px;
+      text-align: center;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .wing-hero::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(233,161,35,.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .wing-logo { font-size: 52px; margin-bottom: 16px; }
+    .wing-title { font-size: 30px; font-weight: 700; color: #E9A123; margin-bottom: 10px; }
+    .wing-subtitle { font-size: 15px; color: var(--muted); margin-bottom: 36px; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .wing-launch-btn {
+      display: inline-block;
+      padding: 16px 44px;
+      background: linear-gradient(135deg, #E9A123, #c97d10);
+      color: #06071A;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px; font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform .2s, box-shadow .2s;
+      font-family: inherit;
+      letter-spacing: .3px;
+    }
+    .wing-launch-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 36px rgba(233,161,35,.4); }
+    .wing-launch-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .wing-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 28px; }
+    .wing-feature { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px; text-align: left; transition: border-color .2s; }
+    .wing-feature:hover { border-color: rgba(233,161,35,.4); }
+    .wing-feature-icon { font-size: 26px; margin-bottom: 10px; }
+    .wing-feature-title { font-size: 13px; font-weight: 700; color: #E9A123; margin-bottom: 8px; }
+    .wing-feature-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+    .wing-locked {
+      background: rgba(233,161,35,.04);
+      border: 1px dashed rgba(233,161,35,.3);
+      border-radius: 16px;
+      padding: 48px 32px;
+      text-align: center;
+    }
+    .wing-status { margin-top: 14px; font-size: 13px; color: var(--muted); }
+    @media (max-width: 900px) { .wing-features { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { .wing-features { grid-template-columns: 1fr; } .wing-hero { padding: 32px 20px; } }
+  </style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-DZPCCPEP1J");
+  </script>
+</head>
+<body>
+
+<div class="container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">K</div>
+      <div class="logo-text">KPI Hub</div>
+    </div>
+
+    <div class="nav">
+      <button class="nav-item active" onclick="switchTab('overview', this)">
+        <span>📊</span> Overview
+      </button>
+      <button class="nav-item" onclick="switchTab('kpis', this)">
+        <span>📈</span> KPIs
+      </button>
+      <button class="nav-item" onclick="switchTab('reports', this)">
+        <span>📋</span> Reports
+      </button>
+      <button class="nav-item" onclick="switchTab('team', this)">
+        <span>👥</span> Team
+      </button>
+      <button class="nav-item" onclick="switchTab('settings', this)">
+        <span>⚙️</span> Settings
+      </button>
+      <button class="nav-item" id="wingNavBtn" onclick="switchTab('wingcommander', this)" style="background:linear-gradient(135deg,rgba(233,161,35,.15),rgba(233,161,35,.05)); border:1px solid rgba(233,161,35,.3); color:#E9A123; font-weight:600;">
+        <span>🤖</span> WingCommander
+      </button>
+
+      <div class="nav-label">Account</div>
+      <a class="nav-item" href="upgrade.html">
+        <span>💳</span> Billing & Plans
+      </a>
+
+      <div class="nav-label">Resources</div>
+      <a class="nav-item" href="updates.html">
+        <span>📡</span> Updates
+      </a>
+      <a class="nav-item" href="sitemap.html">
+        <span>🗺️</span> Site Map
+      </a>
+    </div>
+
+    <div class="upgrade-banner" id="upgradeBanner">
+      <div class="upgrade-text" id="upgradeText"></div>
+      <button class="upgrade-btn" onclick="goToUpgrade()">Upgrade Now</button>
+    </div>
+
+    <div class="user-block">
+      <div class="user-name" id="userName"></div>
+      <div class="user-plan" id="userPlan"></div>
+      <button class="logout-btn" onclick="logout()">Log out</button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="header">
+      <div class="header-left">
+        <div class="greeting" id="greeting"></div>
+        <div class="date-time" id="dateTime"></div>
+      </div>
+      <div class="header-right">
+        <div class="plan-badge" id="planBadge"></div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Overview -->
+      <div class="section active" id="overview">
+        <div class="section-title">Dashboard Overview</div>
+        <div class="grid" id="overviewGrid"></div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="section" id="kpis">
+        <div class="section-title">Key Performance Indicators</div>
+        <div class="grid" id="kpisGrid"></div>
+      </div>
+
+      <!-- Reports -->
+      <div class="section" id="reports">
+        <div class="section-title">Reports & Analytics</div>
+        <div class="grid" id="reportsGrid"></div>
+      </div>
+
+      <!-- Team -->
+      <div class="section" id="team">
+        <div class="section-title">Team Performance</div>
+        <div class="grid" id="teamGrid"></div>
+      </div>
+
+      <!-- WingCommander AI Agent -->
+      <div class="section" id="wingcommander">
+        <div class="section-title">WingCommander — AI Business Intelligence</div>
+
+        <div id="wingLocked" class="wing-locked" style="display:none;">
+          <div style="font-size:40px; margin-bottom:16px;">🔒</div>
+          <div style="font-size:18px; font-weight:700; color:#E9A123; margin-bottom:10px;">WingCommander requires Growth</div>
+          <div style="font-size:14px; color:var(--muted); max-width:420px; margin:0 auto 24px; line-height:1.7;">Get KPI-aware AI that knows your actual business data, triple-verified answers, and auto-selected models for every task.</div>
+          <a href="upgrade.html" class="wing-launch-btn" style="font-size:14px; padding:13px 32px;">Upgrade to Growth ($99/mo) →</a>
+        </div>
+
+        <div id="wingAvailable" style="display:none;">
+          <div class="wing-hero">
+            <div class="wing-logo">🤖</div>
+            <div class="wing-title">WingCommander</div>
+            <div class="wing-subtitle">The world's only KPI-aware multi-model AI agent. It loads your actual business data and triple-verifies every answer before you see it.</div>
+            <button class="wing-launch-btn" id="wingLaunchBtn" onclick="launchWingCommander()">Open WingCommander ↗</button>
+            <div class="wing-status" id="wingStatus"></div>
+          </div>
+
+          <div class="wing-features">
+            <div class="wing-feature">
+              <div class="wing-feature-icon">🧠</div>
+              <div class="wing-feature-title">Consensus Intelligence™</div>
+              <div class="wing-feature-desc">Every answer passes through 3 specialized agents: Specialist → Critic → Synthesizer. Zero hallucinations reach you.</div>
+            </div>
+            <div class="wing-feature">
+              <div class="wing-feature-icon">📊</div>
+              <div class="wing-feature-title">KPI Memory Layer™</div>
+              <div class="wing-feature-desc">WingCommander loads your last 12 months of KPI history at session start. It knows your actual numbers, not generic benchmarks.</div>
+            </div>
+            <div class="wing-feature">
+              <div class="wing-feature-icon">🎯</div>
+              <div class="wing-feature-title">Model Sommelier™</div>
+              <div class="wing-feature-desc">Auto-routes each message to the optimal AI model. Code questions → Claude Opus. Analytics → Sonnet. Translations → Gemini.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div class="section" id="settings">
+        <div class="section-title">Account Settings</div>
+        <div style="max-width: 600px; display:flex; flex-direction:column; gap:20px;">
+
+          <!-- Editable profile form -->
+          <div class="card">
+            <div class="card-title">Profile Information</div>
+            <div id="settingsAlert" style="display:none; border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:14px;"></div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+              <div>
+                <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:5px;">First name</label>
+                <input id="sfirstName" type="text" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:9px 12px; color:var(--text); font-size:13px; outline:none; font-family:inherit;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+              </div>
+              <div>
+                <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:5px;">Last name</label>
+                <input id="slastName" type="text" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:9px 12px; color:var(--text); font-size:13px; outline:none; font-family:inherit;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+              </div>
+            </div>
+            <div style="margin-bottom:14px;">
+              <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:5px;">Organization</label>
+              <input id="sorg" type="text" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:9px 12px; color:var(--text); font-size:13px; outline:none; font-family:inherit;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+            <div style="margin-bottom:18px;">
+              <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:8px;">Role</label>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;" id="roleSelector">
+                <label id="srole-executive" style="border:2px solid var(--border); border-radius:8px; padding:10px 12px; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:8px; transition:all .2s;">
+                  <input type="radio" name="srole" value="executive" style="display:none;"> 🏢 Executive
+                </label>
+                <label id="srole-manager" style="border:2px solid var(--border); border-radius:8px; padding:10px 12px; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:8px; transition:all .2s;">
+                  <input type="radio" name="srole" value="manager" style="display:none;"> 📋 Manager
+                </label>
+                <label id="srole-contributor" style="border:2px solid var(--border); border-radius:8px; padding:10px 12px; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:8px; transition:all .2s;">
+                  <input type="radio" name="srole" value="contributor" style="display:none;"> ⚡ Contributor
+                </label>
+                <label id="srole-analyst" style="border:2px solid var(--border); border-radius:8px; padding:10px 12px; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:8px; transition:all .2s;">
+                  <input type="radio" name="srole" value="analyst" style="display:none;"> 📊 Analyst
+                </label>
+              </div>
+            </div>
+            <button onclick="saveProfile()" id="saveProfileBtn" style="padding:10px 20px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .2s;" onmouseover="this.style.background='#38bdf8'" onmouseout="this.style.background='var(--accent)'">
+              Save Changes
+            </button>
+          </div>
+
+          <!-- Read-only account info -->
+          <div class="card">
+            <div class="card-title">Account</div>
+            <div style="font-size:13px; display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+              <div style="display:flex; justify-content:space-between;">
+                <span style="color:var(--muted);">Email</span>
+                <span id="settingsEmail"></span>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span style="color:var(--muted);">Plan</span>
+                <span id="settingsPlan" style="font-weight:600;"></span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:var(--muted);">Billing</span>
+                <a href="upgrade.html" style="font-size:12px; color:var(--accent); text-decoration:none;">Manage plan →</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Change password -->
+          <div class="card">
+            <div class="card-title">Password</div>
+            <div id="pwAlert" style="display:none; border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:14px;"></div>
+            <div style="margin-bottom:12px;">
+              <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:5px;">New password</label>
+              <input id="newPw" type="password" placeholder="At least 8 characters" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:9px 12px; color:var(--text); font-size:13px; outline:none; font-family:inherit;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+            <div style="margin-bottom:16px;">
+              <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:5px;">Confirm new password</label>
+              <input id="confirmPw" type="password" placeholder="Repeat password" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:9px 12px; color:var(--text); font-size:13px; outline:none; font-family:inherit;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+            <button onclick="changePassword()" id="changePwBtn" style="padding:10px 20px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:background .2s;" onmouseover="this.style.background='#38bdf8'" onmouseout="this.style.background='var(--accent)'">
+              Update Password
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+  const { createClient } = supabase;
+  const sb = createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+
+  let currentUser = null;
+  let profile = null;
+
+  const $ = id => document.getElementById(id);
+
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = CONFIG.app.loginUrl; return; }
+
+    currentUser = session.user;
+    const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    profile = data;
+
+    renderUI();
+    renderContent();
+  }
+
+  function renderUI() {
+    const greeting = getGreeting();
+    $('greeting').textContent = greeting + ', ' + (profile.first_name || 'there');
+    $('dateTime').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    $('userName').textContent = profile.first_name + ' ' + profile.last_name;
+    $('userPlan').textContent = profile.plan.charAt(0).toUpperCase() + profile.plan.slice(1) + ' Plan';
+    $('planBadge').className = 'plan-badge badge-' + profile.plan;
+    $('planBadge').textContent = profile.plan.toUpperCase();
+
+    // Upgrade banner
+    if (profile.plan === 'starter') {
+      $('upgradeBanner').className = 'upgrade-banner';
+      $('upgradeText').textContent = 'Ready to unlock advanced analytics? Upgrade to Growth.';
+    } else if (profile.plan === 'growth') {
+      $('upgradeBanner').className = 'upgrade-banner';
+      $('upgradeText').textContent = 'Automate your operations. Upgrade to Enterprise.';
+    } else {
+      $('upgradeBanner').className = 'upgrade-banner hide';
+    }
+
+    // WingCommander visibility
+    if (profile.plan === 'growth' || profile.plan === 'enterprise') {
+      if ($('wingAvailable')) $('wingAvailable').style.display = 'block';
+      if ($('wingLocked'))    $('wingLocked').style.display    = 'none';
+    } else {
+      if ($('wingAvailable')) $('wingAvailable').style.display = 'none';
+      if ($('wingLocked'))    $('wingLocked').style.display    = 'block';
+    }
+
+    // Settings — populate form fields
+    $('sfirstName').value = profile.first_name || '';
+    $('slastName').value  = profile.last_name  || '';
+    $('sorg').value       = profile.org        || '';
+    $('settingsEmail').textContent = profile.email || '';
+    $('settingsPlan').textContent  = (profile.plan || 'starter').charAt(0).toUpperCase() + (profile.plan || 'starter').slice(1);
+
+    // Highlight selected role card
+    const roles = ['executive','manager','contributor','analyst'];
+    roles.forEach(r => {
+      const card = $('srole-' + r);
+      if (!card) return;
+      if (r === profile.role) {
+        card.style.borderColor = 'var(--accent)';
+        card.style.background  = 'rgba(14,165,233,.1)';
+        card.querySelector('input[type="radio"]').checked = true;
+      } else {
+        card.style.borderColor = 'var(--border)';
+        card.style.background  = 'transparent';
+      }
+      card.addEventListener('click', () => {
+        roles.forEach(x => {
+          const c = $('srole-' + x);
+          c.style.borderColor = 'var(--border)';
+          c.style.background  = 'transparent';
+        });
+        card.style.borderColor = 'var(--accent)';
+        card.style.background  = 'rgba(14,165,233,.1)';
+      });
+    });
+  }
+
+  function renderContent() {
+    renderOverview();
+    renderKPIs();
+    renderReports();
+    renderTeam();
+  }
+
+  function renderOverview() {
+    const html = getOverviewCards();
+    $('overviewGrid').innerHTML = html;
+    if (profile.plan === 'growth') setTimeout(() => renderCharts('overview'), 0);
+  }
+
+  function renderKPIs() {
+    const html = getKPICards();
+    $('kpisGrid').innerHTML = html;
+    if (profile.plan !== 'starter') setTimeout(() => renderCharts('kpis'), 0);
+  }
+
+  function renderReports() {
+    const html = getReportCards();
+    $('reportsGrid').innerHTML = html;
+  }
+
+  function renderTeam() {
+    const html = getTeamCards();
+    $('teamGrid').innerHTML = html;
+  }
+
+  function getOverviewCards() {
+    let html = '';
+    const role = profile.role;
+
+    if (role === 'executive' || role === 'manager') {
+      html += `
+        <div class="card">
+          <div class="card-title">Company Revenue</div>
+          <div class="kpi-value">$2.4M</div>
+          <div class="kpi-meta">This quarter</div>
+          <div class="trend up">↑ 12% vs last quarter</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Team Size</div>
+          <div class="kpi-value">42</div>
+          <div class="kpi-meta">Active members</div>
+          <div class="trend up">↑ 4 new hires</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Projects Active</div>
+          <div class="kpi-value">8</div>
+          <div class="kpi-meta">In progress</div>
+          <div class="trend">3 at risk</div>
+        </div>
+      `;
+      if (profile.plan === 'growth' || profile.plan === 'enterprise') {
+        html += `
+          <div class="card">
+            <div class="card-title">Anomalies Detected</div>
+            <div class="kpi-value">3</div>
+            <div class="kpi-meta">Last 7 days</div>
+            <div class="trend down">Unusual drop in conversion</div>
+          </div>
+        `;
+      }
+    }
+
+    if (role === 'contributor' || role === 'analyst') {
+      html += `
+        <div class="card">
+          <div class="card-title">My Tasks</div>
+          <div class="kpi-value">12</div>
+          <div class="kpi-meta">This week</div>
+          <div class="trend up">8 completed</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Completion Rate</div>
+          <div class="kpi-value">94%</div>
+          <div class="kpi-meta">This month</div>
+          <div class="trend up">↑ 3% vs last month</div>
+        </div>
+      `;
+    }
+
+    if (role === 'analyst') {
+      html += `
+        <div class="card">
+          <div class="card-title">Data Points</div>
+          <div class="kpi-value">48.2K</div>
+          <div class="kpi-meta">Available for analysis</div>
+        </div>
+      `;
+    }
+
+    return html;
+  }
+
+  function getKPICards() {
+    let html = '';
+
+    if (profile.role === 'executive') {
+      html += `
+        <div class="card">
+          <div class="card-title">Annual Recurring Revenue (ARR)</div>
+          <div class="kpi-value">$18.2M</div>
+          <div class="kpi-meta">Projected for year</div>
+          <div class="trend up">↑ 28% YoY</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Customer Churn Rate</div>
+          <div class="kpi-value">2.1%</div>
+          <div class="kpi-meta">Monthly</div>
+          <div class="trend up">↓ Improving</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Net Promoter Score</div>
+          <div class="kpi-value">67</div>
+          <div class="kpi-meta">Last quarter</div>
+          <div class="trend up">↑ 5 points</div>
+        </div>
+      `;
+      if (profile.plan === 'starter') {
+        html += `
+          <div class="card no-access">
+            <div class="gate">
+              <div class="gate-icon">🔍</div>
+              <div class="gate-title">Anomaly Root-Cause Engine™</div>
+              <div class="gate-copy">Your KPIs are tracking — but when something breaks, you're the last to know why. Growth unlocks automatic root-cause analysis.</div>
+              <button class="gate-btn" onclick="goToUpgrade()">Unlock with Growth</button>
+            </div>
+          </div>
+        `;
+      } else if (profile.plan === 'growth') {
+        html += `
+          <div class="card">
+            <div class="card-title">Anomalies (7d)</div>
+            <div class="kpi-value">2</div>
+            <div class="kpi-meta">Detected &amp; analyzed</div>
+            <div class="trend down">Revenue dip traced to Q3 pricing</div>
+          </div>
+        `;
+      }
+    }
+
+    if (profile.role === 'manager') {
+      html += `
+        <div class="card">
+          <div class="card-title">Team Velocity</div>
+          <div class="kpi-value">34</div>
+          <div class="kpi-meta">Story points / sprint</div>
+          <div class="trend up">↑ 6% vs avg</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Sprint Completion</div>
+          <div class="kpi-value">91%</div>
+          <div class="kpi-meta">Last sprint</div>
+          <div class="trend">1 item carryover</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Resource Utilization</div>
+          <div class="kpi-value">87%</div>
+          <div class="kpi-meta">Team capacity</div>
+          <div class="trend">3 people on PTO</div>
+        </div>
+      `;
+    }
+
+    if (profile.role === 'contributor') {
+      html += `
+        <div class="card">
+          <div class="card-title">Task Completion</div>
+          <div class="kpi-value">18</div>
+          <div class="kpi-meta">This month</div>
+          <div class="trend up">↑ 3 ahead of schedule</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Avg Task Time</div>
+          <div class="kpi-value">4.2h</div>
+          <div class="kpi-meta">Per task</div>
+          <div class="trend up">↓ 20% faster than avg</div>
+        </div>
+      `;
+    }
+
+    if (profile.role === 'analyst') {
+      html += `
+        <div class="card">
+          <div class="card-title">Datasets</div>
+          <div class="kpi-value">24</div>
+          <div class="kpi-meta">Available</div>
+          <div class="trend">3 real-time</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Reports Generated</div>
+          <div class="kpi-value">156</div>
+          <div class="kpi-meta">This quarter</div>
+          <div class="trend up">↑ 28%</div>
+        </div>
+      `;
+    }
+
+    return html;
+  }
+
+  function getReportCards() {
+    let html = '';
+
+    if (profile.plan === 'starter') {
+      html += `
+        <div class="card no-access">
+          <div class="gate">
+            <div class="gate-icon">📊</div>
+            <div class="gate-title">Advanced Analytics</div>
+            <div class="gate-copy">Access detailed trend analysis, cohort breakdowns, and custom metrics. Unlock with Growth Plan.</div>
+            <button class="gate-btn" onclick="goToUpgrade()">Upgrade to Growth</button>
+          </div>
+        </div>
+      `;
+    } else {
+      html += `
+        <div class="card">
+          <div class="card-title">Weekly Summary</div>
+          <div style="padding: 20px 0; color: var(--muted); font-size: 13px;">
+            <p>📈 Revenue up 8%</p>
+            <p style="margin-top: 8px;">👥 3 new customers</p>
+            <p style="margin-top: 8px;">⚡ 1 critical alert</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Custom Reports</div>
+          <div style="padding: 20px 0; color: var(--muted); font-size: 13px;">
+            <p>Q3 Performance Review (8 days ago)</p>
+            <p style="margin-top: 8px;">Monthly Exec Briefing (1 day ago)</p>
+          </div>
+        </div>
+      `;
+    }
+
+    if (profile.plan === 'enterprise') {
+      html += `
+        <div class="card">
+          <div class="card-title">Automation Workflows</div>
+          <div style="padding: 20px 0; color: var(--muted); font-size: 13px;">
+            <p>✓ Auto-alert on conversion drop >5%</p>
+            <p style="margin-top: 8px;">✓ Weekly CSV export to data warehouse</p>
+            <p style="margin-top: 8px;">✓ Slack notifications on anomalies</p>
+          </div>
+        </div>
+      `;
+    }
+
+    return html;
+  }
+
+  function getTeamCards() {
+    let html = '';
+
+    if (profile.role === 'executive' || profile.role === 'manager') {
+      html += `
+        <div class="card">
+          <div class="card-title">Top Performer</div>
+          <div style="margin: 16px 0; font-size: 14px;">
+            <p><strong>Sarah Chen</strong></p>
+            <p style="margin-top: 4px; color: var(--muted); font-size: 12px;">18 tasks completed</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Team Capacity</div>
+          <div style="margin: 16px 0; font-size: 13px; color: var(--muted);">
+            <p>Available: 28 people</p>
+            <p style="margin-top: 8px;">On PTO: 3 people</p>
+          </div>
+        </div>
+      `;
+    }
+
+    if (profile.plan === 'growth' || profile.plan === 'enterprise') {
+      if (profile.role === 'manager') {
+        html += `
+          <div class="card">
+            <div class="card-title">Team Benchmarks</div>
+            <div style="margin: 16px 0; font-size: 13px; color: var(--muted);">
+              <p>Your team: 87% of company avg</p>
+              <p style="margin-top: 8px;">Industry avg: 84%</p>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    return html;
+  }
+
+  function renderCharts(section) {
+    if (section === 'overview' && (profile.plan === 'growth' || profile.plan === 'enterprise')) {
+      // Add a simple chart
+      const html = `
+        <div class="card chart-card">
+          <div class="card-title">Revenue Trend (Last 6 Months)</div>
+          <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+      `;
+      const overview = $('overviewGrid');
+      overview.innerHTML += html;
+      new Chart($('revenueChart').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+          datasets: [{
+            label: 'Revenue ($M)',
+            data: [1.8, 1.9, 2.0, 2.1, 2.3, 2.4],
+            borderColor: '#0ea5e9',
+            backgroundColor: 'rgba(14,165,233,0.1)',
+            tension: 0.3,
+            fill: true,
+            pointRadius: 5,
+            pointBackgroundColor: '#0ea5e9'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { color: 'var(--muted)' } },
+            x: { ticks: { color: 'var(--muted)' } }
+          }
+        }
+      });
+    }
+  }
+
+  function getGreeting() {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 18) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  function switchTab(name, el) {
+    document.querySelectorAll('.section').forEach(s => s.className = 'section');
+    $(name).className = 'section active';
+    document.querySelectorAll('.nav-item').forEach(btn => btn.className = 'nav-item');
+    el.className = 'nav-item active';
+  }
+
+  function goToUpgrade() {
+    window.location.href = CONFIG.app.upgradeUrl;
+  }
+
+  async function logout() {
+    await sb.auth.signOut();
+    window.location.href = CONFIG.app.loginUrl;
+  }
+
+  async function saveProfile() {
+    const firstName = $('sfirstName').value.trim();
+    const lastName  = $('slastName').value.trim();
+    const org       = $('sorg').value.trim();
+    const role      = document.querySelector('input[name="srole"]:checked')?.value;
+
+    if (!firstName || !lastName) { showSettingsAlert('error', 'First and last name are required.'); return; }
+    if (!role) { showSettingsAlert('error', 'Please select a role.'); return; }
+
+    const btn = $('saveProfileBtn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    const { error } = await sb.from('profiles').update({ first_name: firstName, last_name: lastName, org, role }).eq('id', currentUser.id);
+
+    if (error) {
+      showSettingsAlert('error', error.message);
+    } else {
+      profile.first_name = firstName;
+      profile.last_name  = lastName;
+      profile.org = org;
+      profile.role = role;
+      renderUI();
+      showSettingsAlert('success', 'Profile updated successfully.');
+    }
+    btn.disabled = false; btn.textContent = 'Save Changes';
+  }
+
+  function showSettingsAlert(type, msg) {
+    const el = $('settingsAlert');
+    el.textContent = msg;
+    el.style.display = 'block';
+    if (type === 'success') {
+      el.style.background = 'rgba(63,185,80,.12)';
+      el.style.border = '1px solid rgba(63,185,80,.4)';
+      el.style.color  = '#86efac';
+    } else {
+      el.style.background = 'rgba(248,81,73,.12)';
+      el.style.border = '1px solid rgba(248,81,73,.4)';
+      el.style.color  = '#fca5a5';
+    }
+    setTimeout(() => { el.style.display = 'none'; }, 4000);
+  }
+
+  async function changePassword() {
+    const newPw     = $('newPw').value;
+    const confirmPw = $('confirmPw').value;
+    const alert     = $('pwAlert');
+
+    if (newPw.length < 8) { showPwAlert('error', 'Password must be at least 8 characters.'); return; }
+    if (newPw !== confirmPw) { showPwAlert('error', 'Passwords do not match.'); return; }
+
+    const btn = $('changePwBtn');
+    btn.disabled = true; btn.textContent = 'Updating…';
+
+    const { error } = await sb.auth.updateUser({ password: newPw });
+
+    if (error) {
+      showPwAlert('error', error.message);
+    } else {
+      $('newPw').value = ''; $('confirmPw').value = '';
+      showPwAlert('success', 'Password updated successfully.');
+    }
+    btn.disabled = false; btn.textContent = 'Update Password';
+  }
+
+  function showPwAlert(type, msg) {
+    const el = $('pwAlert');
+    el.textContent = msg;
+    el.style.display = 'block';
+    if (type === 'success') {
+      el.style.background = 'rgba(63,185,80,.12)';
+      el.style.border = '1px solid rgba(63,185,80,.4)';
+      el.style.color  = '#86efac';
+    } else {
+      el.style.background = 'rgba(248,81,73,.12)';
+      el.style.border = '1px solid rgba(248,81,73,.4)';
+      el.style.color  = '#fca5a5';
+    }
+    setTimeout(() => { el.style.display = 'none'; }, 4000);
+  }
+
+  async function launchWingCommander() {
+    const btn    = $('wingLaunchBtn');
+    const status = $('wingStatus');
+    btn.disabled = true;
+    btn.textContent = 'Connecting…';
+    status.textContent = '';
+    status.style.color = 'var(--muted)';
+    status.textContent = 'Verifying your session…';
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { window.location.href = CONFIG.app.loginUrl; return; }
+      const res = await fetch('https://kpihub-backend-821108037779.asia-south1.run.app/open-wingman', {
+        headers: { 'Authorization': 'Bearer ' + session.access_token },
+        redirect: 'manual'
+      });
+      // PHP returns a 302 redirect to agent.thekpihub.com
+      if (res.status === 302 || res.type === 'opaqueredirect') {
+        status.textContent = 'Launching WingCommander…';
+        // Re-fetch following redirect in same tab
+        window.location.href = '/pages/api/open-wingman.php?_t=' + Date.now();
+        return;
+      }
+      if (res.ok || res.status === 0) {
+        window.location.href = '/pages/api/open-wingman.php?_t=' + Date.now();
+        return;
+      }
+      const err = await res.json().catch(() => ({}));
+      status.textContent = err.error || 'Could not launch WingCommander. Try again.';
+      status.style.color = 'var(--danger)';
+      btn.disabled = false;
+      btn.textContent = 'Open WingCommander ↗';
+    } catch(e) {
+      status.textContent = 'Network error. Please try again.';
+      status.style.color = 'var(--danger)';
+      btn.disabled = false;
+      btn.textContent = 'Open WingCommander ↗';
+    }
+  }
+
+  init();
+</script>
+<script src="/gk-shortcut.js?v=a3bb6e13"></script>
+</body>
+</html>

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="yRGmgTNjIHFmLom_ZrczRQpmaJkf2SpAZWR75g3g71k">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="About The KPI Hub — the team, mission, and AI-powered intelligence engine behind decision-grade SaaS insights.">
+    <title>About — The KPI Hub</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%2306071A'/><text x='16' y='22' font-family='sans-serif' font-weight='800' font-size='18' fill='%23E9A123' text-anchor='middle'>K</text></svg>">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thekpihub.com/about.html">
+    <meta property="og:title" content="About — The KPI Hub">
+    <meta property="og:description" content="The team, mission, and AI-powered intelligence engine behind decision-grade SaaS insights.">
+    <meta property="og:image" content="https://thekpihub.com/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="About — The KPI Hub">
+    <meta name="twitter:description" content="The team, mission, and AI-powered intelligence engine behind decision-grade SaaS insights.">
+    <meta name="twitter:image" content="https://thekpihub.com/og-image.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:#06071A; --bg2:#0C0E28; --card:rgba(255,255,255,0.04);
+            --gold:#E9A123; --gold-glow:rgba(233,161,35,0.18); --gold-rim:rgba(233,161,35,0.28);
+            --teal:#00C9A7; --teal-glow:rgba(0,201,167,0.12);
+            --text:#EAEDF5; --text2:rgba(234,237,245,0.62); --text3:rgba(234,237,245,0.32);
+            --border:rgba(255,255,255,0.08); --r:12px; --max:1100px;
+        }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+        html{scroll-behavior:smooth;}
+        body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:400;line-height:1.65;overflow-x:hidden;}
+        a{color:inherit;text-decoration:none;}
+        ::-webkit-scrollbar{width:5px;} ::-webkit-scrollbar-track{background:var(--bg);} ::-webkit-scrollbar-thumb{background:var(--gold);border-radius:3px;}
+
+        /* NAV */
+        nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:18px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(6,7,26,0.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);transition:background 0.4s ease,border-color 0.4s ease,backdrop-filter 0.4s ease;}
+        nav.overlay-open{background:transparent;border-bottom-color:transparent;backdrop-filter:none;}
+        .logo{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;letter-spacing:-0.02em;display:flex;align-items:center;gap:9px;position:relative;z-index:210;}
+        .logo-accent{color:var(--gold);}
+        .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:blink 2s ease infinite;}
+        .nav-right{display:flex;align-items:center;gap:20px;position:relative;z-index:210;}
+        .nav-btn{font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:10px 26px;background:var(--gold);color:var(--bg);border-radius:6px;border:none;transition:transform 0.2s,box-shadow 0.2s,opacity 0.3s;cursor:pointer;}
+        .nav-btn:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(233,161,35,0.4);}
+        nav.overlay-open .nav-btn{opacity:0;pointer-events:none;}
+        /* HAMBURGER */
+        .hamburger{display:flex;flex-direction:column;justify-content:center;gap:5px;width:40px;height:40px;background:none;border:none;cursor:none;padding:6px;border-radius:4px;}
+        .hamburger span{display:block;height:1.5px;background:var(--text);transition:transform 0.45s cubic-bezier(0.77,0,0.175,1),opacity 0.3s ease,width 0.3s ease;transform-origin:center;}
+        .hamburger span:nth-child(1){width:100%;}
+        .hamburger span:nth-child(2){width:68%;}
+        .hamburger span:nth-child(3){width:100%;}
+        .hamburger.open span:nth-child(1){width:100%;transform:translateY(6.5px) rotate(45deg);}
+        .hamburger.open span:nth-child(2){opacity:0;width:0;}
+        .hamburger.open span:nth-child(3){width:100%;transform:translateY(-6.5px) rotate(-45deg);}
+        /* OVERLAY */
+        .nav-overlay{position:fixed;inset:0;z-index:150;background:var(--bg);clip-path:inset(0 0 100% 0);transition:clip-path 0.75s cubic-bezier(0.77,0,0.175,1);pointer-events:none;overflow-y:auto;}
+        .nav-overlay.open{clip-path:inset(0 0 0% 0);pointer-events:all;}
+        .overlay-inner{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:100px 80px 140px;}
+        .overlay-item{overflow:hidden;border-bottom:1px solid var(--border);}
+        .overlay-item:first-child{border-top:1px solid var(--border);}
+        .overlay-item-inner{display:flex;align-items:baseline;gap:20px;padding:14px 0;transform:translateY(110%);transition:transform 0.7s cubic-bezier(0.77,0,0.175,1);}
+        .nav-overlay.open .overlay-item:nth-child(1) .overlay-item-inner{transform:translateY(0);transition-delay:0.06s;}
+        .nav-overlay.open .overlay-item:nth-child(2) .overlay-item-inner{transform:translateY(0);transition-delay:0.13s;}
+        .nav-overlay.open .overlay-item:nth-child(3) .overlay-item-inner{transform:translateY(0);transition-delay:0.20s;}
+        .nav-overlay.open .overlay-item:nth-child(4) .overlay-item-inner{transform:translateY(0);transition-delay:0.27s;}
+        .nav-overlay.open .overlay-item:nth-child(5) .overlay-item-inner{transform:translateY(0);transition-delay:0.34s;}
+        .nav-overlay.open .overlay-item:nth-child(6) .overlay-item-inner{transform:translateY(0);transition-delay:0.41s;}
+        .overlay-num{font-family:'Syne',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.14em;color:var(--gold);min-width:30px;padding-bottom:2px;}
+        .overlay-link{font-family:'Cormorant Garamond',serif;font-size:clamp(2.2rem,4.5vw,4.5rem);font-weight:700;line-height:1;letter-spacing:-0.025em;color:var(--text);transition:color 0.3s ease,letter-spacing 0.35s ease;}
+        .overlay-link:hover{color:var(--gold);letter-spacing:0.01em;}
+        .overlay-badge{font-family:'Syne',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:4px 12px;border-radius:100px;margin-left:auto;align-self:center;}
+        .overlay-badge.staff{background:var(--gold-glow);border:1px solid var(--gold-rim);color:var(--gold);}
+        .overlay-badge.member{background:var(--teal-glow);border:1px solid rgba(0,201,167,0.28);color:var(--teal);}
+        .overlay-meta{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:20px 80px;border-top:1px solid var(--border);background:var(--bg);opacity:0;transform:translateY(8px);transition:opacity 0.5s 0.5s ease,transform 0.5s 0.5s ease;pointer-events:none;}
+        .nav-overlay.open .overlay-meta{opacity:1;transform:translateY(0);pointer-events:all;}
+        .overlay-meta-copy{font-family:'Syne',sans-serif;font-size:0.72rem;color:var(--text3);letter-spacing:0.04em;}
+        .overlay-meta-links{display:flex;gap:24px;list-style:none;}
+        .overlay-meta-links a{font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text2);transition:color 0.2s;}
+        .overlay-meta-links a:hover{color:var(--gold);}
+
+        /* PAGE HERO */
+        .page-hero{min-height:52vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:140px 48px 80px;text-align:center;}
+        .page-hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(233,161,35,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(233,161,35,0.05) 1px,transparent 1px);background-size:64px 64px;}
+        .page-hero-glow{position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:800px;height:600px;background:radial-gradient(ellipse,rgba(233,161,35,0.12) 0%,rgba(0,201,167,0.04) 50%,transparent 72%);pointer-events:none;}
+        .page-hero-content{position:relative;z-index:2;max-width:720px;}
+        .s-label{display:inline-flex;align-items:center;gap:12px;font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);margin-bottom:18px;}
+        .s-label::before{content:'';width:28px;height:2px;background:var(--gold);}
+        .page-hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2.8rem,6vw,5rem);font-weight:700;line-height:1.06;letter-spacing:-0.025em;margin-bottom:22px;animation:fadeUp 0.8s 0.2s ease both;}
+        .page-hero h1 em{font-style:italic;color:var(--gold);}
+        .page-hero p{font-size:1.08rem;color:var(--text2);line-height:1.78;animation:fadeUp 0.8s 0.45s ease both;}
+
+        /* SECTIONS */
+        section{padding:90px 48px;}
+        .wrap{max-width:var(--max);margin:0 auto;}
+        .s-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,3.8vw,3.2rem);font-weight:700;line-height:1.1;letter-spacing:-0.025em;margin-bottom:16px;}
+        .s-sub{font-size:1rem;color:var(--text2);line-height:1.72;max-width:460px;}
+
+        /* MISSION */
+        .mission-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+        .mission-text p{font-size:1.05rem;color:var(--text2);line-height:1.82;margin-bottom:22px;}
+        .mission-text p:last-child{margin-bottom:0;}
+        .mission-text strong{color:var(--text);font-weight:500;}
+        .mission-visual{position:relative;display:flex;align-items:center;justify-content:center;}
+        .m-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:36px;width:100%;}
+        .m-card-title{font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:24px;}
+        .m-stat-row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);}
+        .m-stat-row:last-child{border-bottom:none;padding-bottom:0;}
+        .m-stat-name{font-size:0.9rem;color:var(--text2);}
+        .m-stat-val{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--gold);}
+        .m-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:var(--teal-glow);border:1px solid rgba(0,201,167,0.25);border-radius:100px;font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--teal);margin-bottom:20px;}
+
+        /* VALUES */
+        .values-bg{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+        .values-header{text-align:center;max-width:600px;margin:0 auto 60px;}
+        .values-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+        .val-card{padding:40px 32px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);text-align:center;transition:border-color 0.3s,transform 0.3s;}
+        .val-card:hover{border-color:var(--gold-rim);transform:translateY(-5px);}
+        .val-num{font-family:'Cormorant Garamond',serif;font-size:3.8rem;font-weight:700;color:var(--gold);line-height:1;margin-bottom:12px;opacity:0.7;}
+        .val-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:10px;}
+        .val-text{font-size:0.88rem;color:var(--text2);line-height:1.7;}
+
+        /* PIPELINE */
+        .pipeline-header{text-align:center;max-width:640px;margin:0 auto 64px;}
+        .pipeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative;}
+        .pipeline::before{content:'';position:absolute;top:40px;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--gold-rim),var(--gold-rim),transparent);}
+        .pipe-step{text-align:center;padding:24px 16px;}
+        .pipe-icon{width:80px;height:80px;border-radius:50%;background:var(--bg2);border:1px solid var(--gold-rim);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.6rem;position:relative;z-index:1;transition:background 0.3s,box-shadow 0.3s;}
+        .pipe-step:hover .pipe-icon{background:var(--gold-glow);box-shadow:0 0 30px rgba(233,161,35,0.3);}
+        .pipe-label{font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;}
+        .pipe-desc{font-size:0.82rem;color:var(--text3);line-height:1.6;}
+
+        /* TEAM */
+        .team-bg{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+        .team-header{text-align:center;max-width:540px;margin:0 auto 60px;}
+        .team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+        .team-card{padding:36px 28px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);text-align:center;transition:border-color 0.3s,transform 0.3s;}
+        .team-card:hover{border-color:var(--gold-rim);transform:translateY(-5px);}
+        .team-avatar{width:80px;height:80px;border-radius:50%;border:2px solid var(--gold-rim);background:var(--gold-glow);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.8rem;}
+        .team-name{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;margin-bottom:4px;}
+        .team-role{font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;}
+        .team-bio{font-size:0.85rem;color:var(--text2);line-height:1.68;}
+
+        /* CTA STRIP */
+        .cta-strip{text-align:center;padding:100px 48px;position:relative;overflow:hidden;}
+        .cta-strip::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(233,161,35,0.1) 0%,transparent 70%);pointer-events:none;}
+        .cta-strip h2{font-family:'Cormorant Garamond',serif;font-size:clamp(2.4rem,4.5vw,4rem);font-weight:700;margin-bottom:18px;line-height:1.1;}
+        .cta-strip h2 em{font-style:italic;color:var(--gold);}
+        .cta-strip p{font-size:1rem;color:var(--text2);max-width:420px;margin:0 auto 40px;line-height:1.72;}
+        .btn-primary{display:inline-flex;align-items:center;gap:10px;padding:16px 38px;background:var(--gold);color:var(--bg);font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;border:none;border-radius:8px;box-shadow:0 0 50px rgba(233,161,35,0.3);transition:transform 0.2s,box-shadow 0.2s;cursor:pointer;}
+        .btn-primary:hover{transform:translateY(-3px);box-shadow:0 0 80px rgba(233,161,35,0.5);}
+
+        /* FOOTER */
+        footer{padding:60px 48px 40px;border-top:1px solid var(--border);}
+        .foot-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:40px;margin-bottom:52px;}
+        .foot-tag{font-size:0.88rem;color:var(--text3);max-width:210px;line-height:1.65;margin-top:12px;}
+        .foot-group h4{font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:18px;}
+        .foot-group ul{list-style:none;display:flex;flex-direction:column;gap:10px;}
+        .foot-group a{font-size:0.9rem;color:var(--text2);transition:color 0.2s;}
+        .foot-group a:hover{color:var(--text);}
+        .foot-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;padding-top:32px;border-top:1px solid var(--border);}
+        .foot-copy{font-size:0.82rem;color:var(--text3);}
+        .foot-copy a{color:var(--gold);}
+        .foot-made{font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);}
+
+        /* ANIMATIONS */
+        @keyframes fadeUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+        .reveal{opacity:0;transform:translateY(28px);transition:opacity 0.7s ease,transform 0.7s ease;}
+        .reveal.visible{opacity:1;transform:translateY(0);}
+
+        /* RESPONSIVE */
+        @media(max-width:960px){nav{padding:16px 24px;}.overlay-inner{padding:100px 32px 140px;}.overlay-meta{padding:20px 32px;}section{padding:70px 24px;}.mission-grid{grid-template-columns:1fr;}.values-grid,.team-grid{grid-template-columns:1fr;}.pipeline{grid-template-columns:repeat(2,1fr);}.pipeline::before{display:none;}.page-hero{padding:120px 24px 60px;}}
+        @media(max-width:560px){.overlay-link{font-size:clamp(1.8rem,8vw,2.6rem);}.overlay-badge{display:none;}}
+    </style>
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-DZPCCPEP1J');
+    </script>
+
+<link rel="canonical" href="https://thekpihub.com/about.html">
+    <meta name="robots" content="index, follow">
+        <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wdshn14xgf");
+    </script>
+</head>
+<body>
+
+<nav id="mainNav">
+    <a href="index.html"><img src="assets/logo-wordmark.svg?v=3d541613" alt="The KPI Hub" class="logo-img" style="height:40px;width:auto;max-width:160px;"></a>
+    <div class="nav-right">
+        <a href="get-audit.html"><button class="nav-btn">Get My KPI Audit →</button></a>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</nav>
+
+<div class="nav-overlay" id="navOverlay" role="dialog" aria-label="Navigation menu" aria-hidden="true">
+    <div class="overlay-inner">
+        <div class="overlay-item"><div class="overlay-item-inner"><span class="overlay-num">01</span><a href="index.html" class="overlay-link">Home</a></div></div>
+        <div class="overlay-item"><div class="overlay-item-inner"><span class="overlay-num">02</span><a href="about.html" class="overlay-link">About</a></div></div>
+        <div class="overlay-item"><div class="overlay-item-inner"><span class="overlay-num">03</span><a href="directory.html" class="overlay-link">Directory</a></div></div>
+        <div class="overlay-item"><div class="overlay-item-inner"><span class="overlay-num">04</span><a href="intelligence.html" class="overlay-link">Intelligence</a></div></div>
+        <div class="overlay-item"><div class="overlay-item-inner"><span class="overlay-num">05</span><a href="login.html" class="overlay-link">Member Login</a><span class="overlay-badge member">Customer</span></div></div>
+    </div>
+    <div class="overlay-meta">
+        <span class="overlay-meta-copy">© 2025 The KPI Hub &middot; Decision-Grade Intelligence</span>
+        <ul class="overlay-meta-links">
+            <li><a href="get-audit.html">Get My KPI Audit →</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="login.html">Login</a></li>
+        </ul>
+    </div>
+</div>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+    <div class="page-hero-grid"></div>
+    <div class="page-hero-glow"></div>
+    <div class="page-hero-content">
+        <div class="s-label">Our Story</div>
+        <h1>Built to end <em>SaaS decision fatigue</em> forever</h1>
+        <p>The KPI Hub was born from a simple frustration: too many SaaS tools, too little verified intelligence to choose between them. We built the solution we always wished existed.</p>
+    </div>
+</div>
+
+<!-- MISSION -->
+<section>
+    <div class="wrap">
+        <div class="mission-grid reveal">
+            <div class="mission-text">
+                <div class="s-label">Our Mission</div>
+                <h2 class="s-title">Intelligence that respects your time</h2>
+                <p>Every SaaS decision costs you time, money, and momentum. Bad tooling choices ripple through teams for years. We built The KPI Hub because <strong>decision-grade intelligence shouldn't require a research team</strong> — it should be instant, verified, and contextual.</p>
+                <p>We combine AI synthesis, real-time data harvesting, and a proprietary verification matrix to deliver the kind of intelligence that used to cost enterprises millions to produce in-house.</p>
+                <p>Our mission is simple: <strong>zero fluff, maximum signal</strong> — for every SaaS professional, at every stage of the buying journey.</p>
+            </div>
+            <div class="mission-visual">
+                <div class="m-card">
+                    <div class="m-badge">🟢 Live Platform Stats</div>
+                    <div class="m-card-title">Intelligence Engine Metrics</div>
+                    <div class="m-stat-row"><span class="m-stat-name">SaaS Tools Tracked</span><span class="m-stat-val">16</span></div>
+                    <div class="m-stat-row"><span class="m-stat-name">Data Sources Monitored</span><span class="m-stat-val">20</span></div>
+                    <div class="m-stat-row"><span class="m-stat-name">Pipeline Automation</span><span class="m-stat-val">95%</span></div>
+                    <div class="m-stat-row"><span class="m-stat-name">Intelligence Updates</span><span class="m-stat-val">Daily</span></div>
+                    <div class="m-stat-row"><span class="m-stat-name">Avg. Decision Time Saved</span><span class="m-stat-val">~14 hrs</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- VALUES -->
+<section class="values-bg">
+    <div class="wrap">
+        <div class="values-header reveal">
+            <div class="s-label" style="justify-content:center;display:inline-flex;width:100%;">Our Principles</div>
+            <h2 class="s-title">The rules we never break</h2>
+        </div>
+        <div class="values-grid">
+            <div class="val-card reveal">
+                <div class="val-num">01</div>
+                <h3 class="val-title">Signal over Noise</h3>
+                <p class="val-text">We ruthlessly filter. Every piece of intelligence on our platform is verified, contextual, and actionable. If it doesn't help you decide faster, it doesn't ship.</p>
+            </div>
+            <div class="val-card reveal" style="transition-delay:0.15s">
+                <div class="val-num">02</div>
+                <h3 class="val-title">Automation First</h3>
+                <p class="val-text">95% of our content pipeline runs without human intervention. This isn't laziness — it's scale. It means our intelligence is always fresh, never stale.</p>
+            </div>
+            <div class="val-card reveal" style="transition-delay:0.3s">
+                <div class="val-num">03</div>
+                <h3 class="val-title">Context is King</h3>
+                <p class="val-text">Generic rankings don't work. We match intelligence to your company stage, industry, stack, and goals — because what's best for a Series A startup is rarely best for an enterprise.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PIPELINE -->
+<section>
+    <div class="wrap">
+        <div class="pipeline-header reveal">
+            <div class="s-label" style="justify-content:center;display:inline-flex;width:100%;">Our Technology</div>
+            <h2 class="s-title">The 5-engine intelligence architecture</h2>
+            <p style="color:var(--text2);font-size:1rem;line-height:1.72;max-width:500px;margin:12px auto 0;">A fully automated pipeline that never sleeps, never stops, and never lets noise through.</p>
+        </div>
+        <div class="pipeline">
+            <div class="pipe-step reveal">
+                <div class="pipe-icon">🕷️</div>
+                <div class="pipe-label">Harvest</div>
+                <div class="pipe-desc">Python data harvester pulls RSS, X API & financial news via cron jobs</div>
+            </div>
+            <div class="pipe-step reveal" style="transition-delay:0.1s">
+                <div class="pipe-icon">🧠</div>
+                <div class="pipe-label">Synthesize</div>
+                <div class="pipe-desc">Claude AI engine transforms raw data into structured intelligence</div>
+            </div>
+            <div class="pipe-step reveal" style="transition-delay:0.2s">
+                <div class="pipe-icon">✅</div>
+                <div class="pipe-label">Verify</div>
+                <div class="pipe-desc">SerpAPI verification matrix cross-checks every data point</div>
+            </div>
+            <div class="pipe-step reveal" style="transition-delay:0.3s">
+                <div class="pipe-icon">📡</div>
+                <div class="pipe-label">Stage</div>
+                <div class="pipe-desc">WordPress REST API stages content for editorial review</div>
+            </div>
+            <div class="pipe-step reveal" style="transition-delay:0.4s">
+                <div class="pipe-icon">🚀</div>
+                <div class="pipe-label">Deliver</div>
+                <div class="pipe-desc">Monetization funnel delivers insights to the right audience</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TEAM -->
+<section class="team-bg">
+    <div class="wrap">
+        <div class="team-header reveal">
+            <div class="s-label" style="justify-content:center;display:inline-flex;width:100%;">The Team</div>
+            <h2 class="s-title">Built by people obsessed with signal</h2>
+        </div>
+        <div class="team-grid">
+            <div class="team-card reveal">
+                <div class="team-avatar">👨‍💻</div>
+                <h3 class="team-name">Ashu</h3>
+                <div class="team-role">Founder & Chief Intelligence Officer</div>
+                <p class="team-bio">Associate Consultant & Lead Specialist with deep roots in cloud computing, AI/ML, and broadcast engineering. The architect behind The KPI Hub's 5-engine intelligence pipeline.</p>
+            </div>
+            <div class="team-card reveal" style="transition-delay:0.15s">
+                <div class="team-avatar">🤖</div>
+                <h3 class="team-name">Atlas (AI Engine)</h3>
+                <div class="team-role">Intelligence Synthesis Engine</div>
+                <p class="team-bio">Powered by Anthropic Claude, Atlas runs 24/7 synthesizing thousands of SaaS data points into clean, verified, decision-grade intelligence. The engine never sleeps.</p>
+            </div>
+            <div class="team-card reveal" style="transition-delay:0.3s">
+                <div class="team-avatar">🌐</div>
+                <h3 class="team-name">Join the Team</h3>
+                <div class="team-role">We're Hiring</div>
+                <p class="team-bio">We're building the future of SaaS intelligence. If you're obsessed with data, AI, and making complex decisions simple — we want to hear from you.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-strip">
+    <div class="wrap">
+        <h2 class="reveal">Ready for <em>zero fluff</em><br>intelligence?</h2>
+        <p class="reveal">Join thousands of SaaS professionals who are making faster, smarter decisions with The KPI Hub.</p>
+        <a href="get-audit.html"><button class="btn-primary reveal">Get My KPI Audit →</button></a>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="wrap">
+        <div class="foot-top">
+            <div class="foot-brand">
+                <a href="index.html"><img src="assets/logo-wordmark.svg?v=3d541613" alt="The KPI Hub" class="logo-img" style="height:40px;width:auto;max-width:160px;margin-bottom:14px;"></a>
+                <p class="foot-tag">Decision-Grade Intelligence for the modern SaaS professional.</p>
+            </div>
+            <div class="foot-group">
+                <h4>Platform</h4>
+                <ul>
+                    <li><a href="intelligence.html">Intelligence Feed</a></li>
+                    <li><a href="directory.html">SaaS Discovery</a></li>
+                    <li><a href="intelligence.html">Benchmarks</a></li>
+                    <li><a href="get-audit.html">Pricing</a></li>
+                </ul>
+            </div>
+            <div class="foot-group">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="intelligence.html">Blog</a></li>
+                    <li><a href="get-audit.html">Get My KPI Audit →</a></li>
+                    <li><a href="get-audit.html">Contact</a></li>
+                </ul>
+            </div>
+            <div class="foot-group">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                    <li><a href="cookies.html">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="foot-bottom">
+            <p class="foot-copy">© 2026 <a href="index.html">The KPI Hub</a>. All rights reserved.</p>
+            <p class="foot-made">Made with ☕ in Delhi, India</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target);} });
+    },{threshold:0.1});
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    window.addEventListener('scroll',()=>{
+        const nav=document.querySelector('nav');
+        nav.style.boxShadow=window.scrollY>60?'0 8px 40px rgba(0,0,0,0.4)':'none';
+    });
+    /* === Hamburger Menu === */
+    const hamburgerBtn=document.getElementById('hamburgerBtn');
+    const navOverlay=document.getElementById('navOverlay');
+    const mainNav=document.getElementById('mainNav');
+    function openMenu(){hamburgerBtn.classList.add('open');navOverlay.classList.add('open');mainNav.classList.add('overlay-open');hamburgerBtn.setAttribute('aria-expanded','true');navOverlay.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';}
+    function closeMenu(){hamburgerBtn.classList.remove('open');navOverlay.classList.remove('open');mainNav.classList.remove('overlay-open');hamburgerBtn.setAttribute('aria-expanded','false');navOverlay.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+    hamburgerBtn.addEventListener('click',()=>{navOverlay.classList.contains('open')?closeMenu():openMenu();});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
+</script>
+</body>
+</html>

@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="yRGmgTNjIHFmLom_ZrczRQpmaJkf2SpAZWR75g3g71k">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Cookie Policy — The KPI Hub. How we use cookies and tracking technologies on our platform.">
+    <title>Cookie Policy — The KPI Hub</title>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thekpihub.com/cookies.html">
+    <meta property="og:title" content="Cookie Policy — The KPI Hub">
+    <meta property="og:description" content="Cookie Policy — The KPI Hub. How we use cookies and tracking technologies on our platform.">
+    <meta property="og:image" content="https://thekpihub.com/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Cookie Policy — The KPI Hub">
+    <meta name="twitter:description" content="Cookie Policy — The KPI Hub. How we use cookies and tracking technologies on our platform.">
+    <meta name="twitter:image" content="https://thekpihub.com/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+
+    <style>
+        /* =============================================
+           VARIABLES
+        ============================================= */
+        :root {
+            --bg:        #06071A;
+            --bg2:       #0C0E28;
+            --card:      rgba(255,255,255,0.04);
+            --gold:      #E9A123;
+            --gold-glow: rgba(233,161,35,0.18);
+            --gold-rim:  rgba(233,161,35,0.28);
+            --teal:      #00C9A7;
+            --teal-glow: rgba(0,201,167,0.12);
+            --red:       #FF6B6B;
+            --text:      #EAEDF5;
+            --text2:     rgba(234,237,245,0.62);
+            --text3:     rgba(234,237,245,0.32);
+            --border:    rgba(255,255,255,0.08);
+            --r:         12px;
+            --max:       1180px;
+            --display:   'Cormorant Garamond', serif;
+            --head:      'Syne', sans-serif;
+            --body:      'DM Sans', sans-serif;
+        }
+
+        /* =============================================
+           RESET
+        ============================================= */
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; font-size:16px; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--body);
+            font-weight: 400;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        a { color: var(--gold); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--text); }
+        img { max-width:100%; display:block; }
+        button { cursor:pointer; }
+
+        ::-webkit-scrollbar { width:5px; }
+        ::-webkit-scrollbar-track { background:var(--bg); }
+        ::-webkit-scrollbar-thumb { background:var(--gold); border-radius:3px; }
+
+        /* =============================================
+           NAV
+        ============================================= */
+        nav {
+            position: fixed; top:0; left:0; right:0; z-index:100;
+            padding: 18px 48px;
+            display: flex; align-items:center; justify-content:space-between;
+            background: rgba(6,7,26,0.88);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border);
+        }
+        .logo {
+            font-family: var(--head);
+            font-size: 1.25rem; font-weight:800;
+            letter-spacing:-0.02em;
+            display:flex; align-items:center; gap:9px;
+            color: var(--text);
+        }
+        .logo-accent { color:var(--gold); }
+        .logo-dot {
+            width:8px; height:8px; border-radius:50%;
+            background:var(--gold);
+            animation: blink 2s ease infinite;
+        }
+        .nav-links {
+            display:flex; gap:36px; list-style:none;
+        }
+        .nav-links a {
+            font-family:var(--head); font-size:0.78rem; font-weight:600;
+            letter-spacing:0.07em; text-transform:uppercase;
+            color:var(--text2); transition:color 0.2s;
+        }
+        .nav-links a:hover { color:var(--text); }
+        .nav-btn {
+            font-family:var(--head); font-size:0.78rem; font-weight:700;
+            letter-spacing:0.06em; text-transform:uppercase;
+            padding:10px 26px; background:var(--gold); color:var(--bg);
+            border-radius:6px; border:none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .nav-btn:hover {
+            transform:translateY(-1px);
+            box-shadow: 0 8px 30px rgba(233,161,35,0.4);
+        }
+
+        /* =============================================
+           HERO
+        ============================================= */
+        .page-hero {
+            padding: 140px 48px 80px;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+        .page-hero::before {
+            content:'';
+            position:absolute; inset:0;
+            background-image:
+                linear-gradient(rgba(233,161,35,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(233,161,35,0.04) 1px, transparent 1px);
+            background-size:64px 64px;
+        }
+        .page-hero::after {
+            content:'';
+            position:absolute; top:-200px; left:50%; transform:translateX(-50%);
+            width:700px; height:500px;
+            background: radial-gradient(ellipse, rgba(233,161,35,0.1) 0%, transparent 65%);
+            pointer-events:none;
+        }
+        .hero-inner { position:relative; z-index:2; max-width:720px; margin:0 auto; }
+        .hero-label {
+            display:inline-flex; align-items:center; gap:8px;
+            font-family: var(--head); font-size:0.7rem; font-weight:700;
+            letter-spacing:0.12em; text-transform:uppercase; color:var(--gold);
+            background: var(--gold-glow); border:1px solid var(--gold-rim);
+            padding:6px 18px; border-radius:100px; margin-bottom:28px;
+        }
+        .hero-label-dot { width:5px; height:5px; border-radius:50%; background:var(--teal); animation:blink 1.5s ease infinite; }
+        .page-title {
+            font-family: var(--display);
+            font-size: clamp(2.8rem, 6vw, 4.8rem);
+            font-weight:700; line-height:1.1; letter-spacing:-0.02em;
+            margin-bottom:20px;
+        }
+        .page-title em { font-style:italic; color:var(--gold); }
+        .page-sub {
+            font-size:1rem; color:var(--text2); line-height:1.75;
+            max-width:540px; margin:0 auto 24px;
+        }
+        .meta-row {
+            display:flex; align-items:center; justify-content:center; gap:24px; flex-wrap:wrap;
+            font-family:var(--head); font-size:0.72rem; font-weight:600;
+            letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);
+        }
+        .meta-row span { display:flex; align-items:center; gap:6px; }
+        .meta-dot { width:4px; height:4px; border-radius:50%; background:var(--text3); }
+
+        /* =============================================
+           CONTENT LAYOUT
+        ============================================= */
+        .content-wrap {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 72px 48px 100px;
+        }
+
+        /* TOC */
+        .toc-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 32px 36px;
+            margin-bottom: 56px;
+        }
+        .toc-card h2 {
+            font-family: var(--head); font-size:0.72rem; font-weight:700;
+            letter-spacing:0.12em; text-transform:uppercase; color:var(--gold);
+            margin-bottom:18px;
+        }
+        .toc-list { list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:6px 24px; }
+        .toc-list li a {
+            font-family:var(--head); font-size:0.8rem; font-weight:500;
+            color:var(--text2); display:flex; align-items:center; gap:8px;
+            padding:4px 0; transition:color 0.2s;
+        }
+        .toc-list li a:hover { color:var(--gold); }
+        .toc-num { color:var(--gold); font-weight:700; min-width:22px; }
+
+        /* Sections */
+        .policy-section {
+            margin-bottom: 64px;
+            scroll-margin-top: 100px;
+        }
+        .section-header {
+            display:flex; align-items:flex-start; gap:16px;
+            margin-bottom:24px;
+        }
+        .section-num {
+            font-family: var(--head); font-size:0.7rem; font-weight:800;
+            letter-spacing:0.1em; text-transform:uppercase;
+            color:var(--gold); background:var(--gold-glow);
+            border:1px solid var(--gold-rim); border-radius:6px;
+            padding:5px 10px; white-space:nowrap; margin-top:4px;
+        }
+        .section-title {
+            font-family: var(--head); font-size:1.4rem; font-weight:700;
+            letter-spacing:-0.01em; color:var(--text);
+        }
+        .policy-section p {
+            color:var(--text2); font-size:0.95rem; margin-bottom:14px;
+        }
+        .policy-section p:last-child { margin-bottom:0; }
+        .policy-section h4 {
+            font-family:var(--head); font-size:0.88rem; font-weight:700;
+            color:var(--text); margin:24px 0 10px; letter-spacing:0.01em;
+        }
+        .policy-section ul, .policy-section ol {
+            padding-left:0; list-style:none; margin-bottom:14px;
+        }
+        .policy-section ul li, .policy-section ol li {
+            position:relative; padding-left:20px; color:var(--text2);
+            font-size:0.95rem; margin-bottom:8px;
+        }
+        .policy-section ul li::before {
+            content:'—'; position:absolute; left:0; color:var(--gold);
+            font-size:0.8rem; top:1px;
+        }
+        .policy-section ol { counter-reset:item; }
+        .policy-section ol li { counter-increment:item; }
+        .policy-section ol li::before {
+            content:counter(item)'.'; position:absolute; left:0; color:var(--gold);
+            font-size:0.85rem; font-weight:700; font-family:var(--head);
+        }
+
+        /* Highlight boxes */
+        .highlight-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--gold);
+            border-radius: var(--r);
+            padding:20px 24px; margin:20px 0;
+        }
+        .highlight-box p { margin:0; font-size:0.9rem; color:var(--text2); }
+        .highlight-box strong { color:var(--gold); }
+
+        .teal-box {
+            background: var(--teal-glow);
+            border: 1px solid rgba(0,201,167,0.2);
+            border-left: 3px solid var(--teal);
+            border-radius: var(--r);
+            padding:20px 24px; margin:20px 0;
+        }
+        .teal-box p { margin:0; font-size:0.9rem; color:var(--text2); }
+        .teal-box strong { color:var(--teal); }
+
+        /* Cookie type cards */
+        .cookie-types { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:24px 0; }
+        .ctype-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 22px;
+        }
+        .ctype-card.necessary { border-top:3px solid var(--teal); }
+        .ctype-card.functional { border-top:3px solid #6C8EF5; }
+        .ctype-card.analytics  { border-top:3px solid var(--gold); }
+        .ctype-card.marketing  { border-top:3px solid var(--red); }
+        .ctype-badge {
+            display:inline-block; font-family:var(--head); font-size:0.6rem;
+            font-weight:800; letter-spacing:0.1em; text-transform:uppercase;
+            padding:3px 9px; border-radius:4px; margin-bottom:12px;
+        }
+        .necessary .ctype-badge  { background:rgba(0,201,167,0.15); color:var(--teal); }
+        .functional .ctype-badge { background:rgba(108,142,245,0.15); color:#6C8EF5; }
+        .analytics  .ctype-badge { background:var(--gold-glow); color:var(--gold); }
+        .marketing  .ctype-badge { background:rgba(255,107,107,0.1); color:var(--red); }
+        .ctype-card h5 {
+            font-family:var(--head); font-size:0.92rem; font-weight:700;
+            color:var(--text); margin-bottom:8px;
+        }
+        .ctype-card p { font-size:0.85rem; color:var(--text2); margin:0 0 10px; }
+        .ctype-opt {
+            font-family:var(--head); font-size:0.68rem; font-weight:700;
+            letter-spacing:0.06em; text-transform:uppercase;
+        }
+        .ctype-opt.yes { color:var(--teal); }
+        .ctype-opt.no  { color:var(--text3); }
+
+        /* Browser instructions */
+        .browser-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:20px 0; }
+        .browser-card {
+            background:var(--card); border:1px solid var(--border);
+            border-radius:var(--r); padding:18px 20px;
+        }
+        .browser-card h5 {
+            font-family:var(--head); font-size:0.82rem; font-weight:700;
+            color:var(--text); margin-bottom:8px; display:flex; align-items:center; gap:8px;
+        }
+        .browser-icon {
+            width:18px; height:18px; border-radius:50%;
+            background:var(--gold-glow); border:1px solid var(--gold-rim);
+            display:inline-flex; align-items:center; justify-content:center;
+            font-size:0.6rem; font-weight:800; color:var(--gold);
+        }
+        .browser-card p { font-size:0.82rem; color:var(--text2); margin:0; }
+        .browser-card a { font-size:0.8rem; }
+
+        /* Table */
+        .table-wrap { overflow-x:auto; margin:20px 0; border-radius:var(--r); border:1px solid var(--border); }
+        table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+        th {
+            font-family:var(--head); font-size:0.65rem; font-weight:700;
+            letter-spacing:0.1em; text-transform:uppercase; color:var(--gold);
+            padding:12px 16px; background:rgba(233,161,35,0.06);
+            border-bottom:1px solid var(--border); text-align:left;
+            white-space:nowrap;
+        }
+        td {
+            padding:11px 16px; color:var(--text2);
+            border-bottom:1px solid var(--border); vertical-align:top;
+            font-size:0.84rem;
+        }
+        tr:last-child td { border-bottom:none; }
+        tr:hover td { background:rgba(255,255,255,0.02); }
+        .tag {
+            display:inline-block; font-family:var(--head); font-size:0.6rem;
+            font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+            padding:2px 8px; border-radius:4px;
+        }
+        .tag-necessary { background:rgba(0,201,167,0.12); color:var(--teal); }
+        .tag-analytics  { background:var(--gold-glow); color:var(--gold); }
+        .tag-functional { background:rgba(108,142,245,0.12); color:#6C8EF5; }
+        .tag-marketing  { background:rgba(255,107,107,0.1); color:var(--red); }
+
+        /* Third-party table */
+        .provider-table td:first-child { font-weight:500; color:var(--text); }
+
+        /* Divider */
+        .section-divider {
+            width:100%; height:1px;
+            background:var(--border); margin:64px 0;
+        }
+
+        /* =============================================
+           FOOTER
+        ============================================= */
+        footer {
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            padding: 64px 0 32px;
+        }
+        .wrap { max-width:var(--max); margin:0 auto; padding:0 48px; }
+        .foot-top {
+            display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:48px;
+            margin-bottom:48px;
+        }
+        .foot-brand .logo { font-family:var(--head); font-size:1.15rem; font-weight:800; letter-spacing:-0.02em; display:flex; align-items:center; gap:9px; color:var(--text); margin-bottom:14px; }
+        .foot-tag { font-size:0.88rem; color:var(--text3); line-height:1.6; }
+        .foot-group h4 {
+            font-family:var(--head); font-size:0.68rem; font-weight:700;
+            letter-spacing:0.12em; text-transform:uppercase; color:var(--text3);
+            margin-bottom:18px;
+        }
+        .foot-group ul { list-style:none; }
+        .foot-group ul li { margin-bottom:10px; }
+        .foot-group ul li a {
+            font-size:0.88rem; color:var(--text2); transition:color 0.2s;
+        }
+        .foot-group ul li a:hover { color:var(--gold); }
+        .foot-bottom {
+            display:flex; align-items:center; justify-content:space-between;
+            padding-top:32px; border-top:1px solid var(--border);
+        }
+        .foot-copy, .foot-made { font-size:0.82rem; color:var(--text3); }
+        .foot-copy a { color:var(--text2); }
+        .foot-copy a:hover { color:var(--gold); }
+
+        /* =============================================
+           ANIMATIONS
+        ============================================= */
+        @keyframes blink {
+            0%,100%{opacity:1;} 50%{opacity:0.3;}
+        }
+
+        /* =============================================
+           RESPONSIVE
+        ============================================= */
+        @media(max-width:768px) {
+            nav { padding:16px 24px; }
+            .nav-links { display:none; }
+            .page-hero { padding:120px 24px 60px; }
+            .content-wrap { padding:48px 24px 80px; }
+            .toc-list { grid-template-columns:1fr; }
+            .cookie-types { grid-template-columns:1fr; }
+            .browser-grid { grid-template-columns:1fr; }
+            .wrap { padding:0 24px; }
+            .foot-top { grid-template-columns:1fr 1fr; gap:32px; }
+            .foot-bottom { flex-direction:column; gap:8px; text-align:center; }
+            .table-wrap { font-size:0.78rem; }
+        }
+    </style>
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-DZPCCPEP1J');
+    </script>
+
+<link rel="canonical" href="https://thekpihub.com/cookies.html">
+    <meta name="robots" content="index, follow">
+        <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wdshn14xgf");
+    </script>
+</head>
+<body>
+
+    <!-- NAV -->
+    <nav>
+        <div class="logo">
+            <div class="logo-dot"></div>
+            The <span class="logo-accent">KPI</span> Hub
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="intelligence.html">Intelligence</a></li>
+            <li><a href="directory.html">Directory</a></li>
+            <li><a href="about.html">About</a></li>
+        </ul>
+        <a href="get-audit.html"><button class="nav-btn">Get My KPI Audit →</button></a>
+    </nav>
+
+    <!-- HERO -->
+    <section class="page-hero">
+        <div class="hero-inner">
+            <div class="hero-label">
+                <span class="hero-label-dot"></span>
+                Legal &amp; Compliance
+            </div>
+            <h1 class="page-title">Cookie <em>Policy</em></h1>
+            <p class="page-sub">How The KPI Hub uses cookies and similar technologies — what they are, why we use them, and how to control them.</p>
+            <div class="meta-row">
+                <span>Version 1.0</span>
+                <span class="meta-dot"></span>
+                <span>Effective: April 3, 2026</span>
+                <span class="meta-dot"></span>
+                <span>GDPR · CCPA Compliant</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTENT -->
+    <main class="content-wrap">
+
+        <!-- TABLE OF CONTENTS -->
+        <div class="toc-card">
+            <h2>Table of Contents</h2>
+            <ol class="toc-list">
+                <li><a href="#s1"><span class="toc-num">01</span> What Are Cookies?</a></li>
+                <li><a href="#s2"><span class="toc-num">02</span> Types of Cookies We Use</a></li>
+                <li><a href="#s3"><span class="toc-num">03</span> Full Cookie Table</a></li>
+                <li><a href="#s4"><span class="toc-num">04</span> Managing Cookies in Your Browser</a></li>
+                <li><a href="#s5"><span class="toc-num">05</span> Analytics Opt-Out</a></li>
+                <li><a href="#s6"><span class="toc-num">06</span> Withdrawing Your Consent</a></li>
+                <li><a href="#s7"><span class="toc-num">07</span> Third-Party Cookie Providers</a></li>
+                <li><a href="#s8"><span class="toc-num">08</span> GDPR &amp; CCPA Compliance</a></li>
+                <li><a href="#s9"><span class="toc-num">09</span> Policy Updates</a></li>
+                <li><a href="#s10"><span class="toc-num">10</span> Contact Us</a></li>
+            </ol>
+        </div>
+
+        <!-- S1 -->
+        <section class="policy-section" id="s1">
+            <div class="section-header">
+                <span class="section-num">01</span>
+                <h2 class="section-title">What Are Cookies?</h2>
+            </div>
+            <p>Cookies are small text files that are placed on your device (computer, smartphone, or tablet) when you visit a website. They are widely used to make websites work, work more efficiently, and to provide information to the owners of the site.</p>
+            <p>Think of cookies like a short-term memory for a website. When you visit thekpihub.com, cookies help us remember things like whether you are logged in, your preferences, and how you use our platform — so we can make your experience better the next time you visit.</p>
+
+            <h4>How Cookies Work</h4>
+            <ul>
+                <li>Your browser stores a cookie as a small file on your device when you visit our site.</li>
+                <li>Every time you return to our site, your browser sends that cookie back to our server, allowing us to recognise you and recall your preferences.</li>
+                <li>Cookies cannot execute programmes or deliver viruses. They are just data files.</li>
+            </ul>
+
+            <h4>Similar Technologies</h4>
+            <p>In addition to cookies, we also use similar tracking technologies:</p>
+            <ul>
+                <li><strong>Local Storage &amp; Session Storage:</strong> Browser-based storage used to persist data (such as chatbot session context) within your browser without an expiry date (local storage) or until your browser tab is closed (session storage).</li>
+                <li><strong>Pixels / Web Beacons:</strong> Tiny transparent images embedded in pages or emails that signal when a page or email is opened.</li>
+                <li><strong>Device Fingerprinting:</strong> We do not use device fingerprinting techniques that identify you across sites without your consent.</li>
+            </ul>
+
+            <div class="highlight-box">
+                <p><strong>Your control:</strong> You can control and delete cookies through your browser settings at any time. See Section 4 for browser-specific instructions. Please note that disabling certain cookies may affect the functionality of the Platform.</p>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S2 -->
+        <section class="policy-section" id="s2">
+            <div class="section-header">
+                <span class="section-num">02</span>
+                <h2 class="section-title">Types of Cookies We Use</h2>
+            </div>
+            <p>We use four categories of cookies. The level of consent required and your ability to opt out varies by category:</p>
+
+            <div class="cookie-types">
+                <div class="ctype-card necessary">
+                    <span class="ctype-badge">Strictly Necessary</span>
+                    <h5>Strictly Necessary</h5>
+                    <p>These cookies are essential for the Platform to function correctly. They enable core features like account login, security, and session management. Without them, you cannot use the Platform.</p>
+                    <p class="ctype-opt no">Cannot be disabled</p>
+                </div>
+
+                <div class="ctype-card functional">
+                    <span class="ctype-badge">Functional</span>
+                    <h5>Functional / Preference</h5>
+                    <p>These cookies remember your choices and preferences — such as your cookie consent decision, display settings, or language preference — to give you a more personalised experience.</p>
+                    <p class="ctype-opt yes">Can be opted out</p>
+                </div>
+
+                <div class="ctype-card analytics">
+                    <span class="ctype-badge">Analytics</span>
+                    <h5>Analytics / Performance</h5>
+                    <p>These cookies help us understand how visitors interact with the Platform. They collect anonymised data about pages visited, time on site, errors encountered, and traffic sources — helping us improve our product.</p>
+                    <p class="ctype-opt yes">Can be opted out</p>
+                </div>
+
+                <div class="ctype-card marketing">
+                    <span class="ctype-badge">Marketing</span>
+                    <h5>Marketing / Targeting</h5>
+                    <p>These cookies track your browsing activity to enable retargeting and measure the effectiveness of marketing campaigns. They may be set by us or third-party ad networks.</p>
+                    <p class="ctype-opt yes">Can be opted out</p>
+                </div>
+            </div>
+
+            <p>We obtain your consent for non-essential cookies (Functional, Analytics, Marketing) via our cookie consent banner when you first visit the Platform. You may change your preferences at any time — see Section 6.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S3 -->
+        <section class="policy-section" id="s3">
+            <div class="section-header">
+                <span class="section-num">03</span>
+                <h2 class="section-title">Full Cookie Table</h2>
+            </div>
+            <p>The following table lists all cookies and similar technologies currently in use on thekpihub.com:</p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cookie Name</th>
+                            <th>Provider</th>
+                            <th>Purpose</th>
+                            <th>Duration</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>_kpihub_session</code></td>
+                            <td>The KPI Hub</td>
+                            <td>Maintains your authenticated session while you are logged in. Destroyed when you close your browser tab or log out.</td>
+                            <td>Session</td>
+                            <td><span class="tag tag-necessary">Necessary</span></td>
+                        </tr>
+                        <tr>
+                            <td><code>_kpihub_csrf</code></td>
+                            <td>The KPI Hub</td>
+                            <td>Cross-Site Request Forgery (CSRF) protection token. Prevents unauthorised form submissions.</td>
+                            <td>Session</td>
+                            <td><span class="tag tag-necessary">Necessary</span></td>
+                        </tr>
+                        <tr>
+                            <td><code>cookie_consent</code></td>
+                            <td>The KPI Hub</td>
+                            <td>Stores your cookie consent preferences (which categories you have accepted or declined) so we don't show the banner on every visit.</td>
+                            <td>12 months</td>
+                            <td><span class="tag tag-functional">Functional</span></td>
+                        </tr>
+                        <tr>
+                            <td><code>_kpihub_prefs</code></td>
+                            <td>The KPI Hub</td>
+                            <td>Remembers your display preferences and settings within the Platform (e.g., theme, layout choices).</td>
+                            <td>12 months</td>
+                            <td><span class="tag tag-functional">Functional</span></td>
+                        </tr>
+                        <tr>
+                            <td><code>_ga</code></td>
+                            <td>Google Analytics</td>
+                            <td>Registers a unique ID to generate statistical data about how you use the Platform. Used to distinguish users.</td>
+                            <td>2 years</td>
+                            <td><span class="tag tag-analytics">Analytics</span></td>
+                        </tr>
+                        <tr>
+                            <td><code>_gid</code></td>
+                            <td>Google Analytics</td>
+                            <td>Registers a unique ID used to generate statistical data about how you use the Platform. Shorter-lived companion to <code>_ga</code>.</td>
+                            <td>24 hours</td>
+                            <td><span class="tag tag-analytics">Analytics</span></td>
+                        </tr>
+                        <tr>
+                            <td><code>_gat</code></td>
+                            <td>Google Analytics</td>
+                            <td>Used to throttle the rate of requests to Google Analytics servers.</td>
+                            <td>1 minute</td>
+                            <td><span class="tag tag-analytics">Analytics</span></td>
+                        </tr>
+                        <tr>
+                            <td><code>chatbot_session</code> (localStorage)</td>
+                            <td>The KPI Hub</td>
+                            <td>Stores your current chatbot / AI assistant conversation context in browser local storage so the assistant maintains continuity within a session. Not a traditional cookie — stored in <code>localStorage</code> in your browser.</td>
+                            <td>Until cleared</td>
+                            <td><span class="tag tag-functional">Functional</span></td>
+                        </tr>
+                        <tr>
+                            <td><code>_fbp</code></td>
+                            <td>Meta (Facebook)</td>
+                            <td>Used by Meta to deliver, measure, and improve the relevance of advertisements on Facebook and across the web (retargeting). Only set if marketing cookies are accepted.</td>
+                            <td>3 months</td>
+                            <td><span class="tag tag-marketing">Marketing</span></td>
+                        </tr>
+                        <tr>
+                            <td><code>_kpihub_utm</code></td>
+                            <td>The KPI Hub</td>
+                            <td>Stores UTM campaign parameters (source, medium, campaign) from the URL when you first visit, to help us understand which marketing channels are most effective.</td>
+                            <td>30 days</td>
+                            <td><span class="tag tag-analytics">Analytics</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p>This table is updated whenever we add or remove cookies. The "Last Updated" date at the top of this page reflects the most recent revision.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S4 -->
+        <section class="policy-section" id="s4">
+            <div class="section-header">
+                <span class="section-num">04</span>
+                <h2 class="section-title">Managing Cookies in Your Browser</h2>
+            </div>
+            <p>Most web browsers allow you to control cookies through their settings. You can typically find cookie controls in the "Privacy", "Security", or "Settings" menu of your browser. Below are direct instructions for the most common browsers:</p>
+
+            <div class="browser-grid">
+                <div class="browser-card">
+                    <h5><span class="browser-icon">C</span> Google Chrome</h5>
+                    <p>Go to <strong>Settings → Privacy and security → Cookies and other site data</strong>. You can block all cookies, allow all, or customise by site. To clear existing cookies, go to <strong>Clear browsing data → Cookies and other site data</strong>.</p>
+                    <a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener">Chrome Cookie Help →</a>
+                </div>
+
+                <div class="browser-card">
+                    <h5><span class="browser-icon">F</span> Mozilla Firefox</h5>
+                    <p>Go to <strong>Settings → Privacy &amp; Security → Cookies and Site Data</strong>. You can choose Standard, Strict, or Custom Enhanced Tracking Protection. Click "Clear Data" to remove existing cookies.</p>
+                    <a href="https://support.mozilla.org/en-US/kb/enhanced-tracking-protection-firefox-desktop" target="_blank" rel="noopener">Firefox Cookie Help →</a>
+                </div>
+
+                <div class="browser-card">
+                    <h5><span class="browser-icon">S</span> Apple Safari</h5>
+                    <p>Go to <strong>Preferences → Privacy → Manage Website Data</strong>. You can block all cookies or prevent cross-site tracking. Click "Remove All" to delete stored cookies and website data.</p>
+                    <a href="https://support.apple.com/en-gb/guide/safari/sfri11471/mac" target="_blank" rel="noopener">Safari Cookie Help →</a>
+                </div>
+
+                <div class="browser-card">
+                    <h5><span class="browser-icon">E</span> Microsoft Edge</h5>
+                    <p>Go to <strong>Settings → Cookies and site permissions → Manage and delete cookies and site data</strong>. Edge offers Basic, Balanced, and Strict tracking prevention modes.</p>
+                    <a href="https://support.microsoft.com/en-us/microsoft-edge/delete-cookies-in-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09" target="_blank" rel="noopener">Edge Cookie Help →</a>
+                </div>
+            </div>
+
+            <div class="teal-box">
+                <p><strong>Mobile browsers:</strong> On iOS, go to <strong>Settings → Safari → Privacy &amp; Security</strong>. On Android Chrome, tap the three-dot menu → <strong>Settings → Site settings → Cookies</strong>.</p>
+            </div>
+
+            <p>Please note that restricting or deleting cookies may impact your ability to use certain features of The KPI Hub, including staying logged in, remembering your preferences, and using the AI assistant effectively.</p>
+
+            <h4>Clearing localStorage (Chatbot Data)</h4>
+            <p>The chatbot session data stored in <code>localStorage</code> is not a traditional cookie and is not cleared by the standard "clear cookies" function. To remove it:</p>
+            <ul>
+                <li><strong>Chrome / Edge:</strong> DevTools → Application tab → Local Storage → right-click on thekpihub.com → Clear</li>
+                <li><strong>Firefox:</strong> DevTools → Storage tab → Local Storage → right-click → Delete All</li>
+                <li><strong>Safari:</strong> Develop menu → Show Web Inspector → Storage → Local Storage → delete entries</li>
+                <li>Alternatively, clearing "All site data" via your browser's privacy settings will remove localStorage.</li>
+            </ul>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S5 -->
+        <section class="policy-section" id="s5">
+            <div class="section-header">
+                <span class="section-num">05</span>
+                <h2 class="section-title">Analytics Opt-Out</h2>
+            </div>
+            <p>We use Google Analytics to understand how users interact with the Platform. If you wish to opt out of Google Analytics tracking across all websites, you can use the official Google opt-out tool:</p>
+            <div class="highlight-box">
+                <p>
+                    <strong>Google Analytics Opt-Out Browser Add-on:</strong><br>
+                    <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener">tools.google.com/dlpage/gaoptout</a><br>
+                    Installing this browser extension prevents Google Analytics from collecting your data on any website that uses it.
+                </p>
+            </div>
+            <p>Additionally, you can control analytics cookies specifically on our Platform by:</p>
+            <ul>
+                <li>Declining analytics cookies in our cookie consent banner when you first visit</li>
+                <li>Withdrawing your consent via "Cookie Settings" in the footer (see Section 6)</li>
+                <li>Using your browser's "Do Not Track" (DNT) signal — we respect DNT where technically feasible</li>
+            </ul>
+            <p>Note: Opting out of Google Analytics on our Platform does not affect Google's data collection on other sites, and vice versa.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S6 -->
+        <section class="policy-section" id="s6">
+            <div class="section-header">
+                <span class="section-num">06</span>
+                <h2 class="section-title">Withdrawing Your Consent</h2>
+            </div>
+            <p>You may withdraw or change your cookie consent at any time. Your consent applies only to non-essential cookies — strictly necessary cookies cannot be disabled as they are required for the Platform to function.</p>
+            <h4>How to Change or Withdraw Consent</h4>
+            <ul>
+                <li><strong>Cookie Settings link:</strong> Click the "Cookie Settings" link in the footer of any page on thekpihub.com to reopen the consent banner and update your preferences.</li>
+                <li><strong>Clear browser cookies:</strong> Deleting the <code>cookie_consent</code> cookie from your browser will reset your consent status. The next time you visit the Platform, the consent banner will reappear.</li>
+                <li><strong>Email request:</strong> You may also email us at <a href="mailto:info@thekpihub.com">info@thekpihub.com</a> to request that all non-essential cookies be disabled for your account.</li>
+            </ul>
+            <div class="teal-box">
+                <p><strong>Effect of withdrawal:</strong> Withdrawing consent for analytics or marketing cookies stops future data collection by those technologies. It does not delete historical data already collected before you withdrew consent. To request deletion of historical data, see our <a href="privacy.html">Privacy Policy</a> (Section 9 – GDPR Rights / Section 10 – CCPA Rights).</p>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S7 -->
+        <section class="policy-section" id="s7">
+            <div class="section-header">
+                <span class="section-num">07</span>
+                <h2 class="section-title">Third-Party Cookie Providers</h2>
+            </div>
+            <p>Some cookies on thekpihub.com are set by third-party services. These providers have their own privacy policies governing how they use the data collected through their cookies. We have no control over third-party cookies once they are set.</p>
+
+            <div class="table-wrap">
+                <table class="provider-table">
+                    <thead>
+                        <tr>
+                            <th>Provider</th>
+                            <th>Service</th>
+                            <th>Cookie(s)</th>
+                            <th>Privacy Policy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Google LLC</td>
+                            <td>Google Analytics — web usage analytics</td>
+                            <td><code>_ga</code>, <code>_gid</code>, <code>_gat</code></td>
+                            <td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a></td>
+                        </tr>
+                        <tr>
+                            <td>Meta Platforms, Inc.</td>
+                            <td>Meta Pixel — advertising and retargeting (when marketing cookies accepted)</td>
+                            <td><code>_fbp</code></td>
+                            <td><a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener">facebook.com/privacy/policy</a></td>
+                        </tr>
+                        <tr>
+                            <td>Email Service Provider (ESP)</td>
+                            <td>Transactional and marketing email delivery tracking (open/click pixels)</td>
+                            <td>Email tracking pixels</td>
+                            <td>Varies by ESP — see our <a href="privacy.html">Privacy Policy</a> Section 7 for current processor list</td>
+                        </tr>
+                        <tr>
+                            <td>Cloud Hosting Provider</td>
+                            <td>Infrastructure — load balancer and CDN session cookies</td>
+                            <td>Provider-specific session identifiers</td>
+                            <td>Varies by provider — see our <a href="privacy.html">Privacy Policy</a> Section 7</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p>We review our third-party providers periodically and update this table as our provider list changes. We require all third-party providers to process data in accordance with applicable data protection law and under appropriate data processing agreements.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S8 -->
+        <section class="policy-section" id="s8">
+            <div class="section-header">
+                <span class="section-num">08</span>
+                <h2 class="section-title">GDPR &amp; CCPA Compliance</h2>
+            </div>
+
+            <h4>GDPR (EU / EEA)</h4>
+            <p>Under the General Data Protection Regulation (GDPR), the placement of non-essential cookies on your device requires your prior, freely given, specific, informed, and unambiguous consent. We comply with this requirement by:</p>
+            <ul>
+                <li>Presenting a cookie consent banner on your first visit before placing any non-essential cookies</li>
+                <li>Categorising cookies clearly and obtaining consent by category</li>
+                <li>Making it as easy to decline cookies as it is to accept them</li>
+                <li>Allowing you to withdraw consent at any time (see Section 6)</li>
+                <li>Recording and storing consent decisions as required by GDPR Article 7</li>
+                <li>Not using "consent walls" that deny access to the Platform if you decline non-essential cookies</li>
+            </ul>
+            <p>The legal basis for strictly necessary cookies is our <strong>legitimate interest</strong> in operating the Platform (GDPR Art. 6(1)(f)) and the performance of a contract with you (Art. 6(1)(b)). All other cookies require your <strong>consent</strong> (Art. 6(1)(a)).</p>
+
+            <h4>CCPA (California)</h4>
+            <p>Under the California Consumer Privacy Act (CCPA) as amended by the CPRA, some cookies (particularly analytics and marketing cookies) may constitute "sharing" of personal information for cross-context behavioural advertising purposes. We address this as follows:</p>
+            <ul>
+                <li>We do not "sell" personal information collected via cookies for monetary consideration.</li>
+                <li>To the extent analytics or marketing cookies constitute "sharing" under CCPA, California residents may opt out by declining those categories in our cookie consent banner or by emailing <a href="mailto:info@thekpihub.com">info@thekpihub.com</a> with the subject line "Do Not Share My Data".</li>
+                <li>We honour Global Privacy Control (GPC) signals as an opt-out of sharing where technically feasible.</li>
+            </ul>
+
+            <div class="highlight-box">
+                <p><strong>India DPDP Act 2023:</strong> We treat cookie-related consent in accordance with the notice and consent requirements of the Digital Personal Data Protection Act, 2023. Our cookie consent mechanism constitutes the required "notice" under the Act, and your affirmative consent action (accepting cookies) constitutes valid consent under Section 6 of the DPDP Act.</p>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S9 -->
+        <section class="policy-section" id="s9">
+            <div class="section-header">
+                <span class="section-num">09</span>
+                <h2 class="section-title">Policy Updates</h2>
+            </div>
+            <p>We may update this Cookie Policy periodically to reflect changes in our use of cookies, new technology, regulatory requirements, or for other operational, legal, or regulatory reasons.</p>
+            <p>When we make material changes to this policy, we will:</p>
+            <ul>
+                <li>Update the "Last Updated" date at the top of this page</li>
+                <li>Notify registered users via email where the changes are significant</li>
+                <li>Reset cookie consent banners if the changes affect the scope of consent previously obtained</li>
+            </ul>
+            <p>We encourage you to review this Cookie Policy periodically. Your continued use of the Platform after an updated policy takes effect constitutes your acceptance of the revised terms.</p>
+
+            <div class="table-wrap" style="margin-top:24px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th>Date</th>
+                            <th>Summary</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>v1.0</td>
+                            <td>April 3, 2026</td>
+                            <td>Initial publication. Covers all cookie categories, full cookie table, browser instructions, GDPR and CCPA compliance.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S10 -->
+        <section class="policy-section" id="s10">
+            <div class="section-header">
+                <span class="section-num">10</span>
+                <h2 class="section-title">Contact Us</h2>
+            </div>
+            <p>If you have any questions about this Cookie Policy or how we use cookies and tracking technologies, please contact us:</p>
+            <div class="highlight-box">
+                <p>
+                    <strong>The KPI Hub — Data &amp; Privacy</strong><br>
+                    Delhi, India<br>
+                    Email: <a href="mailto:info@thekpihub.com">info@thekpihub.com</a><br>
+                    Website: <a href="https://thekpihub.com">thekpihub.com</a>
+                </p>
+            </div>
+            <p>For support-related queries or to request a data export:</p>
+            <div class="teal-box">
+                <p>
+                    <strong>Support Team</strong><br>
+                    Email: <a href="mailto:support@thekpihub.com">support@thekpihub.com</a>
+                </p>
+            </div>
+            <p>We aim to respond to all cookie-related queries within <strong>5 business days</strong>.</p>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="wrap">
+            <div class="foot-top">
+                <div class="foot-brand">
+                    <div class="logo"><div class="logo-dot"></div>The <span class="logo-accent">KPI</span> Hub</div>
+                    <p class="foot-tag">Decision-Grade Intelligence for the modern SaaS professional.</p>
+                </div>
+                <div class="foot-group"><h4>Platform</h4><ul>
+                    <li><a href="intelligence.html">Intelligence Feed</a></li>
+                    <li><a href="directory.html">SaaS Discovery</a></li>
+                    <li><a href="benchmarks.html">Benchmarks</a></li>
+                </ul></div>
+                <div class="foot-group"><h4>Company</h4><ul>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul></div>
+                <div class="foot-group"><h4>Legal</h4><ul>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                    <li><a href="cookies.html">Cookie Policy</a></li>
+                </ul></div>
+            </div>
+            <div class="foot-bottom">
+                <p class="foot-copy">© 2026 <a href="index.html">The KPI Hub</a>. All rights reserved.</p>
+                <p class="foot-made">Made with ☕ in Delhi, India</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

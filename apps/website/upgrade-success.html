@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Successful · The KPI Hub</title>
+    <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="assets/favicon-new.svg?v=d6470a38" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0d1117;
+      --surface: #161b22;
+      --border:  #30363d;
+      --text:    #e6edf3;
+      --muted:   #8b949e;
+      --success: #3fb950;
+      --danger:  #f85149;
+      --radius:  10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+    }
+
+    .icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .subtitle { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+
+    .status {
+      background: rgba(63,185,80,.1);
+      border: 1px solid rgba(63,185,80,.3);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+
+    .status.error {
+      background: rgba(248,81,73,.1);
+      border-color: rgba(248,81,73,.3);
+      color: #fca5a5;
+    }
+
+    .status.success { color: #86efac; }
+
+    .details {
+      text-align: left;
+      background: rgba(0,0,0,.2);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .detail-row:last-child { border: none; }
+
+    .detail-label { color: var(--muted); }
+    .detail-value { font-weight: 600; }
+
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: var(--radius);
+      border: none;
+      font-family: inherit;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: #0ea5e9;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #38bdf8; }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .checkmark {
+      display: inline-block;
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: rgba(63,185,80,.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 20px;
+    }
+  </style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-DZPCCPEP1J");
+  </script>
+</head>
+<body>
+
+<div class="card" id="card">
+  <div class="loading">
+    <span class="spinner"></span>
+    Verifying payment...
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+  const { createClient } = supabase;
+  const sb = createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+
+  const $ = id => document.getElementById(id);
+
+  let oldPlan = 'starter';
+
+  async function verifyPayment() {
+    const sessionId = new URLSearchParams(window.location.search).get('session_id');
+    if (!sessionId) { showError('Missing session ID. Please contact support.'); return; }
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'login.html'; return; }
+
+    currentUser = session.user;
+
+    // Fetch initial profile to know what the starting plan was
+    const { data: initialProfile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    oldPlan = initialProfile ? initialProfile.plan : 'starter';
+
+    // Start polling Supabase profiles table for the plan update
+    let attempts = 0;
+    const maxAttempts = 30; // Max 1 minute polling (2s interval)
+
+    const interval = setInterval(async () => {
+      attempts++;
+      
+      const { data: currentProfile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+      
+      if (currentProfile && currentProfile.plan !== oldPlan) {
+        clearInterval(interval);
+        showSuccess(currentProfile.plan);
+        // Auto-redirect to dashboard after 3 seconds
+        setTimeout(() => {
+          window.location.href = CONFIG.app.dashboardUrl;
+        }, 3000);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        showError('Payment verification is taking longer than expected. Please check your Dashboard in a moment.');
+      }
+    }, 2000);
+  }
+
+  function showSuccess(plan) {
+    const planName = plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : 'Unknown';
+    $('card').innerHTML = `
+      <div class="checkmark">✓</div>
+      <h1>Payment received!</h1>
+      <p class="subtitle">Your plan has been updated successfully.</p>
+      <div class="status success">
+        You now have access to all <strong>${planName}</strong> features.
+      </div>
+      <div class="details">
+        <div class="detail-row">
+          <span class="detail-label">Plan</span>
+          <span class="detail-value">${planName}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Billing</span>
+          <span class="detail-value">Monthly subscription</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Next billing</span>
+          <span class="detail-value">1 month from now</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="window.location.href=CONFIG.app.dashboardUrl">
+        Go to Dashboard
+      </button>
+    `;
+  }
+
+  function showError(message) {
+    $('card').innerHTML = `
+      <div style="font-size: 40px; margin-bottom: 20px;">⚠️</div>
+      <h1>Verification failed</h1>
+      <p class="subtitle">We couldn't verify your payment.</p>
+      <div class="status error">
+        ${message}
+      </div>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 20px;">
+        If you believe this is an error, please contact support@thekpihub.com with your session ID.
+      </p>
+      <button class="btn btn-primary" onclick="window.location.href='upgrade.html'">
+        Back to Plans
+      </button>
+    `;
+  }
+
+  // Guard: must be logged in to reach this page
+  (async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'login.html'; return; }
+    verifyPayment();
+  })();
+</script>
+</body>
+</html>

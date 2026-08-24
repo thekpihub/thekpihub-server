@@ -1,0 +1,21 @@
+# robots.txt — thekpihub.com
+# Updated: 2026-08-15
+# SEO-optimized for maximum crawlability
+
+User-agent: *
+Allow: /
+
+# Staff-only pages are kept out of the index with a page-level
+# <meta name="robots" content="noindex, nofollow"> rather than a rule here.
+# A crawler must be able to fetch a page to read that tag, so Disallow and noindex
+# cancel out — and this file is public, so naming such paths here only advertises them.
+Disallow: /admin/
+Disallow: /api/
+Disallow: /cgi-bin/
+Disallow: /.git/
+Disallow: *.json
+
+Sitemap: https://thekpihub.com/sitemap.xml
+
+# Crawl-delay for politeness
+Crawl-delay: 1

@@ -1,0 +1,64 @@
+# Secrets
+.env
+.env.local
+config.js
+
+# Pipeline runtime output (uploaded as Actions artifacts instead)
+pipeline.log
+reports/
+
+# Operational artifacts — belong in docs/ if worth keeping, not root
+/AGENT_*.md
+/AGENT_*.txt
+/*_REPORT.md
+/*_REPORT_*.md
+/*_REPORT.txt
+/*_RESULTS.txt
+/VERIFICATION_REPORT*.md
+/DEPLOYMENT_TEST_RESULTS.txt
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+.npm
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Next.js / Build caches
+.next/
+.vercel/
+out/
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local dev files
+live_*.html
+live_*.js
+_*.txt
+coming-soon.html
+.vercel
+.env*
+
+# ── Not this repo's content ─────────────────────────────
+# platform/ is a SEPARATE git repository (thekpihub/thekpihub-platform) that
+# happens to sit inside this working copy. Committing it here would duplicate a
+# whole codebase into this PUBLIC repo and detach it from its own history.
+# It is versioned and pushed on its own remote -- leave it alone.
+platform/
+
+# Internal business material. This repo is PUBLIC; these are working notes on
+# referral economics, hiring and pay bands, not website content.
+revenue-sprint-week1/

@@ -1,0 +1,72 @@
+// config.js — Production configuration for thekpihub.com
+// SECURITY: This file is SERVER-ONLY (not in git, protected in .deploy-exclude)
+// Contains client-side API keys and configuration endpoints.
+//
+// CRITICAL: All nested CONFIG objects MUST be Object.freeze()d to prevent
+// accidental mutation in the browser.
+
+const CONFIG = {
+  // Supabase — Authentication & database
+  supabase: Object.freeze({
+    url: 'https://eeuwkislidznpgdbvvbo.supabase.co',
+    anonKey: '<YOUR_SUPABASE_ANON_KEY>',
+    // service_role_key is NEVER exposed to browser — server-side only
+  }),
+
+  // Stripe — Payments & subscriptions
+  stripe: Object.freeze({
+    publishableKey: '<YOUR_STRIPE_PUBLISHABLE_KEY>',
+    prices: Object.freeze({
+      starter: '<STRIPE_PRICE_ID_STARTER>',      // Rs.999/mo
+      growth: '<STRIPE_PRICE_ID_GROWTH>',       // Rs.2499/mo
+      enterprise: '<STRIPE_PRICE_ID_ENTERPRISE>'    // Rs.7999/mo
+    })
+  }),
+
+  // Formspree — Contact & subscription forms
+  formspree: Object.freeze({
+    contact: 'xvzdbban',        // Contact form
+    waitlist: 'xnjoevjk',       // Waitlist signup (deprecated)
+    blog: 'xgojpynr'            // Blog newsletter signup
+  }),
+
+  // Application URLs & paths
+  app: Object.freeze({
+    url: 'https://thekpihub.com',
+    loginUrl: '/login.html',
+    registerUrl: '/register.html',
+    upgradeUrl: '/upgrade.html',
+    dashboardUrl: '/dashboard.html',
+    getAuditUrl: '/get-audit.html',
+    auditorsUrl: '/auditor.html'
+  }),
+
+  // Analytics & tracking
+  analytics: Object.freeze({
+    ga4_id: 'G-DZPCCPEP1J',           // Google Analytics 4
+    clarity_id: 'l76saqfmyf'          // Microsoft Clarity
+  }),
+
+  // Wingman — AI agent backend
+  wingman: Object.freeze({
+    api_url: 'https://agent.thekpihub.com',
+    // handoff_secret retrieved from .htaccess SetEnv — never hardcoded here
+  }),
+
+  // Feature flags & behavior
+  features: Object.freeze({
+    enableAIModal: true,
+    enableStripeCheckout: true,
+    enableWingmanHandoff: true,
+    enableAnalytics: true,
+    maintenanceMode: false
+  })
+};
+
+// Freeze the root CONFIG object to prevent accidental mutations
+Object.freeze(CONFIG);
+
+// Export for use in other scripts
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = CONFIG;
+}

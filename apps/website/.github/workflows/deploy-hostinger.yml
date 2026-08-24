@@ -1,0 +1,211 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Governed deploy: GitHub Actions → Hostinger over SSH (rsync)
+#
+#  - PRs to main: run checks only (secret scan + HTML lint). No deploy.
+#  - Push to main: run checks, then WAIT for manual approval on the
+#    `production` GitHub Environment, then rsync to Hostinger over SSH.
+#  - Manual run (workflow_dispatch): optional dry-run to preview changes.
+#
+#  Required repo secrets (Settings → Secrets and variables → Actions):
+#    HOSTINGER_HOST       Hostinger server IP/host, e.g. 145.79.212.91
+#    HOSTINGER_PORT       Hostinger SSH port, e.g. 65002
+#    HOSTINGER_USERNAME   SSH username (e.g. u117990013)
+#    HOSTINGER_SSH_KEY    Private key whose public key is in ~/.ssh/authorized_keys
+#
+#  Setup, rollback, and how to disable the old Hostinger Git auto-deploy:
+#    see docs/DEPLOYMENT_GITHUB_ACTIONS.md
+# ─────────────────────────────────────────────────────────────────────────────
+name: Deploy to Hostinger (SSH)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — show what would change, deploy nothing"
+        type: boolean
+        default: true
+
+concurrency:
+  group: hostinger-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Governance checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build landing assets
+        run: |
+          npm run build
+          npm run build:css
+          npm run prerender
+          npm run version-assets
+
+      - name: Secret scan (gitleaks)
+        run: |
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:latest \
+            detect --source=/repo --no-git --no-banner --redact -v
+
+      - name: HTML lint (report-only)
+        run: |
+          npx --yes htmlhint "**/*.html" \
+            --ignore "docs/**,node_modules/**,wp-plugin/**" || true
+
+  deploy:
+    name: Deploy to Hostinger
+    needs: checks
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+      HOSTINGER_PORT: ${{ secrets.HOSTINGER_PORT }}
+      HOSTINGER_USERNAME: ${{ secrets.HOSTINGER_USERNAME }}
+      HOSTINGER_SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      HOSTINGER_WEBROOT: /home/${{ secrets.HOSTINGER_USERNAME }}/domains/thekpihub.com/public_html
+    environment:
+      name: production
+      url: https://thekpihub.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build landing assets for upload
+        run: |
+          npm run build
+          npm run build:css
+          npm run prerender
+          npm run version-assets
+
+      # index.html is a build artifact, generated from index.shell.html. If the
+      # pre-render ever silently no-ops, the homepage would go back to shipping a
+      # bare loading spinner with ~128 bytes of text -- which is exactly the state
+      # this pipeline was fixed to escape, and it fails silently. Fail loudly.
+      - name: Verify the homepage was actually pre-rendered
+        run: |
+          if grep -q 'Loading The KPI Hub' index.html; then
+            echo "::error::index.html still contains the loading spinner - pre-render did not run."
+            exit 1
+          fi
+          if ! grep -q '<h1' index.html; then
+            echo "::error::index.html has no <h1> - pre-render produced no markup."
+            exit 1
+          fi
+          bytes=$(wc -c < index.html)
+          if [ "$bytes" -lt 20000 ]; then
+            echo "::error::index.html is only ${bytes} B - expected ~58 kB of pre-rendered markup."
+            exit 1
+          fi
+          echo "pre-render verified: ${bytes} B, spinner absent, <h1> present"
+
+      - name: Validate Hostinger secrets
+        run: |
+          test -n "$HOSTINGER_HOST"
+          test -n "$HOSTINGER_PORT"
+          test -n "$HOSTINGER_USERNAME"
+          test -n "$HOSTINGER_SSH_KEY"
+          test -n "$HOSTINGER_WEBROOT"
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$HOSTINGER_SSH_KEY" > ~/.ssh/hostinger_deploy_key
+          chmod 600 ~/.ssh/hostinger_deploy_key
+          ssh-keyscan -T 20 -p "$HOSTINGER_PORT" -H "$HOSTINGER_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          chmod 644 ~/.ssh/known_hosts
+
+      # Hostinger's edge intermittently drops connections from GitHub runner IP
+      # ranges: the failure is a TCP-level "Connection timed out", not an auth
+      # error, and the same secrets succeed on a re-run that lands on a different
+      # runner. hPanel exposes no SSH IP allowlist, so this cannot be fixed on
+      # the server side. Retry here in case the block is transient; if it is
+      # sticky for this runner's IP, only a re-run (new IP) clears it, so say so.
+      - name: Verify SSH connectivity
+        run: |
+          for attempt in 1 2 3; do
+            if ssh -i ~/.ssh/hostinger_deploy_key \
+                 -p "$HOSTINGER_PORT" \
+                 -o BatchMode=yes \
+                 -o StrictHostKeyChecking=accept-new \
+                 -o ConnectTimeout=30 \
+                 -o ServerAliveInterval=10 \
+                 -o ServerAliveCountMax=3 \
+                 "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+                 "pwd && test -d '$HOSTINGER_WEBROOT'"; then
+              echo "SSH reachable on attempt ${attempt}."
+              exit 0
+            fi
+            echo "::warning::SSH attempt ${attempt}/3 failed."
+            if [ "$attempt" -lt 3 ]; then sleep $((attempt * 30)); fi
+          done
+          echo "::error::Could not reach Hostinger over SSH after 3 attempts. If this \
+          is 'Connection timed out' the credentials are fine and this runner's IP is \
+          being filtered - re-run this job to get a different runner."
+          exit 1
+
+      - name: Deploy via rsync over SSH
+        run: |
+          DRY=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            DRY="--dry-run"
+            echo "::notice::DRY RUN — no files will be changed on the server."
+          fi
+          for attempt in 1 2 3; do
+            if rsync -avz $DRY --delete \
+                 --exclude-from='.deploy-exclude' \
+                 -e "ssh -i ~/.ssh/hostinger_deploy_key -p $HOSTINGER_PORT -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=30 -o ServerAliveInterval=10 -o ServerAliveCountMax=3" \
+                 ./ "$HOSTINGER_USERNAME@$HOSTINGER_HOST:$HOSTINGER_WEBROOT/"; then
+              echo "rsync completed on attempt ${attempt}."
+              exit 0
+            fi
+            echo "::warning::rsync attempt ${attempt}/3 failed."
+            if [ "$attempt" -lt 3 ]; then sleep $((attempt * 30)); fi
+          done
+          echo "::error::rsync failed 3 times. Re-run this job to retry from a different runner IP."
+          exit 1
+
+  smoke:
+    name: Post-deploy smoke test
+    needs: deploy
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify key pages return 200
+        run: |
+          fail=0
+          for path in / /pricing.html /auditor.html /benchmarks.html; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "https://thekpihub.com${path}")
+            echo "${path} -> ${code}"
+            [ "$code" = "200" ] || fail=1
+          done
+          if [ "$fail" = "1" ]; then
+            echo "::error::Smoke test failed — a key page is not returning 200. Consider rolling back (see docs/DEPLOYMENT_GITHUB_ACTIONS.md)."
+            exit 1
+          fi

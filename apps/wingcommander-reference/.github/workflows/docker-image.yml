@@ -1,0 +1,20 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build backend image
+      run: docker build -f backend/Dockerfile -t wingcommander-backend:ci .
+    - name: Build frontend image
+      run: docker build -f frontend/Dockerfile -t wingcommander-frontend:ci .

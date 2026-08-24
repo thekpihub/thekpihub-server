@@ -1,0 +1,24 @@
+{
+  "name": "thekpihub-wingcommander",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=frontend\" \"npm run dev --workspace=backend\"",
+    "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
+    "start": "npm run start --workspace=backend"
+  },
+  "overrides": {
+    "esbuild": "0.28.1",
+    "monaco-editor": "0.53.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "esbuild": "0.28.1",
+    "monaco-editor": "0.53.0"
+  }
+}

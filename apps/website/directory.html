@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="yRGmgTNjIHFmLom_ZrczRQpmaJkf2SpAZWR75g3g71k">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Compare hand-verified SaaS tools — real ratings, no sponsored placements. The KPI Hub SaaS Directory.">
+    <title>SaaS Directory — Hand-Verified Tools, No Sponsored Results</title>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thekpihub.com/directory.html">
+    <meta property="og:title" content="SaaS Directory — Hand-Verified Tools, No Sponsored Results">
+    <meta property="og:description" content="Compare hand-verified SaaS tools — real ratings, no sponsored placements. The KPI Hub SaaS Directory.">
+    <meta property="og:image" content="https://thekpihub.com/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SaaS Directory — Hand-Verified Tools, No Sponsored Results">
+    <meta name="twitter:description" content="Compare hand-verified SaaS tools — real ratings, no sponsored placements. The KPI Hub SaaS Directory.">
+    <meta name="twitter:image" content="https://thekpihub.com/og-image.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #06071A;
+            --bg2: #0C0E28;
+            --card: rgba(255,255,255,0.04);
+            --gold: #E9A123;
+            --gold-glow: rgba(233,161,35,0.15);
+            --gold-rim: rgba(233,161,35,0.30);
+            --teal: #00C9A7;
+            --teal-glow: rgba(0,201,167,0.12);
+            --red: #FF6B6B;
+            --text: #EAEDF5;
+            --text2: rgba(234,237,245,0.62);
+            --text3: rgba(234,237,245,0.32);
+            --border: rgba(255,255,255,0.08);
+            --r: 12px;
+            --max: 1280px;
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; line-height: 1.65; overflow-x: hidden; }
+        a { color: inherit; text-decoration: none; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
+
+        /* NAV */
+        nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(6,7,26,0.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
+        .logo{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;letter-spacing:-0.02em;display:flex;align-items:center;gap:9px;}
+        .logo-accent{color:var(--gold);}
+        .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:blink 2s ease infinite;}
+        .nav-links{display:flex;gap:36px;list-style:none;}
+        .nav-links a{font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text2);transition:color 0.2s;}
+        .nav-links a:hover,.nav-links a.active{color:var(--gold);}
+        .nav-btn{font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:10px 26px;background:var(--gold);color:var(--bg);border-radius:6px;border:none;transition:transform 0.2s,box-shadow 0.2s;cursor:pointer;}
+        .nav-btn:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(233,161,35,0.4);}
+
+        /* ── HERO ── */
+        .dir-hero { padding: 140px 48px 72px; background: var(--bg2); border-bottom: 1px solid var(--border); position: relative; overflow: hidden; text-align: center; }
+        .hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(0,201,167,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,201,167,0.03) 1px, transparent 1px); background-size: 52px 52px; }
+        .hero-glow { position: absolute; top: -80px; left: 50%; transform: translateX(-50%); width: 700px; height: 500px; background: radial-gradient(ellipse, rgba(0,201,167,0.08) 0%, transparent 70%); pointer-events: none; }
+        .hero-inner { position: relative; z-index: 2; max-width: 720px; margin: 0 auto; }
+        .teal-badge { display: inline-flex; align-items: center; gap: 8px; padding: 7px 18px; background: var(--teal-glow); border: 1px solid rgba(0,201,167,0.3); border-radius: 100px; font-family: 'Syne', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal); margin-bottom: 22px; }
+        .teal-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); animation: blink 2s ease infinite; }
+        .dir-hero h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.8rem, 5.5vw, 4.6rem); font-weight: 700; line-height: 1.06; letter-spacing: -0.03em; margin-bottom: 18px; }
+        .dir-hero h1 em { font-style: italic; color: var(--teal); }
+        .dir-hero p { font-size: 1.05rem; color: var(--text2); line-height: 1.75; margin-bottom: 40px; }
+
+        /* Search bar */
+        .search-wrap { max-width: 640px; margin: 0 auto 20px; position: relative; }
+        .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 1rem; pointer-events: none; }
+        .search-input { width: 100%; padding: 18px 18px 18px 48px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; outline: none; transition: border-color 0.2s, background 0.2s; }
+        .search-input::placeholder { color: var(--text3); }
+        .search-input:focus { border-color: var(--teal); background: rgba(0,201,167,0.04); }
+        .search-hint { font-family: 'Syne', sans-serif; font-size: 0.7rem; color: var(--text3); margin-top: 10px; letter-spacing: 0.04em; }
+        .search-hint span { color: var(--teal); }
+
+        /* Stats bar */
+        .stats-bar { display: flex; gap: 0; justify-content: center; margin-top: 40px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--card); flex-wrap: wrap; }
+        .stat-item { padding: 18px 32px; text-align: center; border-right: 1px solid var(--border); flex: 1; min-width: 140px; }
+        .stat-item:last-child { border-right: none; }
+        .stat-val { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--teal); line-height: 1; margin-bottom: 4px; }
+        .stat-label { font-family: 'Syne', sans-serif; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); }
+
+        /* ── CATEGORY TABS ── */
+        .cat-tabs-bar { position: sticky; top: 73px; z-index: 90; background: rgba(6,7,26,0.97); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+        .cat-tabs-wrap { max-width: var(--max); margin: 0 auto; padding: 0 48px; display: flex; overflow-x: auto; scrollbar-width: none; }
+        .cat-tabs-wrap::-webkit-scrollbar { display: none; }
+        .ctab { padding: 15px 20px; font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text3); cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; transition: color 0.2s, border-color 0.2s; }
+        .ctab:hover { color: var(--text2); }
+        .ctab.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+        /* ── DIRECTORY BODY ── */
+        .dir-body { max-width: var(--max); margin: 0 auto; padding: 48px 48px 80px; }
+
+        /* Toolbar */
+        .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+        .tool-count { font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--text3); }
+        .tool-count strong { color: var(--text); }
+        .toolbar-right { display: flex; align-items: center; gap: 12px; }
+        .sort-label { font-family: 'Syne', sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); }
+        .sort-sel { padding: 9px 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--text2); font-family: 'Syne', sans-serif; font-size: 0.78rem; font-weight: 600; outline: none; cursor: pointer; }
+
+        /* ── TOOL CARDS GRID ── */
+        .tools-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 48px; }
+
+        .tool-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 24px; display: flex; flex-direction: column; gap: 0; transition: border-color 0.22s, transform 0.22s; }
+        .tool-card:hover { border-color: rgba(0,201,167,0.3); transform: translateY(-4px); }
+        .tool-card:hover .view-btn { border-color: rgba(0,201,167,0.4); color: var(--teal); }
+
+        .tc-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+        .tc-logo { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.02em; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); }
+        .pricing-badge { padding: 3px 9px; border-radius: 100px; font-family: 'Syne', sans-serif; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+        .price-free { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25); color: #4ade80; }
+        .price-freemium { background: var(--teal-glow); border: 1px solid rgba(0,201,167,0.25); color: var(--teal); }
+        .price-paid { background: var(--gold-glow); border: 1px solid var(--gold-rim); color: var(--gold); }
+        .price-enterprise { background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.25); color: #a78bfa; }
+
+        .tc-name { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; margin-bottom: 4px; }
+        .tc-cat { font-family: 'Syne', sans-serif; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+        .tc-desc { font-size: 0.82rem; color: var(--text2); line-height: 1.65; margin-bottom: 14px; flex: 1; }
+
+        .tc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+        .tc-tag { padding: 3px 9px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; font-size: 0.68rem; color: var(--text3); font-family: 'Syne', sans-serif; font-weight: 600; }
+
+        .tc-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 14px; border-top: 1px solid var(--border); gap: 8px; margin-top: auto; }
+        .tc-rating { display: flex; align-items: center; gap: 5px; }
+        .stars { color: var(--gold); font-size: 0.7rem; letter-spacing: 0.05em; }
+        .rating-val { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--text); }
+        .review-count { font-size: 0.68rem; color: var(--text3); }
+        .view-btn { padding: 7px 14px; background: transparent; border: 1px solid var(--border); border-radius: 7px; font-family: 'Syne', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text3); cursor: pointer; transition: border-color 0.2s, color 0.2s; white-space: nowrap; }
+
+        /* No results */
+        .no-results { grid-column: 1 / -1; text-align: center; padding: 60px 24px; }
+        .no-results p { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 600; color: var(--text3); margin-bottom: 8px; }
+        .no-results small { font-size: 0.85rem; color: var(--text3); }
+
+        /* ── BOTTOM CTA ── */
+        .bottom-cta { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .bcta-box { padding: 36px; border-radius: 16px; border: 1px solid var(--border); }
+        .bcta-box.suggest { background: var(--card); }
+        .bcta-box.suggest:hover { border-color: rgba(0,201,167,0.3); }
+        .bcta-box.waitlist { background: linear-gradient(135deg, rgba(233,161,35,0.08), rgba(0,201,167,0.06)); border-color: var(--gold-rim); }
+        .bcta-label { font-family: 'Syne', sans-serif; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        .bcta-label::before { content: ''; width: 14px; height: 1px; background: var(--text3); }
+        .bcta-box h3 { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; margin-bottom: 8px; }
+        .bcta-box p { font-size: 0.88rem; color: var(--text2); line-height: 1.65; margin-bottom: 20px; }
+        .bcta-btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 24px; border-radius: 8px; font-family: 'Syne', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; border: none; }
+        .bcta-btn.teal { background: var(--teal); color: var(--bg); }
+        .bcta-btn.teal:hover { opacity: 0.9; transform: translateY(-2px); }
+        .bcta-btn.gold { background: var(--gold); color: var(--bg); }
+        .bcta-btn.gold:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        /* ── LOGO COLOR VARIANTS ── */
+        .lc-teal { background: rgba(0,201,167,0.15); color: var(--teal); }
+        .lc-gold { background: var(--gold-glow); color: var(--gold); }
+        .lc-purple { background: rgba(139,92,246,0.15); color: #a78bfa; }
+        .lc-blue { background: rgba(59,130,246,0.12); color: #60a5fa; }
+        .lc-orange { background: rgba(251,146,60,0.12); color: #fb923c; }
+        .lc-red { background: rgba(255,107,107,0.12); color: var(--red); }
+        .lc-green { background: rgba(34,197,94,0.12); color: #4ade80; }
+        .lc-pink { background: rgba(236,72,153,0.12); color: #f472b6; }
+
+        /* ── FOOTER ── */
+        footer { border-top: 1px solid var(--border); }
+        .wrap { max-width: var(--max); margin: 0 auto; padding: 60px 48px 40px; }
+        .foot-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 40px; margin-bottom: 52px; }
+        .foot-brand .logo { margin-bottom: 12px; }
+        .foot-tag { font-size: 0.88rem; color: var(--text3); max-width: 210px; line-height: 1.65; }
+        .foot-group h4 { font-family: 'Syne', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); margin-bottom: 16px; }
+        .foot-group ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+        .foot-group a { font-size: 0.88rem; color: var(--text2); transition: color 0.2s; }
+        .foot-group a:hover { color: var(--text); }
+        .foot-bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; padding-top: 28px; border-top: 1px solid var(--border); }
+        .foot-copy { font-size: 0.82rem; color: var(--text3); }
+        .foot-copy a { color: var(--gold); }
+        .foot-made { font-family: 'Syne', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); }
+
+        /* ── ANIMATIONS ── */
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+        .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.65s ease, transform 0.65s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        @media(max-width:980px){
+            nav{padding:16px 24px;}
+            .nav-links{display:none;}
+            .dir-hero{padding:110px 24px 48px;}
+            .dir-body{padding:24px;grid-template-columns:1fr;}
+            .sidebar{position:static;}
+            .cat-strip{padding:16px 24px;}
+            .tool-card{grid-template-columns:1fr;}
+            .tool-actions{flex-direction:row;}
+            .footer{padding:50px 24px 32px;}
+            .tools-grid{grid-template-columns:repeat(2,1fr);gap:14px;}
+            .cat-tabs-wrap{padding:0 24px;}
+        }
+        @media(max-width:640px){
+            .tools-grid{grid-template-columns:1fr;gap:12px;}
+            .bottom-cta{grid-template-columns:1fr;}
+            .dir-hero{padding:90px 16px 32px;}
+            .dir-body{padding:16px 16px 60px;}
+            .search-input{padding:14px 14px 14px 40px;font-size:0.9rem;}
+            .stats-bar{flex-direction:column;}
+            .stat-item{border-right:none;border-bottom:1px solid var(--border);padding:14px 20px;}
+            .stat-item:last-child{border-bottom:none;}
+            .bcta-box{padding:22px 18px;}
+            .wrap{padding:40px 16px 28px;}
+            .cat-tabs-wrap{padding:0 12px;}
+            .toolbar{flex-direction:column;align-items:flex-start;}
+            .toolbar-right{width:100%;}
+            .sort-sel{width:100%;}
+            .tc-name{font-size:0.92rem;}
+            .tc-desc{font-size:0.8rem;}
+        }
+    </style>
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-DZPCCPEP1J');
+    </script>
+
+<link rel="canonical" href="https://thekpihub.com/directory.html">
+    <meta name="robots" content="index, follow">
+        <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wdshn14xgf");
+    </script>
+</head>
+<body>
+
+<nav>
+    <a href="index.html"><div class="logo"><div class="logo-dot"></div>The <span class="logo-accent">KPI</span> Hub</div></a>
+    <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="directory.html" class="active">Directory</a></li>
+        <li><a href="intelligence.html">Intelligence</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+    </ul>
+    <a href="get-audit.html"><button class="nav-btn">Get My KPI Audit →</button></a>
+</nav>
+
+<div class="nav-overlay" id="navOverlay" role="dialog" aria-label="Navigation menu" aria-hidden="true">
+    <div class="overlay-inner">
+        <div class="overlay-item"><div class="overlay-item-inner"><span class="overlay-num">01</span><a href="index.html" class="overlay-link">Home</a></div></div>
+        <div class="overlay-item"><div class="overlay-item-inner"><span class="overlay-num">02</span><a href="about.html" class="overlay-link">About</a></div></div>
+        <div class="overlay-item"><div class="overlay-item-inner"><span class="overlay-num">03</span><a href="directory.html" class="overlay-link">Directory</a></div></div>
+        <div class="overlay-item"><div class="overlay-item-inner"><span class="overlay-num">04</span><a href="intelligence.html" class="overlay-link">Intelligence</a></div></div>
+        <div class="overlay-item"><div class="overlay-item-inner"><span class="overlay-num">05</span><a href="login.html" class="overlay-link">Member Login</a><span class="overlay-badge member">Customer</span></div></div>
+    </div>
+    <div class="overlay-meta">
+        <span class="overlay-meta-copy">© 2025 The KPI Hub &middot; Decision-Grade Intelligence</span>
+        <ul class="overlay-meta-links">
+            <li><a href="get-audit.html">Get My KPI Audit →</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="login.html">Login</a></li>
+        </ul>
+    </div>
+</div>
+
+<!-- HERO -->
+<section class="dir-hero">
+    <div class="hero-grid"></div>
+    <div class="hero-glow"></div>
+    <div class="hero-inner">
+        <div class="teal-badge"><div class="teal-dot"></div>Pre-Launch Preview</div>
+        <h1>SaaS <em>Discovery</em></h1>
+        <p>Every tool verified by hand. Zero sponsored results.<br>Find exactly what your team needs, without the noise.</p>
+
+        <div class="search-wrap">
+            <div class="search-icon">⌕</div>
+            <input type="text" class="search-input" id="search-input" placeholder="Search tools, categories, integrations...">
+        </div>
+        <div class="search-hint">Try: <span>Salesforce</span>, <span>analytics</span>, <span>freemium</span>, <span>devtools</span></div>
+
+        <div class="stats-bar reveal">
+            <div class="stat-item"><div class="stat-val">200+</div><div class="stat-label">Tools Tracked</div></div>
+            <div class="stat-item"><div class="stat-val">18</div><div class="stat-label">Categories</div></div>
+            <div class="stat-item"><div class="stat-val">50+</div><div class="stat-label">Integrations Mapped</div></div>
+            <div class="stat-item"><div class="stat-val">Daily</div><div class="stat-label">Updated</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- CATEGORY TABS -->
+<div class="cat-tabs-bar">
+    <div class="cat-tabs-wrap">
+        <div class="ctab active" data-cat="all">All</div>
+        <div class="ctab" data-cat="analytics">Analytics</div>
+        <div class="ctab" data-cat="crm">CRM</div>
+        <div class="ctab" data-cat="projectmgmt">Project Mgmt</div>
+        <div class="ctab" data-cat="finance">Finance</div>
+        <div class="ctab" data-cat="hr">HR &amp; People</div>
+        <div class="ctab" data-cat="devtools">DevTools</div>
+        <div class="ctab" data-cat="marketing">Marketing</div>
+        <div class="ctab" data-cat="support">Support</div>
+    </div>
+</div>
+
+<!-- DIRECTORY BODY -->
+<div class="dir-body">
+
+    <div class="toolbar">
+        <div class="tool-count">Showing <strong id="visible-count">16</strong> tools</div>
+        <div class="toolbar-right">
+            <span class="sort-label">Sort:</span>
+            <select class="sort-sel" id="sort-sel">
+                <option value="rating">Highest Rated</option>
+                <option value="reviews">Most Reviewed</option>
+                <option value="name">Name A–Z</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="tools-grid" id="tools-grid">
+
+        <!-- 1. Notion -->
+        <div class="tool-card reveal" data-cat="analytics" data-name="notion" data-rating="4.7" data-reviews="2341">
+            <div class="tc-header">
+                <div class="tc-logo lc-teal">NT</div>
+                <div class="pricing-badge price-freemium">Freemium</div>
+            </div>
+            <div class="tc-name">Notion</div>
+            <div class="tc-cat">Analytics · Productivity</div>
+            <div class="tc-desc">All-in-one workspace for notes, docs, databases, and projects.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">Docs</span>
+                <span class="tc-tag">Databases</span>
+                <span class="tc-tag">AI</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-val">4.7</span>
+                    <span class="review-count">(2,341)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+        <!-- 2. Linear -->
+        <div class="tool-card reveal" data-cat="projectmgmt" data-name="linear" data-rating="4.9" data-reviews="891" style="transition-delay:0.04s">
+            <div class="tc-header">
+                <div class="tc-logo lc-purple">LN</div>
+                <div class="pricing-badge price-paid">Paid</div>
+            </div>
+            <div class="tc-name">Linear</div>
+            <div class="tc-cat">Project Mgmt</div>
+            <div class="tc-desc">High-velocity issue tracking for software teams.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">Issues</span>
+                <span class="tc-tag">Roadmaps</span>
+                <span class="tc-tag">Git sync</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-val">4.9</span>
+                    <span class="review-count">(891)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+        <!-- 3. Figma -->
+        <div class="tool-card reveal" data-cat="devtools" data-name="figma" data-rating="4.8" data-reviews="3102" style="transition-delay:0.08s">
+            <div class="tc-header">
+                <div class="tc-logo lc-orange">FG</div>
+                <div class="pricing-badge price-freemium">Freemium</div>
+            </div>
+            <div class="tc-name">Figma</div>
+            <div class="tc-cat">DevTools · Design</div>
+            <div class="tc-desc">Collaborative interface design and prototyping platform.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">Design</span>
+                <span class="tc-tag">Prototype</span>
+                <span class="tc-tag">Dev Mode</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-val">4.8</span>
+                    <span class="review-count">(3,102)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+        <!-- 4. Stripe -->
+        <div class="tool-card reveal" data-cat="finance" data-name="stripe" data-rating="4.8" data-reviews="1876" style="transition-delay:0.12s">
+            <div class="tc-header">
+                <div class="tc-logo lc-purple">ST</div>
+                <div class="pricing-badge price-paid">Paid</div>
+            </div>
+            <div class="tc-name">Stripe</div>
+            <div class="tc-cat">Finance</div>
+            <div class="tc-desc">Payment infrastructure for internet businesses.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">Payments</span>
+                <span class="tc-tag">Billing</span>
+                <span class="tc-tag">Revenue Rec</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-val">4.8</span>
+                    <span class="review-count">(1,876)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+        <!-- 5. HubSpot -->
+        <div class="tool-card reveal" data-cat="crm" data-name="hubspot" data-rating="4.4" data-reviews="4521" style="transition-delay:0.04s">
+            <div class="tc-header">
+                <div class="tc-logo lc-orange">HS</div>
+                <div class="pricing-badge price-freemium">Freemium</div>
+            </div>
+            <div class="tc-name">HubSpot</div>
+            <div class="tc-cat">CRM</div>
+            <div class="tc-desc">CRM, marketing, and sales platform for growing teams.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">CRM</span>
+                <span class="tc-tag">Email</span>
+                <span class="tc-tag">Automation</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★☆</span>
+                    <span class="rating-val">4.4</span>
+                    <span class="review-count">(4,521)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+        <!-- 6. Salesforce -->
+        <div class="tool-card reveal" data-cat="crm" data-name="salesforce" data-rating="4.2" data-reviews="8923" style="transition-delay:0.08s">
+            <div class="tc-header">
+                <div class="tc-logo lc-blue">SF</div>
+                <div class="pricing-badge price-enterprise">Enterprise</div>
+            </div>
+            <div class="tc-name">Salesforce</div>
+            <div class="tc-cat">CRM</div>
+            <div class="tc-desc">Enterprise CRM and customer platform.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">CRM</span>
+                <span class="tc-tag">AI</span>
+                <span class="tc-tag">Enterprise</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★☆</span>
+                    <span class="rating-val">4.2</span>
+                    <span class="review-count">(8,923)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+        <!-- 7. Mixpanel -->
+        <div class="tool-card reveal" data-cat="analytics" data-name="mixpanel" data-rating="4.5" data-reviews="1234" style="transition-delay:0.12s">
+            <div class="tc-header">
+                <div class="tc-logo lc-purple">MX</div>
+                <div class="pricing-badge price-freemium">Freemium</div>
+            </div>
+            <div class="tc-name">Mixpanel</div>
+            <div class="tc-cat">Analytics</div>
+            <div class="tc-desc">Product analytics for user behavior and retention.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">Events</span>
+                <span class="tc-tag">Funnels</span>
+                <span class="tc-tag">Cohorts</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-val">4.5</span>
+                    <span class="review-count">(1,234)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+        <!-- 8. Amplitude -->
+        <div class="tool-card reveal" data-cat="analytics" data-name="amplitude" data-rating="4.6" data-reviews="987" style="transition-delay:0.04s">
+            <div class="tc-header">
+                <div class="tc-logo lc-blue">AM</div>
+                <div class="pricing-badge price-freemium">Freemium</div>
+            </div>
+            <div class="tc-name">Amplitude</div>
+            <div class="tc-cat">Analytics</div>
+            <div class="tc-desc">Digital analytics platform for product teams.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">Analytics</span>
+                <span class="tc-tag">A/B Test</span>
+                <span class="tc-tag">Insights</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-val">4.6</span>
+                    <span class="review-count">(987)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+        <!-- 9. Slack -->
+        <div class="tool-card reveal" data-cat="projectmgmt" data-name="slack" data-rating="4.5" data-reviews="12341" style="transition-delay:0.08s">
+            <div class="tc-header">
+                <div class="tc-logo lc-pink">SL</div>
+                <div class="pricing-badge price-freemium">Freemium</div>
+            </div>
+            <div class="tc-name">Slack</div>
+            <div class="tc-cat">Project Mgmt</div>
+            <div class="tc-desc">Business messaging and collaboration hub.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">Messaging</span>
+                <span class="tc-tag">Workflows</span>
+                <span class="tc-tag">Integrations</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-val">4.5</span>
+                    <span class="review-count">(12,341)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+        <!-- 10. Jira -->
+        <div class="tool-card reveal" data-cat="projectmgmt" data-name="jira" data-rating="4.1" data-reviews="7654" style="transition-delay:0.12s">
+            <div class="tc-header">
+                <div class="tc-logo lc-blue">JR</div>
+                <div class="pricing-badge price-paid">Paid</div>
+            </div>
+            <div class="tc-name">Jira</div>
+            <div class="tc-cat">Project Mgmt</div>
+            <div class="tc-desc">Issue and project tracking for agile teams.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">Sprints</span>
+                <span class="tc-tag">Roadmaps</span>
+                <span class="tc-tag">Backlog</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★☆</span>
+                    <span class="rating-val">4.1</span>
+                    <span class="review-count">(7,654)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+        <!-- 11. Intercom -->
+        <div class="tool-card reveal" data-cat="support" data-name="intercom" data-rating="4.4" data-reviews="2109" style="transition-delay:0.04s">
+            <div class="tc-header">
+                <div class="tc-logo lc-blue">IC</div>
+                <div class="pricing-badge price-paid">Paid</div>
+            </div>
+            <div class="tc-name">Intercom</div>
+            <div class="tc-cat">Support</div>
+            <div class="tc-desc">Customer messaging platform with AI support.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">Live Chat</span>
+                <span class="tc-tag">Bots</span>
+                <span class="tc-tag">Help Center</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★☆</span>
+                    <span class="rating-val">4.4</span>
+                    <span class="review-count">(2,109)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+        <!-- 12. Zendesk -->
+        <div class="tool-card reveal" data-cat="support" data-name="zendesk" data-rating="4.3" data-reviews="5432" style="transition-delay:0.08s">
+            <div class="tc-header">
+                <div class="tc-logo lc-green">ZD</div>
+                <div class="pricing-badge price-paid">Paid</div>
+            </div>
+            <div class="tc-name">Zendesk</div>
+            <div class="tc-cat">Support</div>
+            <div class="tc-desc">Customer service software and support ticketing.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">Tickets</span>
+                <span class="tc-tag">AI</span>
+                <span class="tc-tag">Omnichannel</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★☆</span>
+                    <span class="rating-val">4.3</span>
+                    <span class="review-count">(5,432)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+        <!-- 13. Rippling -->
+        <div class="tool-card reveal" data-cat="hr" data-name="rippling" data-rating="4.8" data-reviews="1543" style="transition-delay:0.12s">
+            <div class="tc-header">
+                <div class="tc-logo lc-red">RP</div>
+                <div class="pricing-badge price-paid">Paid</div>
+            </div>
+            <div class="tc-name">Rippling</div>
+            <div class="tc-cat">HR &amp; People</div>
+            <div class="tc-desc">HR, IT, and finance operations platform.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">Payroll</span>
+                <span class="tc-tag">HRIS</span>
+                <span class="tc-tag">IT Mgmt</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-val">4.8</span>
+                    <span class="review-count">(1,543)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+        <!-- 14. ChartMogul -->
+        <div class="tool-card reveal" data-cat="finance" data-name="chartmogul" data-rating="4.7" data-reviews="432" style="transition-delay:0.04s">
+            <div class="tc-header">
+                <div class="tc-logo lc-teal">CM</div>
+                <div class="pricing-badge price-freemium">Freemium</div>
+            </div>
+            <div class="tc-name">ChartMogul</div>
+            <div class="tc-cat">Finance · Analytics</div>
+            <div class="tc-desc">Subscription analytics and revenue reporting.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">MRR</span>
+                <span class="tc-tag">Churn</span>
+                <span class="tc-tag">LTV</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-val">4.7</span>
+                    <span class="review-count">(432)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+        <!-- 15. PostHog -->
+        <div class="tool-card reveal" data-cat="analytics" data-name="posthog" data-rating="4.6" data-reviews="678" style="transition-delay:0.08s">
+            <div class="tc-header">
+                <div class="tc-logo lc-orange">PH</div>
+                <div class="pricing-badge price-freemium">Freemium</div>
+            </div>
+            <div class="tc-name">PostHog</div>
+            <div class="tc-cat">Analytics · DevTools</div>
+            <div class="tc-desc">Open-source product analytics with self-hosting.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">Events</span>
+                <span class="tc-tag">Feature Flags</span>
+                <span class="tc-tag">Replays</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-val">4.6</span>
+                    <span class="review-count">(678)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+        <!-- 16. Cursor -->
+        <div class="tool-card reveal" data-cat="devtools" data-name="cursor" data-rating="4.9" data-reviews="2891" style="transition-delay:0.12s">
+            <div class="tc-header">
+                <div class="tc-logo lc-teal">CR</div>
+                <div class="pricing-badge price-freemium">Freemium</div>
+            </div>
+            <div class="tc-name">Cursor</div>
+            <div class="tc-cat">DevTools</div>
+            <div class="tc-desc">AI-native code editor for developers.</div>
+            <div class="tc-tags">
+                <span class="tc-tag">AI Coding</span>
+                <span class="tc-tag">Chat</span>
+                <span class="tc-tag">Autocomplete</span>
+            </div>
+            <div class="tc-footer">
+                <div class="tc-rating">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-val">4.9</span>
+                    <span class="review-count">(2,891)</span>
+                </div>
+                <button class="view-btn">View Details →</button>
+            </div>
+        </div>
+
+    </div><!-- /tools-grid -->
+
+    <!-- BOTTOM CTA -->
+    <div class="bottom-cta">
+        <div class="bcta-box suggest reveal">
+            <div class="bcta-label">Missing a Tool?</div>
+            <h3>Suggest a Tool</h3>
+            <p>Know a SaaS product we should track? Submit it and our team will review and add it to the directory.</p>
+            <a href="contact.html"><button class="bcta-btn teal">Suggest a Tool →</button></a>
+        </div>
+        <div class="bcta-box waitlist reveal">
+            <div class="bcta-label">Full Access</div>
+            <h3>Get My KPI Audit</h3>
+            <p>Unlock detailed profiles, verified benchmarks, and comparison tools. Start with the KPI Audit — no subscription needed.</p>
+            <a href="get-audit.html"><button class="bcta-btn gold">Get My KPI Audit →</button></a>
+        </div>
+    </div>
+
+</div><!-- /dir-body -->
+
+<!-- FOOTER -->
+<footer>
+    <div class="wrap">
+        <div class="foot-top">
+            <div>
+                <a href="index.html"><div class="logo"><div class="logo-dot"></div>The <span class="logo-accent">KPI</span> Hub</div></a>
+                <p class="foot-tag">Decision-Grade Intelligence for the modern SaaS professional.</p>
+            </div>
+            <div class="foot-group">
+                <h4>Platform</h4>
+                <ul>
+                    <li><a href="intelligence.html">Intelligence Feed</a></li>
+                    <li><a href="directory.html">SaaS Discovery</a></li>
+                    <li><a href="benchmarks.html">Benchmarks</a></li>
+                    <li><a href="pricing.html">Pricing</a></li>
+                </ul>
+            </div>
+            <div class="foot-group">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="intelligence.html">Blog</a></li>
+                    <li><a href="get-audit.html">Get My KPI Audit →</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="foot-bottom"><p class="foot-copy">© 2026 <a href="index.html">The KPI Hub</a>. All rights reserved.</p><p class="foot-made">Made with ☕ in Delhi, India</p></div>
+    </div>
+</footer>
+
+<script>
+    // Nav scroll shadow
+    window.addEventListener('scroll', () => {
+        const nav = document.getElementById('main-nav');
+        nav.style.boxShadow = window.scrollY > 60 ? '0 8px 40px rgba(0,0,0,0.5)' : 'none';
+    });
+
+    // Reveal on scroll
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+        });
+    }, { threshold: 0.05 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // --- Filter + Search logic ---
+    const cards = Array.from(document.querySelectorAll('.tool-card'));
+    const countEl = document.getElementById('visible-count');
+    const searchInput = document.getElementById('search-input');
+    const ctabs = document.querySelectorAll('.ctab');
+    let activeCat = 'all';
+    let searchTerm = '';
+
+    function filterCards() {
+        let visible = 0;
+        cards.forEach(card => {
+            const name = card.dataset.name || '';
+            const cat = card.dataset.cat || '';
+            const text = card.innerText.toLowerCase();
+            const catMatch = activeCat === 'all' || cat.includes(activeCat);
+            const searchMatch = searchTerm === '' || text.includes(searchTerm) || name.includes(searchTerm);
+            const show = catMatch && searchMatch;
+            card.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        countEl.textContent = visible;
+
+        // Show no-results if needed
+        let noRes = document.getElementById('no-results-msg');
+        if (visible === 0) {
+            if (!noRes) {
+                noRes = document.createElement('div');
+                noRes.id = 'no-results-msg';
+                noRes.className = 'no-results';
+                noRes.innerHTML = '<p>No tools match your search.</p><small>Try a different keyword or category.</small>';
+                document.getElementById('tools-grid').appendChild(noRes);
+            }
+        } else {
+            if (noRes) noRes.remove();
+        }
+    }
+
+    // Category tabs
+    ctabs.forEach(tab => {
+        tab.addEventListener('click', function () {
+            ctabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            activeCat = this.dataset.cat;
+            filterCards();
+        });
+    });
+
+    // Search
+    searchInput.addEventListener('input', function () {
+        searchTerm = this.value.toLowerCase().trim();
+        filterCards();
+    });
+
+    // Sort
+    document.getElementById('sort-sel').addEventListener('change', function () {
+        const grid = document.getElementById('tools-grid');
+        const sorted = cards.slice().sort((a, b) => {
+            if (this.value === 'rating') return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+            if (this.value === 'reviews') return parseInt(b.dataset.reviews) - parseInt(a.dataset.reviews);
+            if (this.value === 'name') return a.dataset.name.localeCompare(b.dataset.name);
+            return 0;
+        });
+        sorted.forEach(c => grid.appendChild(c));
+    });
+    /* === Hamburger Menu === */
+    const hamburgerBtn=document.getElementById('hamburgerBtn');
+    const navOverlay=document.getElementById('navOverlay');
+    const mainNav=document.getElementById('mainNav');
+    function openMenu(){hamburgerBtn.classList.add('open');navOverlay.classList.add('open');mainNav.classList.add('overlay-open');hamburgerBtn.setAttribute('aria-expanded','true');navOverlay.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';}
+    function closeMenu(){hamburgerBtn.classList.remove('open');navOverlay.classList.remove('open');mainNav.classList.remove('overlay-open');hamburgerBtn.setAttribute('aria-expanded','false');navOverlay.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+    hamburgerBtn.addEventListener('click',()=>{navOverlay.classList.contains('open')?closeMenu():openMenu();});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
+</script>
+</body>
+</html>

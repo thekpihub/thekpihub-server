@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="yRGmgTNjIHFmLom_ZrczRQpmaJkf2SpAZWR75g3g71k">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Terms of Service — The KPI Hub. The legal agreement governing your use of our platform.">
+    <title>Terms of Service — The KPI Hub</title>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thekpihub.com/terms.html">
+    <meta property="og:title" content="Terms of Service — The KPI Hub">
+    <meta property="og:description" content="Terms of Service — The KPI Hub. The legal agreement governing your use of our platform.">
+    <meta property="og:image" content="https://thekpihub.com/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Terms of Service — The KPI Hub">
+    <meta name="twitter:description" content="Terms of Service — The KPI Hub. The legal agreement governing your use of our platform.">
+    <meta name="twitter:image" content="https://thekpihub.com/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+
+    <style>
+        /* =============================================
+           VARIABLES
+        ============================================= */
+        :root {
+            --bg:        #06071A;
+            --bg2:       #0C0E28;
+            --card:      rgba(255,255,255,0.04);
+            --gold:      #E9A123;
+            --gold-glow: rgba(233,161,35,0.18);
+            --gold-rim:  rgba(233,161,35,0.28);
+            --teal:      #00C9A7;
+            --teal-glow: rgba(0,201,167,0.12);
+            --red:       #FF6B6B;
+            --text:      #EAEDF5;
+            --text2:     rgba(234,237,245,0.62);
+            --text3:     rgba(234,237,245,0.32);
+            --border:    rgba(255,255,255,0.08);
+            --r:         12px;
+            --max:       1180px;
+            --display:   'Cormorant Garamond', serif;
+            --head:      'Syne', sans-serif;
+            --body:      'DM Sans', sans-serif;
+        }
+
+        /* =============================================
+           RESET
+        ============================================= */
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; font-size:16px; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--body);
+            font-weight: 400;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        a { color: var(--gold); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--text); }
+        img { max-width:100%; display:block; }
+        button { cursor:pointer; }
+
+        ::-webkit-scrollbar { width:5px; }
+        ::-webkit-scrollbar-track { background:var(--bg); }
+        ::-webkit-scrollbar-thumb { background:var(--gold); border-radius:3px; }
+
+        /* =============================================
+           NAV
+        ============================================= */
+        nav {
+            position: fixed; top:0; left:0; right:0; z-index:100;
+            padding: 18px 48px;
+            display: flex; align-items:center; justify-content:space-between;
+            background: rgba(6,7,26,0.88);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border);
+        }
+        .logo {
+            font-family: var(--head);
+            font-size: 1.25rem; font-weight:800;
+            letter-spacing:-0.02em;
+            display:flex; align-items:center; gap:9px;
+            color: var(--text);
+        }
+        .logo-accent { color:var(--gold); }
+        .logo-dot {
+            width:8px; height:8px; border-radius:50%;
+            background:var(--gold);
+            animation: blink 2s ease infinite;
+        }
+        .nav-links {
+            display:flex; gap:36px; list-style:none;
+        }
+        .nav-links a {
+            font-family:var(--head); font-size:0.78rem; font-weight:600;
+            letter-spacing:0.07em; text-transform:uppercase;
+            color:var(--text2); transition:color 0.2s;
+        }
+        .nav-links a:hover { color:var(--text); }
+        .nav-btn {
+            font-family:var(--head); font-size:0.78rem; font-weight:700;
+            letter-spacing:0.06em; text-transform:uppercase;
+            padding:10px 26px; background:var(--gold); color:var(--bg);
+            border-radius:6px; border:none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .nav-btn:hover {
+            transform:translateY(-1px);
+            box-shadow: 0 8px 30px rgba(233,161,35,0.4);
+        }
+
+        /* =============================================
+           HERO
+        ============================================= */
+        .page-hero {
+            padding: 140px 48px 80px;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+        .page-hero::before {
+            content:'';
+            position:absolute; inset:0;
+            background-image:
+                linear-gradient(rgba(233,161,35,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(233,161,35,0.04) 1px, transparent 1px);
+            background-size:64px 64px;
+        }
+        .page-hero::after {
+            content:'';
+            position:absolute; top:-200px; left:50%; transform:translateX(-50%);
+            width:700px; height:500px;
+            background: radial-gradient(ellipse, rgba(233,161,35,0.1) 0%, transparent 65%);
+            pointer-events:none;
+        }
+        .hero-inner { position:relative; z-index:2; max-width:720px; margin:0 auto; }
+        .hero-label {
+            display:inline-flex; align-items:center; gap:8px;
+            font-family: var(--head); font-size:0.7rem; font-weight:700;
+            letter-spacing:0.12em; text-transform:uppercase; color:var(--gold);
+            background: var(--gold-glow); border:1px solid var(--gold-rim);
+            padding:6px 18px; border-radius:100px; margin-bottom:28px;
+        }
+        .hero-label-dot { width:5px; height:5px; border-radius:50%; background:var(--teal); animation:blink 1.5s ease infinite; }
+        .page-title {
+            font-family: var(--display);
+            font-size: clamp(2.8rem, 6vw, 4.8rem);
+            font-weight:700; line-height:1.1; letter-spacing:-0.02em;
+            margin-bottom:20px;
+        }
+        .page-title em { font-style:italic; color:var(--gold); }
+        .page-sub {
+            font-size:1rem; color:var(--text2); line-height:1.75;
+            max-width:540px; margin:0 auto 24px;
+        }
+        .meta-row {
+            display:flex; align-items:center; justify-content:center; gap:24px; flex-wrap:wrap;
+            font-family:var(--head); font-size:0.72rem; font-weight:600;
+            letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);
+        }
+        .meta-row span { display:flex; align-items:center; gap:6px; }
+        .meta-dot { width:4px; height:4px; border-radius:50%; background:var(--text3); }
+
+        /* =============================================
+           CONTENT LAYOUT
+        ============================================= */
+        .content-wrap {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 72px 48px 100px;
+        }
+
+        /* TOC */
+        .toc-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 32px 36px;
+            margin-bottom: 56px;
+        }
+        .toc-card h2 {
+            font-family: var(--head); font-size:0.72rem; font-weight:700;
+            letter-spacing:0.12em; text-transform:uppercase; color:var(--gold);
+            margin-bottom:18px;
+        }
+        .toc-list { list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:6px 24px; }
+        .toc-list li a {
+            font-family:var(--head); font-size:0.8rem; font-weight:500;
+            color:var(--text2); display:flex; align-items:center; gap:8px;
+            padding:4px 0; transition:color 0.2s;
+        }
+        .toc-list li a:hover { color:var(--gold); }
+        .toc-num { color:var(--gold); font-weight:700; min-width:22px; }
+
+        /* Sections */
+        .policy-section {
+            margin-bottom: 64px;
+            scroll-margin-top: 100px;
+        }
+        .section-header {
+            display:flex; align-items:flex-start; gap:16px;
+            margin-bottom:24px;
+        }
+        .section-num {
+            font-family: var(--head); font-size:0.7rem; font-weight:800;
+            letter-spacing:0.1em; text-transform:uppercase;
+            color:var(--gold); background:var(--gold-glow);
+            border:1px solid var(--gold-rim); border-radius:6px;
+            padding:5px 10px; white-space:nowrap; margin-top:4px;
+        }
+        .section-title {
+            font-family: var(--head); font-size:1.4rem; font-weight:700;
+            letter-spacing:-0.01em; color:var(--text);
+        }
+        .policy-section p {
+            color:var(--text2); font-size:0.95rem; margin-bottom:14px;
+        }
+        .policy-section p:last-child { margin-bottom:0; }
+        .policy-section h4 {
+            font-family:var(--head); font-size:0.88rem; font-weight:700;
+            color:var(--text); margin:24px 0 10px; letter-spacing:0.01em;
+        }
+        .policy-section ul, .policy-section ol {
+            padding-left:0; list-style:none; margin-bottom:14px;
+        }
+        .policy-section ul li, .policy-section ol li {
+            position:relative; padding-left:20px; color:var(--text2);
+            font-size:0.95rem; margin-bottom:8px;
+        }
+        .policy-section ul li::before {
+            content:'—'; position:absolute; left:0; color:var(--gold);
+            font-size:0.8rem; top:1px;
+        }
+        .policy-section ol { counter-reset:item; }
+        .policy-section ol li { counter-increment:item; }
+        .policy-section ol li::before {
+            content:counter(item)'.'; position:absolute; left:0; color:var(--gold);
+            font-size:0.85rem; font-weight:700; font-family:var(--head);
+        }
+
+        /* Highlight boxes */
+        .highlight-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--gold);
+            border-radius: var(--r);
+            padding:20px 24px; margin:20px 0;
+        }
+        .highlight-box p { margin:0; font-size:0.9rem; color:var(--text2); }
+        .highlight-box strong { color:var(--gold); }
+
+        .teal-box {
+            background: var(--teal-glow);
+            border: 1px solid rgba(0,201,167,0.2);
+            border-left: 3px solid var(--teal);
+            border-radius: var(--r);
+            padding:20px 24px; margin:20px 0;
+        }
+        .teal-box p { margin:0; font-size:0.9rem; color:var(--text2); }
+        .teal-box strong { color:var(--teal); }
+
+        .red-box {
+            background: rgba(255,107,107,0.06);
+            border: 1px solid rgba(255,107,107,0.18);
+            border-left: 3px solid var(--red);
+            border-radius: var(--r);
+            padding:20px 24px; margin:20px 0;
+        }
+        .red-box p { margin:0; font-size:0.9rem; color:var(--text2); }
+        .red-box strong { color:var(--red); }
+
+        /* AUP grid */
+        .aup-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:20px 0; }
+        .aup-item {
+            background:rgba(255,107,107,0.05); border:1px solid rgba(255,107,107,0.15);
+            border-radius:var(--r); padding:16px 18px;
+            display:flex; align-items:flex-start; gap:10px;
+        }
+        .aup-x {
+            color:var(--red); font-family:var(--head); font-size:0.9rem;
+            font-weight:800; flex-shrink:0; margin-top:1px;
+        }
+        .aup-text { font-size:0.85rem; color:var(--text2); }
+
+        /* Table */
+        .table-wrap { overflow-x:auto; margin:20px 0; }
+        table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+        th {
+            font-family:var(--head); font-size:0.68rem; font-weight:700;
+            letter-spacing:0.1em; text-transform:uppercase; color:var(--gold);
+            padding:12px 16px; background:rgba(233,161,35,0.06);
+            border-bottom:1px solid var(--border); text-align:left;
+        }
+        td {
+            padding:12px 16px; color:var(--text2);
+            border-bottom:1px solid var(--border); vertical-align:top;
+        }
+        tr:last-child td { border-bottom:none; }
+        tr:hover td { background:rgba(255,255,255,0.02); }
+
+        /* Divider */
+        .section-divider {
+            width:100%; height:1px;
+            background:var(--border); margin:64px 0;
+        }
+
+        /* =============================================
+           FOOTER
+        ============================================= */
+        footer {
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            padding: 64px 0 32px;
+        }
+        .wrap { max-width:var(--max); margin:0 auto; padding:0 48px; }
+        .foot-top {
+            display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:48px;
+            margin-bottom:48px;
+        }
+        .foot-brand .logo { font-family:var(--head); font-size:1.15rem; font-weight:800; letter-spacing:-0.02em; display:flex; align-items:center; gap:9px; color:var(--text); margin-bottom:14px; }
+        .foot-tag { font-size:0.88rem; color:var(--text3); line-height:1.6; }
+        .foot-group h4 {
+            font-family:var(--head); font-size:0.68rem; font-weight:700;
+            letter-spacing:0.12em; text-transform:uppercase; color:var(--text3);
+            margin-bottom:18px;
+        }
+        .foot-group ul { list-style:none; }
+        .foot-group ul li { margin-bottom:10px; }
+        .foot-group ul li a {
+            font-size:0.88rem; color:var(--text2); transition:color 0.2s;
+        }
+        .foot-group ul li a:hover { color:var(--gold); }
+        .foot-bottom {
+            display:flex; align-items:center; justify-content:space-between;
+            padding-top:32px; border-top:1px solid var(--border);
+        }
+        .foot-copy, .foot-made { font-size:0.82rem; color:var(--text3); }
+        .foot-copy a { color:var(--text2); }
+        .foot-copy a:hover { color:var(--gold); }
+
+        /* =============================================
+           ANIMATIONS
+        ============================================= */
+        @keyframes blink {
+            0%,100%{opacity:1;} 50%{opacity:0.3;}
+        }
+
+        /* =============================================
+           RESPONSIVE
+        ============================================= */
+        @media(max-width:768px) {
+            nav { padding:16px 24px; }
+            .nav-links { display:none; }
+            .page-hero { padding:120px 24px 60px; }
+            .content-wrap { padding:48px 24px 80px; }
+            .toc-list { grid-template-columns:1fr; }
+            .aup-grid { grid-template-columns:1fr; }
+            .wrap { padding:0 24px; }
+            .foot-top { grid-template-columns:1fr 1fr; gap:32px; }
+            .foot-bottom { flex-direction:column; gap:8px; text-align:center; }
+        }
+    </style>
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-DZPCCPEP1J');
+    </script>
+
+<link rel="canonical" href="https://thekpihub.com/terms.html">
+    <meta name="robots" content="index, follow">
+        <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wdshn14xgf");
+    </script>
+</head>
+<body>
+
+    <!-- NAV -->
+    <nav>
+        <div class="logo">
+            <div class="logo-dot"></div>
+            The <span class="logo-accent">KPI</span> Hub
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="intelligence.html">Intelligence</a></li>
+            <li><a href="directory.html">Directory</a></li>
+            <li><a href="about.html">About</a></li>
+        </ul>
+        <a href="get-audit.html"><button class="nav-btn">Get My KPI Audit →</button></a>
+    </nav>
+
+    <!-- HERO -->
+    <section class="page-hero">
+        <div class="hero-inner">
+            <div class="hero-label">
+                <span class="hero-label-dot"></span>
+                Legal &amp; Compliance
+            </div>
+            <h1 class="page-title">Terms of <em>Service</em></h1>
+            <p class="page-sub">The legal agreement governing your use of The KPI Hub platform. Please read carefully before accessing or using our services.</p>
+            <div class="meta-row">
+                <span>Version 1.0</span>
+                <span class="meta-dot"></span>
+                <span>Effective: April 3, 2026</span>
+                <span class="meta-dot"></span>
+                <span>Governing Law: India</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTENT -->
+    <main class="content-wrap">
+
+        <!-- TABLE OF CONTENTS -->
+        <div class="toc-card">
+            <h2>Table of Contents</h2>
+            <ol class="toc-list">
+                <li><a href="#s1"><span class="toc-num">01</span> Acceptance of Terms</a></li>
+                <li><a href="#s2"><span class="toc-num">02</span> Eligibility</a></li>
+                <li><a href="#s3"><span class="toc-num">03</span> Account Registration</a></li>
+                <li><a href="#s4"><span class="toc-num">04</span> License Grant</a></li>
+                <li><a href="#s5"><span class="toc-num">05</span> Acceptable Use Policy</a></li>
+                <li><a href="#s6"><span class="toc-num">06</span> Intellectual Property</a></li>
+                <li><a href="#s7"><span class="toc-num">07</span> Free Trial / Early Access</a></li>
+                <li><a href="#s8"><span class="toc-num">08</span> Subscription &amp; Payment</a></li>
+                <li><a href="#s9"><span class="toc-num">09</span> Data &amp; Privacy</a></li>
+                <li><a href="#s10"><span class="toc-num">10</span> Disclaimer of Warranties</a></li>
+                <li><a href="#s11"><span class="toc-num">11</span> Limitation of Liability</a></li>
+                <li><a href="#s12"><span class="toc-num">12</span> Indemnification</a></li>
+                <li><a href="#s13"><span class="toc-num">13</span> Third-Party Services</a></li>
+                <li><a href="#s14"><span class="toc-num">14</span> Termination</a></li>
+                <li><a href="#s15"><span class="toc-num">15</span> Governing Law</a></li>
+                <li><a href="#s16"><span class="toc-num">16</span> Dispute Resolution</a></li>
+                <li><a href="#s17"><span class="toc-num">17</span> Modifications to Terms</a></li>
+                <li><a href="#s18"><span class="toc-num">18</span> Force Majeure</a></li>
+                <li><a href="#s19"><span class="toc-num">19</span> Entire Agreement &amp; Severability</a></li>
+                <li><a href="#s20"><span class="toc-num">20</span> Contact</a></li>
+            </ol>
+        </div>
+
+        <div class="highlight-box">
+            <p><strong>Important:</strong> By accessing or using The KPI Hub, you agree to be bound by these Terms of Service. If you do not agree, you must not use the platform. These Terms constitute a legally binding agreement between you and The KPI Hub.</p>
+        </div>
+
+        <!-- S1 -->
+        <section class="policy-section" id="s1">
+            <div class="section-header">
+                <span class="section-num">01</span>
+                <h2 class="section-title">Acceptance of Terms</h2>
+            </div>
+            <p>By accessing, browsing, registering for, or using The KPI Hub platform (available at <a href="https://thekpihub.com">thekpihub.com</a>), including any features, content, applications, or services offered by The KPI Hub (collectively, the "Platform"), you ("User", "you", "your") acknowledge that you have read, understood, and agree to be bound by these Terms of Service ("Terms"), our <a href="privacy.html">Privacy Policy</a>, and our <a href="cookies.html">Cookie Policy</a>.</p>
+            <p>These Terms apply whether you access the Platform as a guest, a waitlist member, or a registered account holder. Your continued use of the Platform following any modification to these Terms constitutes your acceptance of those changes.</p>
+            <div class="teal-box">
+                <p><strong>Clickwrap Agreement:</strong> By clicking "Get Early Access", "Sign Up", "Continue", or any similar button or link, or by otherwise accessing or using the Platform, you affirmatively consent to these Terms, forming a legally binding contract. This constitutes an electronic signature under the Information Technology Act, 2000 (India).</p>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S2 -->
+        <section class="policy-section" id="s2">
+            <div class="section-header">
+                <span class="section-num">02</span>
+                <h2 class="section-title">Eligibility</h2>
+            </div>
+            <p>To use the Platform, you must:</p>
+            <ul>
+                <li>Be at least <strong>18 years of age</strong> at the time of registration or use</li>
+                <li>Have full legal capacity to enter into binding contracts under applicable law</li>
+                <li>Not be prohibited from receiving services under the laws of India or any other applicable jurisdiction</li>
+                <li>Use the Platform for <strong>professional or business purposes</strong> only; the Platform is designed for SaaS professionals, operators, investors, and enterprise buyers</li>
+            </ul>
+            <p>By using the Platform, you represent and warrant that you meet all eligibility requirements. If you are using the Platform on behalf of an organisation, you represent that you have authority to bind that organisation to these Terms.</p>
+            <div class="red-box">
+                <p><strong>No access for minors:</strong> The Platform is not intended for persons under 18. If we discover that a user is under 18, we will immediately terminate that account and delete all associated data.</p>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S3 -->
+        <section class="policy-section" id="s3">
+            <div class="section-header">
+                <span class="section-num">03</span>
+                <h2 class="section-title">Account Registration</h2>
+            </div>
+            <p>Certain features of the Platform require you to create an account. When registering, you agree to:</p>
+            <ul>
+                <li>Provide accurate, current, and complete information as requested in the registration form</li>
+                <li>Maintain and promptly update your account information to keep it accurate and complete</li>
+                <li>Keep your password and login credentials confidential and not share them with any third party</li>
+                <li>Notify us immediately at <a href="mailto:support@thekpihub.com">support@thekpihub.com</a> of any actual or suspected unauthorised access to your account</li>
+                <li>Accept responsibility for all activities that occur under your account</li>
+            </ul>
+            <h4>Account Security</h4>
+            <p>You are responsible for maintaining the security of your account credentials. The KPI Hub will not be liable for any loss or damage arising from your failure to maintain the security of your account. We reserve the right to disable any account at our sole discretion if we reasonably believe your account has been compromised or is being used in violation of these Terms.</p>
+            <h4>One Account Per Person</h4>
+            <p>You may register only one account per individual. Creating multiple accounts to circumvent restrictions or access limits is a violation of these Terms and may result in permanent suspension.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S4 -->
+        <section class="policy-section" id="s4">
+            <div class="section-header">
+                <span class="section-num">04</span>
+                <h2 class="section-title">License Grant</h2>
+            </div>
+            <p>Subject to your compliance with these Terms, The KPI Hub grants you a <strong>limited, non-exclusive, non-transferable, non-sublicensable, revocable licence</strong> to access and use the Platform solely for your internal professional purposes during the term of your subscription or access period.</p>
+            <h4>Scope of Licence</h4>
+            <p>This licence permits you to:</p>
+            <ul>
+                <li>Access and view content, intelligence feeds, benchmarks, and directory listings made available through the Platform</li>
+                <li>Download or export content expressly made available for download, for your personal or internal business use only</li>
+                <li>Use the AI intelligence assistant and chatbot features for professional research and analysis</li>
+            </ul>
+            <h4>Restrictions</h4>
+            <p>This licence does not permit you to:</p>
+            <ul>
+                <li>Resell, sublicence, or commercially exploit any portion of the Platform or its content</li>
+                <li>Reproduce, distribute, or publicly display Platform content without prior written consent</li>
+                <li>Modify, adapt, translate, or create derivative works based on the Platform</li>
+                <li>Use the Platform in any way that competes with The KPI Hub's business</li>
+            </ul>
+            <p>The KPI Hub reserves all rights not expressly granted in these Terms.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S5 -->
+        <section class="policy-section" id="s5">
+            <div class="section-header">
+                <span class="section-num">05</span>
+                <h2 class="section-title">Acceptable Use Policy</h2>
+            </div>
+            <p>You agree to use the Platform only for lawful purposes and in a manner consistent with all applicable laws, regulations, and these Terms. The following activities are strictly prohibited:</p>
+            <div class="aup-grid">
+                <div class="aup-item">
+                    <span class="aup-x">✕</span>
+                    <span class="aup-text"><strong>Scraping &amp; Automated Access:</strong> Using bots, crawlers, scrapers, or automated scripts to extract content from the Platform without express written permission.</span>
+                </div>
+                <div class="aup-item">
+                    <span class="aup-x">✕</span>
+                    <span class="aup-text"><strong>Reverse Engineering:</strong> Attempting to reverse engineer, decompile, disassemble, or discover the source code or underlying algorithms of the Platform.</span>
+                </div>
+                <div class="aup-item">
+                    <span class="aup-x">✕</span>
+                    <span class="aup-text"><strong>Credential Sharing:</strong> Sharing your login credentials, API keys, or account access with any third party, including colleagues in a team setting unless authorised.</span>
+                </div>
+                <div class="aup-item">
+                    <span class="aup-x">✕</span>
+                    <span class="aup-text"><strong>Spam &amp; Abuse:</strong> Sending unsolicited communications, spam, or bulk messages through any Platform feature including the intelligence assistant.</span>
+                </div>
+                <div class="aup-item">
+                    <span class="aup-x">✕</span>
+                    <span class="aup-text"><strong>False Information:</strong> Submitting false, misleading, or deceptive information, including false account details or fraudulent content submissions.</span>
+                </div>
+                <div class="aup-item">
+                    <span class="aup-x">✕</span>
+                    <span class="aup-text"><strong>Platform Disruption:</strong> Attempting to overload, disrupt, or interfere with the Platform's infrastructure, including DDoS attacks or injection attacks.</span>
+                </div>
+                <div class="aup-item">
+                    <span class="aup-x">✕</span>
+                    <span class="aup-text"><strong>Circumventing Controls:</strong> Attempting to bypass or circumvent any access controls, paywall, rate limits, or security mechanisms.</span>
+                </div>
+                <div class="aup-item">
+                    <span class="aup-x">✕</span>
+                    <span class="aup-text"><strong>Unlawful Use:</strong> Using the Platform for any unlawful purpose, including violation of intellectual property rights, fraud, or harassment of other users.</span>
+                </div>
+            </div>
+            <p>Violation of this Acceptable Use Policy may result in immediate suspension or termination of your account without notice or refund, and may expose you to civil or criminal liability.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S6 -->
+        <section class="policy-section" id="s6">
+            <div class="section-header">
+                <span class="section-num">06</span>
+                <h2 class="section-title">Intellectual Property</h2>
+            </div>
+            <h4>6.1 Platform IP — Owned by The KPI Hub</h4>
+            <p>The Platform and all of its content, features, and functionality — including but not limited to text, graphics, logos, button icons, images, audio clips, data compilations, intelligence reports, AI models, software, and the selection and arrangement thereof — are owned by The KPI Hub, its licensors, or other content providers and are protected by Indian and international copyright, trademark, patent, trade secret, and other intellectual property laws.</p>
+            <p>The KPI Hub name, logo, and all related names, logos, product and service names, designs, and slogans are trademarks of The KPI Hub. You may not use such marks without prior written consent.</p>
+            <h4>6.2 User-Submitted Content</h4>
+            <p>You retain full ownership of any content you submit to the Platform ("User Content"), including feedback, reviews, or data you voluntarily contribute.</p>
+            <p>By submitting User Content, you grant The KPI Hub a <strong>worldwide, royalty-free, non-exclusive, perpetual licence</strong> to use, reproduce, adapt, publish, translate, and distribute such content for the purpose of operating and improving the Platform. This licence does not affect your ownership rights.</p>
+            <p>You represent and warrant that:</p>
+            <ul>
+                <li>You own or have the necessary rights to submit the User Content</li>
+                <li>The User Content does not infringe any third-party intellectual property, privacy, or other rights</li>
+                <li>The User Content does not violate any applicable law or these Terms</li>
+            </ul>
+            <h4>6.3 Feedback</h4>
+            <p>Any feedback, suggestions, or ideas you provide to The KPI Hub about the Platform ("Feedback") may be used by us without restriction or compensation to you. You waive any moral rights in such Feedback to the extent permitted by law.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S7 -->
+        <section class="policy-section" id="s7">
+            <div class="section-header">
+                <span class="section-num">07</span>
+                <h2 class="section-title">Free Trial &amp; Early Access Terms</h2>
+            </div>
+            <div class="highlight-box">
+                <p><strong>Early Access Notice:</strong> The KPI Hub is currently in Early Access. Features, availability, and data may change at any time. Early Access is provided at our sole discretion and may be withdrawn without notice.</p>
+            </div>
+            <p>If you access the Platform during a free trial or early access period, the following additional terms apply:</p>
+            <ul>
+                <li><strong>No guarantee of continued access:</strong> Early access or trial access is not a commitment to provide ongoing or paid access. We may terminate, modify, or limit access at any time without liability.</li>
+                <li><strong>Features may change:</strong> Features available during early access may be added, modified, or removed without notice. The feature set during early access is not representative of the final product.</li>
+                <li><strong>Data not preserved after trial:</strong> We do not guarantee that data, settings, or content you create during a free trial will be preserved after the trial period ends or if the trial is terminated. You are responsible for exporting any data you wish to retain before the trial concludes.</li>
+                <li><strong>No SLA during early access:</strong> No service level agreements, uptime commitments, or support response time guarantees apply during early access.</li>
+                <li><strong>Feedback requested:</strong> As an early access user, you may be asked to provide feedback. Participation is voluntary but appreciated.</li>
+            </ul>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S8 -->
+        <section class="policy-section" id="s8">
+            <div class="section-header">
+                <span class="section-num">08</span>
+                <h2 class="section-title">Subscription &amp; Payment Terms</h2>
+            </div>
+            <div class="teal-box">
+                <p><strong>Coming Soon:</strong> Paid subscription plans are not yet available. This section describes the terms that will govern future paid plans and is included for completeness.</p>
+            </div>
+            <p>When paid subscription tiers are launched, the following terms will apply:</p>
+            <ul>
+                <li><strong>Billing:</strong> Subscriptions will be billed on a recurring basis (monthly or annually) as selected at purchase. Prices will be displayed in Indian Rupees (INR) and/or US Dollars (USD) as applicable.</li>
+                <li><strong>Auto-renewal:</strong> Subscriptions auto-renew unless cancelled at least 24 hours before the renewal date.</li>
+                <li><strong>Refunds:</strong> Refund eligibility will be specified in the relevant subscription plan details. No refunds are available for partial billing periods unless required by applicable law.</li>
+                <li><strong>Price changes:</strong> We reserve the right to change subscription prices with 30 days' prior notice. Continued use after the price change takes effect constitutes acceptance.</li>
+                <li><strong>Taxes:</strong> You are responsible for all applicable taxes (including GST in India) in addition to the stated subscription fee.</li>
+                <li><strong>Non-payment:</strong> Failure to pay may result in suspension or termination of your account.</li>
+            </ul>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S9 -->
+        <section class="policy-section" id="s9">
+            <div class="section-header">
+                <span class="section-num">09</span>
+                <h2 class="section-title">Data &amp; Privacy</h2>
+            </div>
+            <p>Your use of the Platform is subject to our <a href="privacy.html">Privacy Policy</a>, which is incorporated into these Terms by reference. By agreeing to these Terms, you also agree to the Privacy Policy.</p>
+            <p>Key points:</p>
+            <ul>
+                <li>We collect and process personal data as described in the Privacy Policy, including GDPR, CCPA, and India DPDP Act 2023 compliance disclosures.</li>
+                <li>We do not sell your personal data to third parties.</li>
+                <li>You retain ownership of personal data you submit and may request deletion at any time.</li>
+                <li>Chatbot and AI conversations are processed by third-party AI providers under strict data processing agreements.</li>
+            </ul>
+            <p>For questions about data handling, contact <a href="mailto:info@thekpihub.com">info@thekpihub.com</a>.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S10 -->
+        <section class="policy-section" id="s10">
+            <div class="section-header">
+                <span class="section-num">10</span>
+                <h2 class="section-title">Disclaimer of Warranties</h2>
+            </div>
+            <div class="red-box">
+                <p><strong>THE PLATFORM IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT ANY WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED.</strong></p>
+            </div>
+            <p>To the fullest extent permitted by applicable law, The KPI Hub expressly disclaims all warranties, including but not limited to:</p>
+            <ul>
+                <li>Implied warranties of merchantability, fitness for a particular purpose, and non-infringement</li>
+                <li>Warranties that the Platform will be uninterrupted, error-free, secure, or free of viruses or other harmful components</li>
+                <li>Warranties regarding the accuracy, completeness, reliability, or timeliness of any content, intelligence reports, benchmarks, or AI-generated outputs available through the Platform</li>
+                <li>Warranties that defects in the Platform will be corrected</li>
+            </ul>
+            <p>AI-generated content and intelligence outputs are provided for informational purposes only and do not constitute financial, legal, investment, or professional advice. You should independently verify all information before making business decisions based on Platform content.</p>
+            <p>Nothing in this section affects rights that cannot be excluded or limited under applicable consumer protection law.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S11 -->
+        <section class="policy-section" id="s11">
+            <div class="section-header">
+                <span class="section-num">11</span>
+                <h2 class="section-title">Limitation of Liability</h2>
+            </div>
+            <p>To the fullest extent permitted by applicable law:</p>
+            <h4>11.1 Exclusion of Consequential Damages</h4>
+            <p>In no event shall The KPI Hub, its directors, employees, affiliates, agents, contractors, or licensors be liable for any:</p>
+            <ul>
+                <li>Indirect, incidental, special, punitive, or consequential damages</li>
+                <li>Loss of profits, revenue, data, business, or goodwill</li>
+                <li>Loss of opportunity or anticipated savings</li>
+                <li>Damages arising from reliance on AI-generated or platform-generated content</li>
+            </ul>
+            <p>Whether arising under contract, tort (including negligence), statute, or any other theory, even if The KPI Hub has been advised of the possibility of such damages.</p>
+            <h4>11.2 Liability Cap</h4>
+            <p>The KPI Hub's total cumulative liability to you for all claims arising under or related to these Terms or the Platform shall not exceed the greater of:</p>
+            <ul>
+                <li>The total fees paid by you to The KPI Hub in the <strong>twelve (12) months immediately preceding</strong> the event giving rise to the claim; or</li>
+                <li>INR 5,000 (approximately USD 60) if no fees have been paid</li>
+            </ul>
+            <h4>11.3 Essential Basis</h4>
+            <p>The limitations and exclusions in this Section reflect a fair allocation of risk between the parties and are an essential basis of the bargain between the parties. The KPI Hub would not have entered into these Terms without these limitations.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S12 -->
+        <section class="policy-section" id="s12">
+            <div class="section-header">
+                <span class="section-num">12</span>
+                <h2 class="section-title">Indemnification</h2>
+            </div>
+            <p>You agree to defend, indemnify, and hold harmless The KPI Hub and its officers, directors, employees, agents, licensors, and service providers from and against any and all claims, liabilities, damages, judgments, awards, losses, costs, expenses, or fees (including reasonable legal fees) arising out of or relating to:</p>
+            <ul>
+                <li>Your violation of these Terms</li>
+                <li>Your use or misuse of the Platform</li>
+                <li>Any User Content you submit to the Platform</li>
+                <li>Your violation of any applicable law or regulation</li>
+                <li>Your violation of any third-party right, including intellectual property, privacy, or other rights</li>
+                <li>Any claim that your User Content caused damage to a third party</li>
+            </ul>
+            <p>The KPI Hub reserves the right to assume exclusive defence and control of any matter subject to indemnification by you, at your expense. You agree to cooperate fully with our defence of such claims.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S13 -->
+        <section class="policy-section" id="s13">
+            <div class="section-header">
+                <span class="section-num">13</span>
+                <h2 class="section-title">Third-Party Services</h2>
+            </div>
+            <p>The Platform may contain links to third-party websites, tools, data sources, or services ("Third-Party Services") that are not owned or controlled by The KPI Hub. These links are provided for convenience only.</p>
+            <ul>
+                <li>The KPI Hub has no control over and assumes no responsibility for the content, privacy policies, or practices of any Third-Party Services.</li>
+                <li>We do not warrant or endorse the offerings of any Third-Party Services or their operators.</li>
+                <li>Your interactions with Third-Party Services are governed solely by those services' own terms and policies.</li>
+                <li>The KPI Hub shall not be liable for any damage or loss caused by or in connection with your use of any Third-Party Services.</li>
+            </ul>
+            <p>We encourage you to review the terms and privacy policies of any Third-Party Services you access through or in connection with the Platform.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S14 -->
+        <section class="policy-section" id="s14">
+            <div class="section-header">
+                <span class="section-num">14</span>
+                <h2 class="section-title">Termination</h2>
+            </div>
+            <h4>14.1 Termination by You</h4>
+            <p>You may terminate your account at any time by contacting us at <a href="mailto:support@thekpihub.com">support@thekpihub.com</a> or through the account settings page. Termination of your account will take effect within 5 business days of your request.</p>
+            <h4>14.2 Termination by The KPI Hub</h4>
+            <p>We reserve the right to suspend or terminate your account and access to the Platform at any time, with or without notice, for any of the following reasons:</p>
+            <ul>
+                <li>Breach of these Terms or the Acceptable Use Policy</li>
+                <li>Fraudulent, abusive, or illegal activity</li>
+                <li>Non-payment of fees (when applicable)</li>
+                <li>Prolonged inactivity (accounts inactive for more than 24 months)</li>
+                <li>If we discontinue the Platform or a service</li>
+                <li>Where required by applicable law or court order</li>
+            </ul>
+            <h4>14.3 Effect of Termination</h4>
+            <p>Upon termination:</p>
+            <ul>
+                <li>Your licence to use the Platform is immediately revoked</li>
+                <li>You must cease all use of the Platform</li>
+                <li>Provisions that by their nature should survive termination (including intellectual property, limitation of liability, indemnification, and governing law) shall continue to apply</li>
+            </ul>
+            <h4>14.4 Data Export Window</h4>
+            <div class="teal-box">
+                <p><strong>30-Day Data Export:</strong> Following termination (other than for cause), you will have a <strong>30-calendar-day window</strong> to request an export of your personal data and any content you created on the Platform. After this window, your data will be deleted in accordance with our Privacy Policy. To request an export, email <a href="mailto:support@thekpihub.com">support@thekpihub.com</a> with the subject line "Data Export Request".</p>
+            </div>
+            <p>No data export window applies in cases of termination for cause (e.g., fraud, illegal activity, or material breach).</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S15 -->
+        <section class="policy-section" id="s15">
+            <div class="section-header">
+                <span class="section-num">15</span>
+                <h2 class="section-title">Governing Law</h2>
+            </div>
+            <p>These Terms shall be governed by and construed in accordance with the laws of the <strong>Republic of India</strong>, without regard to its conflict of law provisions.</p>
+            <p>Subject to the dispute resolution mechanism in Section 16, the courts of <strong>Delhi, India</strong> shall have exclusive jurisdiction over any disputes arising out of or in connection with these Terms or the Platform.</p>
+            <p>If you are accessing the Platform from outside India, you are responsible for compliance with local laws and regulations applicable to your use of the Platform.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S16 -->
+        <section class="policy-section" id="s16">
+            <div class="section-header">
+                <span class="section-num">16</span>
+                <h2 class="section-title">Dispute Resolution</h2>
+            </div>
+            <h4>16.1 Grievance Mechanism</h4>
+            <p>If you have a dispute or grievance regarding the Platform or these Terms, please first contact our Grievance Officer at <a href="mailto:info@thekpihub.com">info@thekpihub.com</a>. We will acknowledge your grievance within <strong>48 hours</strong> and aim to resolve it within <strong>30 calendar days</strong>.</p>
+            <h4>16.2 Informal Resolution</h4>
+            <p>Before initiating formal proceedings, both parties agree to attempt in good faith to resolve any dispute informally by negotiation for a period of <strong>30 days</strong> from the date one party notifies the other in writing of the dispute.</p>
+            <h4>16.3 Arbitration</h4>
+            <p>If a dispute cannot be resolved informally, it shall be finally settled by binding arbitration under the <strong>Arbitration and Conciliation Act, 1996 (India)</strong> as amended, subject to the following:</p>
+            <ul>
+                <li>The seat and venue of arbitration shall be <strong>Delhi, India</strong></li>
+                <li>The arbitration shall be conducted by a sole arbitrator mutually appointed by the parties</li>
+                <li>The language of the arbitration shall be English</li>
+                <li>The award of the arbitrator shall be final and binding on both parties</li>
+            </ul>
+            <h4>16.4 Exceptions</h4>
+            <p>Notwithstanding the above, either party may seek emergency injunctive or interim relief from a competent court in Delhi to prevent irreparable harm, without waiving the right to arbitration.</p>
+            <h4>16.5 No Class Actions</h4>
+            <p>You agree to resolve disputes with The KPI Hub on an individual basis only. You waive any right to bring or participate in class-action proceedings to the extent permitted by applicable law.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S17 -->
+        <section class="policy-section" id="s17">
+            <div class="section-header">
+                <span class="section-num">17</span>
+                <h2 class="section-title">Modifications to Terms</h2>
+            </div>
+            <p>The KPI Hub reserves the right to modify these Terms at any time. We will provide notice of material changes as follows:</p>
+            <ul>
+                <li><strong>Email notice:</strong> We will send an email to your registered address at least <strong>30 calendar days</strong> before material changes take effect</li>
+                <li><strong>In-platform notice:</strong> A prominent banner or notification will be displayed within the Platform</li>
+                <li><strong>Updated date:</strong> The "Last Updated" date at the top of this page will be revised</li>
+            </ul>
+            <p>For non-material changes (such as clarifications, corrections, or additions that do not adversely affect your rights), we may update the Terms without advance notice.</p>
+            <p>If you do not agree to the modified Terms, your sole remedy is to stop using the Platform and close your account before the effective date of the changes. Continued use after the effective date constitutes acceptance.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S18 -->
+        <section class="policy-section" id="s18">
+            <div class="section-header">
+                <span class="section-num">18</span>
+                <h2 class="section-title">Force Majeure</h2>
+            </div>
+            <p>The KPI Hub shall not be liable for any delay or failure to perform its obligations under these Terms to the extent such delay or failure results from causes beyond our reasonable control, including but not limited to:</p>
+            <ul>
+                <li>Acts of God, natural disasters, floods, fires, or earthquakes</li>
+                <li>Acts of government, regulatory changes, sanctions, or embargoes</li>
+                <li>War, terrorism, riots, or civil unrest</li>
+                <li>Pandemics, epidemics, or public health emergencies</li>
+                <li>Internet or telecommunications outages beyond our control</li>
+                <li>Third-party service provider failures (cloud infrastructure, payment processors)</li>
+                <li>Cyberattacks, denial-of-service attacks, or other malicious acts by third parties</li>
+            </ul>
+            <p>In the event of a force majeure, The KPI Hub will use commercially reasonable efforts to resume performance as soon as practicable and will notify affected users where feasible.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S19 -->
+        <section class="policy-section" id="s19">
+            <div class="section-header">
+                <span class="section-num">19</span>
+                <h2 class="section-title">Entire Agreement &amp; Severability</h2>
+            </div>
+            <h4>19.1 Entire Agreement</h4>
+            <p>These Terms, together with the <a href="privacy.html">Privacy Policy</a> and <a href="cookies.html">Cookie Policy</a>, constitute the entire agreement between you and The KPI Hub with respect to the Platform and supersede all prior and contemporaneous understandings, agreements, representations, or warranties, whether written or oral.</p>
+            <h4>19.2 Severability</h4>
+            <p>If any provision of these Terms is held by a court or arbitrator of competent jurisdiction to be invalid, illegal, or unenforceable, that provision shall be limited or eliminated to the minimum extent necessary, and the remaining provisions of these Terms shall continue in full force and effect.</p>
+            <h4>19.3 Waiver</h4>
+            <p>Failure by The KPI Hub to enforce any right or provision of these Terms shall not constitute a waiver of that right or provision in any subsequent or future instance.</p>
+            <h4>19.4 Assignment</h4>
+            <p>You may not assign or transfer your rights or obligations under these Terms without The KPI Hub's prior written consent. The KPI Hub may freely assign these Terms in connection with a merger, acquisition, reorganisation, or sale of all or substantially all of its assets.</p>
+            <h4>19.5 Language</h4>
+            <p>These Terms are written in English. In the event of any conflict between a translated version and the English version, the English version shall prevail.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S20 -->
+        <section class="policy-section" id="s20">
+            <div class="section-header">
+                <span class="section-num">20</span>
+                <h2 class="section-title">Contact</h2>
+            </div>
+            <p>If you have any questions about these Terms of Service, please contact us:</p>
+            <div class="highlight-box">
+                <p>
+                    <strong>The KPI Hub</strong><br>
+                    Delhi, India<br>
+                    Email: <a href="mailto:info@thekpihub.com">info@thekpihub.com</a><br>
+                    Website: <a href="https://thekpihub.com">thekpihub.com</a>
+                </p>
+            </div>
+            <p>For support-related queries:</p>
+            <div class="teal-box">
+                <p>
+                    <strong>Support Team</strong><br>
+                    Email: <a href="mailto:support@thekpihub.com">support@thekpihub.com</a>
+                </p>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th>Date</th>
+                            <th>Summary</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>v1.0</td>
+                            <td>April 3, 2026</td>
+                            <td>Initial publication. Governing law: India. Includes early access terms, arbitration clause, and AUP.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="wrap">
+            <div class="foot-top">
+                <div class="foot-brand">
+                    <div class="logo"><div class="logo-dot"></div>The <span class="logo-accent">KPI</span> Hub</div>
+                    <p class="foot-tag">Decision-Grade Intelligence for the modern SaaS professional.</p>
+                </div>
+                <div class="foot-group"><h4>Platform</h4><ul>
+                    <li><a href="intelligence.html">Intelligence Feed</a></li>
+                    <li><a href="directory.html">SaaS Discovery</a></li>
+                    <li><a href="benchmarks.html">Benchmarks</a></li>
+                </ul></div>
+                <div class="foot-group"><h4>Company</h4><ul>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul></div>
+                <div class="foot-group"><h4>Legal</h4><ul>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                    <li><a href="cookies.html">Cookie Policy</a></li>
+                </ul></div>
+            </div>
+            <div class="foot-bottom">
+                <p class="foot-copy">© 2026 <a href="index.html">The KPI Hub</a>. All rights reserved.</p>
+                <p class="foot-made">Made with ☕ in Delhi, India</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TheKPIHub — Landing Page</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="stylesheet" href="colors_and_type.css">
+<link rel="stylesheet" href="landing/landing-base.css?v=2">
+<link rel="stylesheet" href="landing/landing.css?v=2">
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body data-annot="off">
+
+<!-- Editable defaults (Tweaks panel rewrites this block on disk) -->
+<script>
+  window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "annotations": true,
+    "heroVariant": "direct",
+    "ctaGoal": "free",
+    "showTicker": true,
+    "showCompare": true,
+    "showIntegrations": true,
+    "showFaq": true
+  }/*EDITMODE-END*/;
+</script>
+
+<!-- Top nav -->
+<nav class="lp-nav">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <div class="logo-text">The<span>KPI</span>Hub</div>
+  </div>
+  <ul class="lp-nav-links">
+    <li><a href="#platform">Platform</a></li>
+    <li><a href="#personas">Roles</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <button class="lp-nav-cta">Sign In →</button>
+</nav>
+
+<div id="root"></div>
+
+<!-- Components -->
+<script type="text/babel" src="landing/hero.jsx"></script>
+<script type="text/babel" src="landing/sections-a.jsx"></script>
+<script type="text/babel" src="landing/sections-b.jsx"></script>
+<script type="text/babel" src="landing/sections-c.jsx"></script>
+<script type="text/babel" src="landing/sections-d.jsx"></script>
+<script type="text/babel" src="landing/sections-e.jsx"></script>
+<script type="text/babel" src="landing/sections-f.jsx"></script>
+<script type="text/babel" src="landing/tweaks-panel.jsx"></script>
+
+<script type="text/babel">
+const { useEffect } = React;
+
+function App() {
+  const [t, setTweak] = useTweaks(window.TWEAK_DEFAULTS);
+
+  // Reflect annotation toggle on body attr (CSS hides/shows via data-annot)
+  useEffect(() => {
+    document.body.setAttribute('data-annot', t.annotations ? 'on' : 'off');
+  }, [t.annotations]);
+
+  // Scroll-reveal on section-hosts
+  useEffect(() => {
+    const els = document.querySelectorAll('.lp-section-host');
+    els.forEach(el => el.classList.add('lp-reveal'));
+    // Hero is above the fold — show immediately so the page doesn't open blank
+    const hero = document.querySelector('.lp-section-host[data-section="hero"]');
+    hero?.classList.add('is-visible');
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('is-visible'); });
+    }, { threshold: 0.05, rootMargin: '0px 0px -10% 0px' });
+    els.forEach(el => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+
+  const onCtaClick = (which) => {
+    document.getElementById('close-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  return (
+    <>
+      <Hero variant={t.heroVariant} ctaGoal={t.ctaGoal} onCtaClick={onCtaClick} />
+      {t.showTicker && <SectionTicker />}
+      <SectionProblem />
+      <SectionPlatform />
+      <SectionPersonas />
+      <SectionMetricStrip />
+      <SectionFeatures />
+      <SectionPipeline />
+      <SectionProof />
+      {t.showCompare && <SectionCompare />}
+      <SectionHow />
+      {t.showIntegrations && <SectionIntegrations />}
+      <SectionPricing />
+      {t.showFaq && <SectionFaq />}
+      <SectionFounder />
+      <SectionCapture ctaGoal={t.ctaGoal} />
+      <div id="close-section" />
+      <SectionClose ctaGoal={t.ctaGoal} onCtaClick={onCtaClick} />
+      <SectionFooter />
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="Overlay" />
+        <TweakToggle label="Design annotations" value={t.annotations}
+                     onChange={(v) => setTweak('annotations', v)} />
+        <TweakSection label="Hero" />
+        <TweakRadio label="Headline style" value={t.heroVariant}
+                    options={['editorial', 'direct']}
+                    onChange={(v) => setTweak('heroVariant', v)} />
+        <TweakSection label="Conversion" />
+        <TweakSelect label="Primary CTA goal" value={t.ctaGoal}
+                     options={['free', 'waitlist', 'demo']}
+                     onChange={(v) => setTweak('ctaGoal', v)} />
+        <TweakSection label="Sections" />
+        <TweakToggle label="Marquee ticker"   value={t.showTicker}       onChange={(v) => setTweak('showTicker', v)} />
+        <TweakToggle label="Comparison table" value={t.showCompare}      onChange={(v) => setTweak('showCompare', v)} />
+        <TweakToggle label="Integrations"     value={t.showIntegrations} onChange={(v) => setTweak('showIntegrations', v)} />
+        <TweakToggle label="FAQ"              value={t.showFaq}          onChange={(v) => setTweak('showFaq', v)} />
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

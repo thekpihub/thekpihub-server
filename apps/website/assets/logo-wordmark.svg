@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" width="220" height="48">
+  <circle cx="12" cy="24" r="5" fill="#E9A123"></circle>
+  <text x="28" y="32" font-family="Beiruti, Syne, sans-serif" font-weight="800" font-size="22" letter-spacing="-0.5" fill="#EAEDF5">
+    The <tspan fill="#E9A123">KPI</tspan> Hub
+  </text>
+</svg>

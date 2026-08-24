@@ -1,0 +1,33 @@
+name: KPI Hub Content Pipeline
+on:
+  schedule:
+    - cron: '0 1,7,13,19 * * *'
+  workflow_dispatch:
+jobs:
+  run-pipeline:
+    name: Run KPI Hub 5-Engine Pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - run: pip install -r requirements.txt
+      - run: python pipeline.py
+        env:
+          ANTHROPIC_API_KEY:    ${{ secrets.ANTHROPIC_API_KEY }}
+          SERPAPI_KEY:          ${{ secrets.SERPAPI_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+          WP_SITE_URL:          ${{ secrets.WP_SITE_URL }}
+          WP_USERNAME:          ${{ secrets.WP_USERNAME }}
+          WP_APP_PASSWORD:      ${{ secrets.WP_APP_PASSWORD }}
+          ALPHA_VANTAGE_KEY:    ${{ secrets.ALPHA_VANTAGE_KEY }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pipeline-log-${{ github.run_number }}
+          path: pipeline.log
+          retention-days: 7

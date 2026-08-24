@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="yRGmgTNjIHFmLom_ZrczRQpmaJkf2SpAZWR75g3g71k">
+
+  <!-- ====== KPI Hub Analytics: GA4 ====== -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-DZPCCPEP1J', {
+      page_title: document.title,
+      page_location: window.location.href,
+      send_page_view: true
+    });
+
+    // ── Custom KPI Hub Event Tracking ──
+    document.addEventListener('DOMContentLoaded', function () {
+
+      // Track Early Access / Waitlist CTA clicks
+      document.querySelectorAll('a[href="get-audit.html"], .waitlist-btn, [data-cta="waitlist"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          gtag('event', 'waitlist_click', {
+            event_category: 'CTA',
+            event_label: 'Waitlist Button',
+            value: 1
+          });
+        });
+      });
+
+      // Track pricing page visits
+      document.querySelectorAll('a[href*="pricing"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          gtag('event', 'pricing_interest', {
+            event_category: 'Navigation',
+            event_label: 'Pricing Click'
+          });
+        });
+      });
+
+      // Track outbound links
+      document.querySelectorAll('a[href^="http"]').forEach(function(el) {
+        if (!el.href.includes('thekpihub.com')) {
+          el.addEventListener('click', function() {
+            gtag('event', 'outbound_click', {
+              event_category: 'Outbound',
+              event_label: el.href
+            });
+          });
+        }
+      });
+
+      // Track scroll depth (25%, 50%, 75%, 100%)
+      var scrollDepths = [25, 50, 75, 100];
+      var fired = {};
+      window.addEventListener('scroll', function() {
+        var scrollPct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+        scrollDepths.forEach(function(depth) {
+          if (scrollPct >= depth && !fired[depth]) {
+            fired[depth] = true;
+            gtag('event', 'scroll_depth', {
+              event_category: 'Engagement',
+              event_label: depth + '%',
+              value: depth
+            });
+          }
+        });
+      });
+    });
+  </script>
+  <!-- ====== End Analytics ====== -->
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Freedom Dashboard — Track Your Founder Runway Target</title>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thekpihub.com/freedom.html">
+    <meta property="og:title" content="Freedom Dashboard — Track Your Founder Runway Target">
+    <meta property="og:description" content="Define your financial freedom target and track the gap. Works out the monthly revenue you need and how many months away you are at current growth.">
+    <meta property="og:image" content="https://thekpihub.com/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Freedom Dashboard — Track Your Founder Runway Target">
+    <meta name="twitter:description" content="Define your financial freedom target and track the gap. Works out the monthly revenue you need and how many months away you are at current growth.">
+    <meta name="twitter:image" content="https://thekpihub.com/og-image.png">
+    <meta name="description" content="Define your financial freedom target and track the gap. Works out the monthly revenue you need and how many months away you are at current growth.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080d1a;--s1:#0d1428;--s2:#111c35;--s3:#162040;--amber:#f59e0b;--amber2:#fbbf24;--teal:#14b8a6;--red:#ef4444;--green:#22c55e;--blue:#3b82f6;--purple:#a855f7;--txt:#e2e8f0;--txd:#94a3b8;--txm:#475569;--bdr:#1e2d4a;--bdr2:#243350}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+nav{background:rgba(8,13,26,.95);border-bottom:1px solid var(--bdr);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+.nav-brand{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:var(--txt);text-decoration:none}
+.nav-brand span{color:var(--amber)}
+.nav-links{display:flex;gap:24px;list-style:none}
+.nav-links a{color:var(--txd);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--amber)}
+.nav-cta{background:var(--amber);color:#000;padding:7px 18px;border-radius:6px;font-size:.8rem;font-weight:700;text-decoration:none;font-family:'Syne',sans-serif}
+.container{max-width:1100px;margin:0 auto;padding:24px}
+/* FREEDOM METER */
+.freedom-hero{background:linear-gradient(135deg,var(--s1) 0%,rgba(168,85,247,.06) 100%);border:1px solid var(--bdr);border-radius:18px;padding:32px;margin-bottom:20px;position:relative;overflow:hidden}
+.freedom-hero::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(168,85,247,.12),transparent 70%);border-radius:50%}
+.freedom-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:24px}
+.freedom-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800}
+.freedom-title span{color:var(--amber)}
+.freedom-subtitle{font-size:.82rem;color:var(--txd);margin-top:4px}
+.freedom-edit-btn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:var(--amber);padding:7px 16px;border-radius:7px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;transition:all .2s}
+.freedom-edit-btn:hover{background:rgba(245,158,11,.18)}
+.freedom-bar-wrap{margin-bottom:16px}
+.freedom-bar-label{display:flex;justify-content:space-between;font-size:.78rem;color:var(--txd);margin-bottom:8px}
+.freedom-bar-label strong{font-family:'Syne',sans-serif;color:var(--amber)}
+.freedom-bar{height:14px;background:rgba(255,255,255,.06);border-radius:7px;overflow:hidden;position:relative}
+.freedom-bar-fill{height:100%;border-radius:7px;background:linear-gradient(90deg,var(--amber),var(--purple));transition:width 1s ease;position:relative}
+.freedom-bar-fill::after{content:'';position:absolute;right:0;top:0;bottom:0;width:4px;background:#fff;border-radius:2px;opacity:.8}
+.freedom-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.fstat{background:var(--s2);border:1px solid var(--bdr2);border-radius:11px;padding:14px;text-align:center}
+.fstat-val{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;line-height:1.1;margin-bottom:3px}
+.fstat-label{font-size:.68rem;color:var(--txm);text-transform:uppercase;letter-spacing:.5px}
+/* GRID */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.dash-grid-2{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-bottom:16px}
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:20px}
+.card-title{font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+/* MRR HISTORY */
+.mrr-history{display:flex;flex-direction:column;gap:8px}
+.mrr-row{display:flex;align-items:center;gap:10px;padding:8px;background:rgba(255,255,255,.02);border-radius:7px}
+.mrr-month{font-size:.72rem;color:var(--txm);width:38px;flex-shrink:0}
+.mrr-bar-track{flex:1;height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
+.mrr-bar-inner{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--amber),var(--amber2));transition:width .6s ease}
+.mrr-val{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;width:72px;text-align:right;flex-shrink:0}
+.mrr-delta{font-size:.68rem;width:42px;text-align:right;flex-shrink:0}
+.mrr-delta.up{color:var(--green)}
+.mrr-delta.down{color:var(--red)}
+/* MILESTONES */
+.milestone-list{display:flex;flex-direction:column;gap:10px}
+.milestone{display:flex;align-items:center;gap:12px;padding:10px;border-radius:9px;transition:all .2s}
+.milestone.done{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.14)}
+.milestone.current{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);animation:milePulse 2s ease-in-out infinite}
+.milestone.future{background:rgba(255,255,255,.02);border:1px solid var(--bdr)}
+.milestone-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+.milestone.done .milestone-icon{background:rgba(34,197,94,.15)}
+.milestone.current .milestone-icon{background:rgba(245,158,11,.15)}
+.milestone.future .milestone-icon{background:rgba(255,255,255,.05)}
+.milestone-info{flex:1}
+.milestone-name{font-size:.8rem;font-weight:600;font-family:'Syne',sans-serif}
+.milestone.done .milestone-name{color:var(--green)}
+.milestone.current .milestone-name{color:var(--amber)}
+.milestone.future .milestone-name{color:var(--txd)}
+.milestone-val{font-size:.68rem;color:var(--txm);margin-top:1px}
+.milestone-eta{font-size:.68rem;color:var(--txm);text-align:right}
+.milestone.done .milestone-eta{color:var(--green)}
+.milestone.current .milestone-eta{color:var(--amber)}
+/* INPUT FORM */
+.setup-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:24px;margin-bottom:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field label{display:block;font-size:.72rem;color:var(--txd);margin-bottom:4px;font-weight:500;letter-spacing:.3px}
+.field input,.field select{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bdr2);border-radius:7px;padding:9px 12px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;transition:all .25s}
+.field input:focus,.field select:focus{border-color:var(--amber);background:rgba(245,158,11,.04)}
+.btn-row{display:flex;gap:10px;margin-top:14px}
+.btn-primary{flex:1;padding:11px;background:linear-gradient(135deg,var(--amber),var(--amber2));color:#000;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .3s}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(245,158,11,.25)}
+.btn-secondary{padding:11px 20px;background:rgba(255,255,255,.05);border:1px solid var(--bdr2);color:var(--txd);border-radius:8px;font-family:'Syne',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-secondary:hover{border-color:var(--amber);color:var(--amber)}
+/* INSIGHT BOX */
+.insight{background:linear-gradient(135deg,rgba(245,158,11,.06),rgba(168,85,247,.04));border:1px solid rgba(245,158,11,.18);border-radius:10px;padding:14px;margin-top:12px}
+.insight-label{font-size:.65rem;color:var(--amber);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.insight p{font-size:.8rem;color:var(--txd);line-height:1.6}
+/* EXPENSE TRACKER */
+.expense-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr);font-size:.8rem}
+.expense-row:last-child{border-bottom:none}
+.expense-name{color:var(--txd)}
+.expense-val{font-family:'Syne',sans-serif;font-weight:700}
+.expense-val.positive{color:var(--green)}
+.expense-val.negative{color:var(--red)}
+.runway-big{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;color:var(--teal);text-align:center;margin:12px 0 4px}
+.runway-label{text-align:center;font-size:.72rem;color:var(--txm);text-transform:uppercase;letter-spacing:1px}
+@keyframes milePulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.2)}50%{box-shadow:0 0 0 6px transparent}}
+@media(max-width:768px){.dash-grid{grid-template-columns:1fr 1fr}.dash-grid-2{grid-template-columns:1fr}.freedom-stats{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}}
+@media(max-width:480px){.dash-grid{grid-template-columns:1fr}.container{padding:14px}.freedom-stats{grid-template-columns:1fr 1fr}}
+</style>
+<link rel="canonical" href="https://thekpihub.com/freedom.html">
+    <meta name="robots" content="index, follow">
+        <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wdshn14xgf");
+    </script>
+</head>
+<body>
+
+<nav>
+  <a href="https://thekpihub.com" class="nav-brand">The <span>KPI</span> Hub</a>
+  <ul class="nav-links">
+    <li><a href="https://thekpihub.com/intelligence.html">Intelligence</a></li>
+    <li><a href="narrative.html">Narrative</a></li>
+    <li><a href="freedom.html" class="active">Freedom Dashboard</a></li>
+  </ul>
+  <a href="get-audit.html" class="nav-cta">Get My KPI Audit →</a>
+</nav>
+
+<div class="container">
+
+  <!-- SETUP (shown first time) -->
+  <div class="setup-card" id="setup-section">
+    <div class="card-title">🎯 Setup Your Freedom Dashboard</div>
+    <p style="font-size:.82rem;color:var(--txd);margin-bottom:18px">Define your financial freedom target. We'll track your journey and tell you exactly how many months away you are.</p>
+    <div class="form-grid">
+      <div class="field"><label>Current Monthly MRR (₹ or $)</label><input type="number" id="s-mrr" placeholder="85000"></div>
+      <div class="field"><label>Monthly Growth Rate (%)</label><input type="number" id="s-growth" placeholder="12" step="0.1"></div>
+      <div class="field"><label>Monthly Personal Expenses</label><input type="number" id="s-expenses" placeholder="60000"></div>
+      <div class="field"><label>Business Monthly Costs</label><input type="number" id="s-costs" placeholder="25000"></div>
+      <div class="field"><label>Freedom Target MRR</label><input type="number" id="s-target" placeholder="300000"></div>
+      <div class="field"><label>Currency</label>
+        <select id="s-currency"><option value="₹">₹ INR</option><option value="$">$ USD</option></select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="setupDashboard()">🚀 Build My Freedom Dashboard</button>
+      <button class="btn-secondary" onclick="loadDemo()">Load Demo Data</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD (shown after setup) -->
+  <div id="dashboard-section" style="display:none">
+
+    <!-- FREEDOM METER -->
+    <div class="freedom-hero">
+      <div class="freedom-top">
+        <div>
+          <div class="freedom-title">Your <span>Financial Freedom</span> Journey</div>
+          <div class="freedom-subtitle">Last updated today · Tracking from <span id="track-from">—</span></div>
+        </div>
+        <button class="freedom-edit-btn" onclick="editSetup()">✏️ Edit Goals</button>
+      </div>
+      <div class="freedom-bar-wrap">
+        <div class="freedom-bar-label">
+          <span>Current MRR: <strong id="curr-mrr-display">—</strong></span>
+          <span>Freedom Target: <strong id="target-display">—</strong></span>
+        </div>
+        <div class="freedom-bar"><div class="freedom-bar-fill" id="freedom-fill" style="width:0%"></div></div>
+        <div style="text-align:center;margin-top:8px;font-size:.78rem;color:var(--txd)"><span id="pct-display">0</span>% of freedom target reached</div>
+      </div>
+      <div class="freedom-stats">
+        <div class="fstat"><div class="fstat-val" id="months-away" style="color:var(--amber)">—</div><div class="fstat-label">Months to Freedom</div></div>
+        <div class="fstat"><div class="fstat-val" id="net-profit" style="color:var(--green)">—</div><div class="fstat-label">Net Monthly Profit</div></div>
+        <div class="fstat"><div class="fstat-val" id="freedom-pct" style="color:var(--purple)">—</div><div class="fstat-label">Freedom Score</div></div>
+        <div class="fstat"><div class="fstat-val" id="runway-display" style="color:var(--teal)">—</div><div class="fstat-label">Months Runway</div></div>
+      </div>
+    </div>
+
+    <div class="dash-grid-2">
+      <!-- MRR HISTORY -->
+      <div class="card">
+        <div class="card-title">📈 MRR Journey</div>
+        <div class="mrr-history" id="mrr-history"></div>
+        <div class="insight">
+          <div class="insight-label">💡 Projection</div>
+          <p id="projection-text">Loading...</p>
+        </div>
+      </div>
+
+      <!-- MILESTONES -->
+      <div class="card">
+        <div class="card-title">🏆 Freedom Milestones</div>
+        <div class="milestone-list" id="milestones"></div>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <!-- P&L -->
+      <div class="card">
+        <div class="card-title">💰 Monthly P&amp;L</div>
+        <div id="pnl-content"></div>
+        <div class="runway-big" id="runway-months">—</div>
+        <div class="runway-label">months runway</div>
+      </div>
+
+      <!-- ADD MRR UPDATE -->
+      <div class="card">
+        <div class="card-title">➕ Log This Month</div>
+        <div class="field"><label>This Month's MRR</label><input type="number" id="new-mrr" placeholder="Enter actual MRR"></div>
+        <div class="field" style="margin-top:10px"><label>Notes (optional)</label><input type="text" id="mrr-note" placeholder="e.g. Launched new plan, lost big customer..."></div>
+        <button class="btn-primary" style="margin-top:12px;width:100%" onclick="logMRR()">✅ Log MRR Update</button>
+        <div class="insight" style="margin-top:12px">
+          <div class="insight-label">🧠 AI Insight</div>
+          <p id="ai-insight-text" style="font-size:.78rem;color:var(--txd)">Log your MRR to get a personalized insight.</p>
+        </div>
+      </div>
+
+      <!-- WHAT TO DO NOW -->
+      <div class="card">
+        <div class="card-title">⚡ Today's Focus</div>
+        <div id="today-focus-content" style="font-size:.82rem;color:var(--txd);line-height:1.7">
+          <div style="color:var(--amber);font-weight:600;margin-bottom:8px">Based on your current trajectory:</div>
+          <div id="focus-items"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'kpihub_freedom_v1';
+let state = {};
+
+function fmt(val, cur='₹') {
+  if (val >= 100000) return cur + (val/100000).toFixed(1) + 'L';
+  if (val >= 1000) return cur + (val/1000).toFixed(1) + 'K';
+  return cur + val.toFixed(0);
+}
+
+function loadDemo() {
+  document.getElementById('s-mrr').value = 85000;
+  document.getElementById('s-growth').value = 12;
+  document.getElementById('s-expenses').value = 60000;
+  document.getElementById('s-costs').value = 25000;
+  document.getElementById('s-target').value = 300000;
+  setupDashboard();
+}
+
+function setupDashboard() {
+  const mrr = parseFloat(document.getElementById('s-mrr').value) || 85000;
+  const growth = parseFloat(document.getElementById('s-growth').value) || 12;
+  const expenses = parseFloat(document.getElementById('s-expenses').value) || 60000;
+  const costs = parseFloat(document.getElementById('s-costs').value) || 25000;
+  const target = parseFloat(document.getElementById('s-target').value) || 300000;
+  const currency = document.getElementById('s-currency').value || '₹';
+
+  // Build 6 months of history
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now = new Date();
+  const history = [];
+  let mrrVal = mrr / Math.pow(1 + growth/100, 5);
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    history.push({month: months[d.getMonth()] + ' ' + String(d.getFullYear()).slice(2), mrr: Math.round(mrrVal)});
+    mrrVal *= (1 + growth/100);
+  }
+
+  state = {mrr, growth, expenses, costs, target, currency, history, startDate: new Date().toLocaleDateString('en-IN', {month:'short', year:'numeric'})};
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  renderDashboard();
+}
+
+function editSetup() {
+  document.getElementById('setup-section').style.display = 'block';
+  document.getElementById('dashboard-section').style.display = 'none';
+  document.getElementById('s-mrr').value = state.mrr;
+  document.getElementById('s-growth').value = state.growth;
+  document.getElementById('s-expenses').value = state.expenses;
+  document.getElementById('s-costs').value = state.costs;
+  document.getElementById('s-target').value = state.target;
+}
+
+function logMRR() {
+  const newMRR = parseFloat(document.getElementById('new-mrr').value);
+  if (!newMRR) { alert('Enter your MRR'); return; }
+  const note = document.getElementById('mrr-note').value;
+  const months = ['Jan','Feb','Mar','Apr','May','Jun'];
+  const now = new Date();
+  const label = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][now.getMonth()] + ' ' + String(now.getFullYear()).slice(2);
+  const prev = state.history[state.history.length-1]?.mrr || state.mrr;
+  const delta = ((newMRR - prev) / prev * 100).toFixed(1);
+  state.history.push({month: label, mrr: newMRR, note});
+  state.mrr = newMRR;
+  if (state.history.length > 12) state.history.shift();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  document.getElementById('ai-insight-text').textContent = delta > 0 ? `📈 Great job! MRR grew ${delta}% this month. At this rate you'll hit your freedom target in ${calcMonthsToFreedom(newMRR, state.growth, state.target)} months.` : `📉 MRR dipped ${Math.abs(delta)}% this month. Focus on reducing churn and re-engaging at-risk customers this week.`;
+  renderDashboard();
+}
+
+function calcMonthsToFreedom(mrr, growth, target) {
+  if (mrr >= target) return 0;
+  let m = mrr, months = 0;
+  while (m < target && months < 120) { m *= (1 + growth/100); months++; }
+  return months;
+}
+
+function renderDashboard() {
+  document.getElementById('setup-section').style.display = 'none';
+  document.getElementById('dashboard-section').style.display = 'block';
+
+  const {mrr, growth, expenses, costs, target, currency, history, startDate} = state;
+  const netProfit = mrr - expenses - costs;
+  const pct = Math.min(100, Math.round(mrr / target * 100));
+  const monthsAway = calcMonthsToFreedom(mrr, growth, target);
+  const runway = costs > 0 ? Math.round(mrr / costs) : 99;
+  const freedomScore = Math.min(100, Math.round((mrr/target*50) + (netProfit>0?25:0) + (growth>=10?25:growth>=5?15:0)));
+
+  document.getElementById('curr-mrr-display').textContent = fmt(mrr, currency);
+  document.getElementById('target-display').textContent = fmt(target, currency);
+  document.getElementById('freedom-fill').style.width = pct + '%';
+  document.getElementById('pct-display').textContent = pct;
+  document.getElementById('months-away').textContent = monthsAway === 0 ? '🎉 FREE' : monthsAway + 'mo';
+  document.getElementById('net-profit').textContent = (netProfit >= 0 ? '+' : '') + fmt(netProfit, currency);
+  document.getElementById('freedom-pct').textContent = freedomScore + '/100';
+  document.getElementById('runway-display').textContent = runway + 'mo';
+  document.getElementById('track-from').textContent = startDate;
+
+  // MRR History
+  const maxMRR = Math.max(...history.map(h=>h.mrr));
+  let histHTML = history.map((h, i) => {
+    const prev = history[i-1]?.mrr;
+    const delta = prev ? ((h.mrr-prev)/prev*100).toFixed(1) : null;
+    const barW = Math.round(h.mrr/maxMRR*100);
+    return `<div class="mrr-row">
+      <div class="mrr-month">${h.month}</div>
+      <div class="mrr-bar-track"><div class="mrr-bar-inner" style="width:${barW}%"></div></div>
+      <div class="mrr-val">${fmt(h.mrr, currency)}</div>
+      <div class="mrr-delta ${delta > 0 ? 'up' : delta < 0 ? 'down' : ''}">${delta ? (delta>0?'+':'')+delta+'%' : '—'}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('mrr-history').innerHTML = histHTML;
+
+  // Projection text
+  const yr1 = mrr * Math.pow(1+growth/100, 12);
+  document.getElementById('projection-text').textContent = `At ${growth}% monthly growth, your MRR will reach ${fmt(yr1, currency)} in 12 months. You'll hit freedom in ~${monthsAway} months${monthsAway > 24 ? ' — consider accelerating growth or lowering your target temporarily' : ''}.`;
+
+  // Milestones
+  const milestoneTargets = [
+    {label:'Ramen Profitable', val: expenses, emoji:'🍜'},
+    {label:'₹1L / Month', val: 100000, emoji:'💯'},
+    {label:'Escape Velocity', val: expenses+costs, emoji:'🚀'},
+    {label:'₹5L / Month', val: 500000, emoji:'⭐'},
+    {label:'Financial Freedom', val: target, emoji:'🏆'},
+  ].filter((m,i,a) => a.findIndex(x=>x.val===m.val) === i);
+
+  let milesHTML = milestoneTargets.map(ms => {
+    const done = mrr >= ms.val;
+    const curr = !done && milestoneTargets.filter(x=>x.val>mrr)[0]?.val === ms.val;
+    const moAway = done ? 0 : calcMonthsToFreedom(mrr, growth, ms.val);
+    return `<div class="milestone ${done?'done':curr?'current':'future'}">
+      <div class="milestone-icon">${ms.emoji}</div>
+      <div class="milestone-info">
+        <div class="milestone-name">${ms.label}</div>
+        <div class="milestone-val">${fmt(ms.val, currency)} MRR</div>
+      </div>
+      <div class="milestone-eta">${done ? '✅ Done' : curr ? `~${moAway}mo` : `~${moAway}mo`}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('milestones').innerHTML = milesHTML;
+
+  // P&L
+  const pnlItems = [
+    {label:'MRR', val:mrr, type:'positive'},
+    {label:'Business Costs', val:-costs, type:'negative'},
+    {label:'Personal Expenses', val:-expenses, type:'negative'},
+    {label:'Net Monthly Profit', val:netProfit, type:netProfit>=0?'positive':'negative'},
+  ];
+  document.getElementById('pnl-content').innerHTML = pnlItems.map(p => `<div class="expense-row"><span class="expense-name">${p.label}</span><span class="expense-val ${p.type}">${p.val>=0?'+':''}${fmt(p.val, currency)}</span></div>`).join('');
+  document.getElementById('runway-months').textContent = runway;
+
+  // Today's Focus
+  const focuses = [];
+  if (netProfit < 0) focuses.push('🚨 You\'re cash flow negative. Cut non-essential costs or close 2 new deals this week.');
+  if (growth < 5) focuses.push('⚡ Growth is below 5% MoM. Run a re-engagement campaign to churned users today.');
+  if (monthsAway > 36) focuses.push('📈 Freedom is 36+ months away. Consider raising prices 15-20% on new customers.');
+  if (monthsAway <= 12) focuses.push('🏁 Freedom is within 12 months! Protect growth — do not increase burn rate.');
+  if (focuses.length === 0) focuses.push('✅ You\'re on track! Focus on retention — reduce churn by 0.5% to accelerate freedom by 3 months.');
+  focuses.push(`💰 Log next month's MRR update to track your progress.`);
+  document.getElementById('focus-items').innerHTML = focuses.map(f => `<div style="margin-bottom:8px;padding:8px 10px;background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:7px;font-size:.78rem">${f}</div>`).join('');
+}
+
+// Load on start
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) { state = JSON.parse(saved); renderDashboard(); }
+});
+</script>
+<script src="/gk-shortcut.js?v=a3bb6e13"></script>
+</body>
+</html>

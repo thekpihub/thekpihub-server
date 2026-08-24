@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="yRGmgTNjIHFmLom_ZrczRQpmaJkf2SpAZWR75g3g71k">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin & Staff Portal — The KPI Hub. Secure login for administrators and employees.">
+    <title>Admin Portal — The KPI Hub</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%2306071A'/><text x='16' y='22' font-family='sans-serif' font-weight='800' font-size='18' fill='%23E9A123' text-anchor='middle'>K</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:#06071A; --bg2:#0C0E28; --card:rgba(255,255,255,0.04);
+            --gold:#E9A123; --gold-glow:rgba(233,161,35,0.18); --gold-rim:rgba(233,161,35,0.28);
+            --teal:#00C9A7; --teal-glow:rgba(0,201,167,0.12);
+            --red:#FF6B6B; --red-glow:rgba(255,107,107,0.15);
+            --text:#EAEDF5; --text2:rgba(234,237,245,0.62); --text3:rgba(234,237,245,0.32);
+            --border:rgba(255,255,255,0.08); --r:12px;
+        }
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+        html{scroll-behavior:smooth;height:100%;}
+        body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.65;overflow-x:hidden;min-height:100vh;cursor:none;}
+        a{color:inherit;text-decoration:none;}
+        ::-webkit-scrollbar{width:5px;} ::-webkit-scrollbar-track{background:var(--bg);} ::-webkit-scrollbar-thumb{background:var(--gold);border-radius:3px;}
+
+        /* CUSTOM CURSOR */
+        .cursor{position:fixed;width:10px;height:10px;border-radius:50%;background:var(--gold);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform 0.08s ease,width 0.2s,height 0.2s;mix-blend-mode:screen;}
+        .cursor-ring{position:fixed;width:36px;height:36px;border-radius:50%;border:1px solid rgba(233,161,35,0.5);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:left 0.12s ease,top 0.12s ease,width 0.2s,height 0.2s;}
+
+        /* TOP BAR */
+        .topbar{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(6,7,26,0.92);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
+        .logo{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;letter-spacing:-0.02em;display:flex;align-items:center;gap:9px;}
+        .logo-accent{color:var(--gold);}
+        .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:blink 2s ease infinite;}
+        .topbar-right{display:flex;align-items:center;gap:16px;}
+        .portal-badge{font-family:'Syne',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:5px 14px;border-radius:100px;background:var(--gold-glow);border:1px solid var(--gold-rim);color:var(--gold);}
+        .back-link{font-family:'Syne',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);transition:color 0.2s;display:flex;align-items:center;gap:6px;}
+        .back-link:hover{color:var(--text2);}
+        .back-link::before{content:'←';}
+
+        /* PAGE LAYOUT */
+        .page{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;}
+
+        /* LEFT PANEL */
+        .left-panel{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:center;padding:120px 80px 80px;position:relative;overflow:hidden;}
+        .left-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(233,161,35,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(233,161,35,0.04) 1px,transparent 1px);background-size:48px 48px;}
+        .left-glow{position:absolute;top:-80px;left:-80px;width:500px;height:500px;background:radial-gradient(ellipse,rgba(233,161,35,0.1) 0%,transparent 70%);pointer-events:none;}
+        .left-content{position:relative;z-index:2;}
+        .left-tag{font-family:'Syne',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+        .left-tag::before{content:'';width:24px;height:1.5px;background:var(--gold);}
+        .left-h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2.4rem,3.5vw,3.8rem);font-weight:700;line-height:1.08;letter-spacing:-0.025em;margin-bottom:20px;}
+        .left-h1 em{font-style:italic;color:var(--gold);}
+        .left-p{font-size:1rem;color:var(--text2);line-height:1.78;max-width:380px;margin-bottom:48px;}
+        .features-list{display:flex;flex-direction:column;gap:16px;}
+        .feat-item{display:flex;align-items:center;gap:14px;font-size:0.9rem;color:var(--text2);}
+        .feat-icon{width:36px;height:36px;border-radius:8px;background:var(--gold-glow);border:1px solid var(--gold-rim);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+        .feat-icon.teal{background:var(--teal-glow);border-color:rgba(0,201,167,0.28);}
+        .security-strip{margin-top:48px;padding-top:32px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);}
+        .security-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);animation:blink 2s ease infinite;}
+
+        /* RIGHT PANEL */
+        .right-panel{display:flex;flex-direction:column;justify-content:center;padding:120px 80px 80px;}
+        .form-header{margin-bottom:36px;}
+        .form-title{font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:8px;}
+        .form-sub{font-size:0.92rem;color:var(--text2);line-height:1.65;}
+
+        /* ROLE SWITCHER */
+        .role-switcher{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:32px;gap:4px;}
+        .role-btn{flex:1;padding:10px 16px;border:none;background:none;border-radius:8px;font-family:'Syne',sans-serif;font-size:0.78rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);cursor:none;transition:background 0.25s,color 0.25s,box-shadow 0.25s;}
+        .role-btn.active{background:var(--gold);color:var(--bg);box-shadow:0 4px 20px rgba(233,161,35,0.3);}
+
+        /* FORM FIELDS */
+        .form-group{margin-bottom:20px;}
+        .form-label{display:flex;align-items:center;justify-content:space-between;font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+        .form-label a{color:var(--gold);letter-spacing:0;text-transform:none;font-weight:400;font-family:'DM Sans',sans-serif;font-size:0.82rem;transition:opacity 0.2s;}
+        .form-label a:hover{opacity:0.7;}
+        .form-in{width:100%;padding:14px 18px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.95rem;outline:none;transition:border-color 0.2s,background 0.2s,box-shadow 0.2s;}
+        .form-in::placeholder{color:var(--text3);}
+        .form-in:focus{border-color:var(--gold);background:rgba(233,161,35,0.04);box-shadow:0 0 0 3px rgba(233,161,35,0.1);}
+        .form-in.error{border-color:var(--red);box-shadow:0 0 0 3px rgba(255,107,107,0.1);}
+        .input-wrap{position:relative;}
+        .input-wrap .form-in{padding-right:48px;}
+        .eye-toggle{position:absolute;right:16px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:none;font-size:1rem;transition:color 0.2s;padding:4px;}
+        .eye-toggle:hover{color:var(--text2);}
+
+        /* EMPLOYEE-ONLY FIELDS */
+        .emp-fields{display:none !important;}
+        .emp-fields.show{display:block !important;}
+        .emp-fields.show.form-row{display:grid !important;}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+        /* SELECT */
+        .form-select{width:100%;padding:14px 18px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.95rem;outline:none;appearance:none;cursor:none;transition:border-color 0.2s,background 0.2s,box-shadow 0.2s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23E9A123' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 18px center;}
+        .form-select:focus{border-color:var(--gold);background-color:rgba(233,161,35,0.04);box-shadow:0 0 0 3px rgba(233,161,35,0.1);}
+        .form-select option{background:var(--bg2);color:var(--text);}
+
+        /* CHECKBOX */
+        .check-row{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
+        .check-box{position:relative;width:18px;height:18px;border:1.5px solid var(--border);border-radius:4px;background:transparent;cursor:none;flex-shrink:0;transition:border-color 0.2s,background 0.2s;}
+        .check-box input{position:absolute;opacity:0;width:100%;height:100%;cursor:none;}
+        .check-box.checked{background:var(--gold);border-color:var(--gold);}
+        .check-box.checked::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--bg);font-weight:700;}
+        .check-label{font-size:0.88rem;color:var(--text2);}
+
+        /* 2FA SECTION */
+        .twofa-section{background:rgba(0,201,167,0.05);border:1px solid rgba(0,201,167,0.15);border-radius:10px;padding:20px;margin-bottom:24px;display:none;}
+        .twofa-section.show{display:block;}
+        .twofa-title{font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--teal);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+        .twofa-dots{display:flex;gap:12px;margin-top:12px;}
+        .twofa-dot-in{width:44px;height:52px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;text-align:center;font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;color:var(--text);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+        .twofa-dot-in:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,201,167,0.12);}
+
+        /* SUBMIT BUTTON */
+        .submit-btn{width:100%;padding:16px 24px;background:var(--gold);color:var(--bg);font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border:none;border-radius:10px;cursor:none;transition:transform 0.2s,box-shadow 0.2s,background 0.2s;position:relative;overflow:hidden;}
+        .submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(233,161,35,0.4);}
+        .submit-btn:disabled{opacity:0.6;transform:none;cursor:default;}
+        .submit-btn .btn-spinner{display:none;width:18px;height:18px;border:2px solid rgba(6,7,26,0.3);border-top-color:var(--bg);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto;}
+        .submit-btn.loading .btn-text{display:none;}
+        .submit-btn.loading .btn-spinner{display:block;}
+
+        /* ERROR / SUCCESS MESSAGES */
+        .form-msg{padding:14px 18px;border-radius:10px;font-size:0.88rem;margin-bottom:20px;display:none;align-items:center;gap:10px;}
+        .form-msg.error{background:var(--red-glow);border:1px solid rgba(255,107,107,0.25);color:var(--red);display:flex;}
+        .form-msg.success{background:var(--teal-glow);border:1px solid rgba(0,201,167,0.25);color:var(--teal);display:flex;}
+
+        /* FORM FOOTER */
+        .form-footer{margin-top:28px;padding-top:24px;border-top:1px solid var(--border);text-align:center;}
+        .form-footer p{font-size:0.82rem;color:var(--text3);}
+        .form-footer a{color:var(--gold);font-weight:500;transition:opacity 0.2s;}
+        .form-footer a:hover{opacity:0.7;}
+
+        /* ANIMATIONS */
+        @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .right-panel form{animation:fadeUp 0.6s 0.1s ease both;}
+        .left-content{animation:fadeUp 0.7s ease both;}
+
+        /* RESPONSIVE */
+        @media(max-width:960px){
+            .page{grid-template-columns:1fr;}
+            .left-panel{display:none;}
+            .right-panel{padding:100px 32px 60px;}
+            body{cursor:auto;}
+            .cursor,.cursor-ring{display:none;}
+        }
+        @media(max-width:560px){
+            .topbar{padding:14px 20px;}
+            .right-panel{padding:90px 20px 60px;}
+            .form-row{grid-template-columns:1fr;}
+            .twofa-dot-in{width:38px;height:46px;}
+        }
+    </style>
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-DZPCCPEP1J');
+    </script>
+
+<link rel="canonical" href="https://thekpihub.com/admin-login.html">
+    <meta name="robots" content="noindex, nofollow">
+        <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wdshn14xgf");
+    </script>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- TOP BAR -->
+<header class="topbar">
+    <a href="index.html">
+        <div class="logo"><div class="logo-dot"></div>The <span class="logo-accent">KPI</span> Hub</div>
+    </a>
+    <div class="topbar-right">
+        <span class="portal-badge">Staff Portal</span>
+        <a href="index.html" class="back-link">Back to site</a>
+    </div>
+</header>
+
+<div class="page">
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+        <div class="left-grid"></div>
+        <div class="left-glow"></div>
+        <div class="left-content">
+            <div class="left-tag">Admin &amp; Staff Access</div>
+            <h1 class="left-h1">Your <em>command centre</em> awaits</h1>
+            <p class="left-p">Secure portal for KPI Hub administrators and team members. Access dashboards, manage intelligence pipelines, and monitor platform performance.</p>
+            <div class="features-list">
+                <div class="feat-item">
+                    <div class="feat-icon">📊</div>
+                    <span>Full analytics dashboard &amp; pipeline monitoring</span>
+                </div>
+                <div class="feat-item">
+                    <div class="feat-icon">⚙️</div>
+                    <span>System settings &amp; content management</span>
+                </div>
+                <div class="feat-item">
+                    <div class="feat-icon teal">👥</div>
+                    <span>User management &amp; permissions control</span>
+                </div>
+                <div class="feat-item">
+                    <div class="feat-icon teal">🔔</div>
+                    <span>Real-time alerts &amp; notification centre</span>
+                </div>
+            </div>
+            <div class="security-strip">
+                <div class="security-dot"></div>
+                256-bit AES Encryption &nbsp;·&nbsp; 2FA Protected &nbsp;·&nbsp; ISO 27001
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+        <div class="form-header">
+            <h2 class="form-title">Staff Login</h2>
+            <p class="form-sub">Select your role and sign in to access the internal portal.</p>
+        </div>
+
+        <!-- ROLE SWITCHER -->
+        <div class="role-switcher" id="roleSwitcher" role="tablist">
+            <button class="role-btn active" data-role="admin" role="tab" aria-selected="true">Administrator</button>
+            <button class="role-btn" data-role="employee" role="tab" aria-selected="false">Employee</button>
+        </div>
+
+        <!-- ALERT MESSAGES -->
+        <div class="form-msg error" id="formError" role="alert">
+            <span>⚠</span>
+            <span id="errorText">Invalid credentials. Please try again.</span>
+        </div>
+        <div class="form-msg success" id="formSuccess" role="status">
+            <span>✓</span>
+            <span id="successText">Authentication successful. Redirecting…</span>
+        </div>
+
+        <form id="adminForm" novalidate>
+            <!-- Email -->
+            <div class="form-group">
+                <label class="form-label" for="adminEmail">Work Email</label>
+                <input class="form-in" type="email" id="adminEmail" name="email" placeholder="admin@thekpihub.com" autocomplete="email" required>
+            </div>
+
+            <!-- Employee ID (employees only) -->
+            <div class="form-group emp-fields" id="empIdGroup">
+                <label class="form-label" for="empId">Employee ID</label>
+                <input class="form-in" type="text" id="empId" name="empId" placeholder="KPI-EMP-XXXX" autocomplete="off">
+            </div>
+
+            <!-- Department (employees only) -->
+            <div class="form-group emp-fields form-row" id="empDeptGroup">
+                <div>
+                    <label class="form-label" for="department">Department</label>
+                    <select class="form-select" id="department" name="department">
+                        <option value="" disabled selected>Select department</option>
+                        <option value="engineering">Engineering</option>
+                        <option value="intelligence">Intelligence</option>
+                        <option value="growth">Growth &amp; Marketing</option>
+                        <option value="operations">Operations</option>
+                        <option value="finance">Finance</option>
+                        <option value="hr">People &amp; HR</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="accessLevel">Access Level</label>
+                    <select class="form-select" id="accessLevel" name="accessLevel">
+                        <option value="" disabled selected>Select level</option>
+                        <option value="l1">Level 1 — Read</option>
+                        <option value="l2">Level 2 — Edit</option>
+                        <option value="l3">Level 3 — Manage</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label class="form-label" for="adminPassword">
+                    Password
+                    <a href="#" id="forgotPwdLink" onclick="handleForgotPassword(event)">Forgot password?</a>
+                </label>
+                <div class="input-wrap">
+                    <input class="form-in" type="password" id="adminPassword" name="password" placeholder="••••••••••••" autocomplete="current-password" required>
+                    <button type="button" class="eye-toggle" id="eyeToggle" aria-label="Toggle password visibility">👁</button>
+                </div>
+            </div>
+
+            <!-- 2FA Section -->
+            <div class="twofa-section" id="twofaSection">
+                <div class="twofa-title">🔒 Two-Factor Authentication</div>
+                <p style="font-size:0.82rem;color:var(--text2);">Enter the 6-digit code from your authenticator app.</p>
+                <div class="twofa-dots">
+                    <input class="twofa-dot-in" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Code digit 1">
+                    <input class="twofa-dot-in" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Code digit 2">
+                    <input class="twofa-dot-in" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Code digit 3">
+                    <input class="twofa-dot-in" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Code digit 4">
+                    <input class="twofa-dot-in" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Code digit 5">
+                    <input class="twofa-dot-in" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Code digit 6">
+                </div>
+            </div>
+
+            <!-- Remember & 2FA Toggle -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+                <div class="check-row" style="margin-bottom:0;">
+                    <div class="check-box" id="rememberBox" role="checkbox" aria-checked="false" aria-label="Keep me signed in">
+                        <input type="checkbox" id="rememberMe" name="remember">
+                    </div>
+                    <label class="check-label" for="rememberMe">Keep me signed in</label>
+                </div>
+                <button type="button" id="enable2fa" style="font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;background:none;border:1px solid var(--border);border-radius:6px;padding:6px 14px;color:var(--text3);cursor:none;transition:border-color 0.2s,color 0.2s;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text3)';">
+                    Enable 2FA
+                </button>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <span class="btn-text">Sign In to Portal</span>
+                <div class="btn-spinner"></div>
+            </button>
+
+            <div class="form-footer">
+                <p>Having trouble? <a href="mailto:admin@thekpihub.com">Contact IT support</a></p>
+                <p style="margin-top:8px;">Not staff? <a href="login.html">Customer login &rarr;</a></p>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    /* Custom Cursor */
+    const cursor = document.getElementById('cursor');
+    const ring   = document.getElementById('cursorRing');
+    document.addEventListener('mousemove', e => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top  = e.clientY + 'px';
+        ring.style.left   = e.clientX + 'px';
+        ring.style.top    = e.clientY + 'px';
+    });
+    document.querySelectorAll('a,button,input,select,.check-box,.role-btn').forEach(el => {
+        el.addEventListener('mouseenter', () => { cursor.style.width='18px'; cursor.style.height='18px'; });
+        el.addEventListener('mouseleave', () => { cursor.style.width='10px'; cursor.style.height='10px'; });
+    });
+
+    /* Role Switcher */
+    const roleBtns   = document.querySelectorAll('.role-btn');
+    const empFields  = document.querySelectorAll('.emp-fields');
+    let currentRole  = 'admin';
+
+    roleBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            roleBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+            btn.classList.add('active');
+            btn.setAttribute('aria-selected','true');
+            currentRole = btn.dataset.role;
+            empFields.forEach(f => f.classList.toggle('show', currentRole === 'employee'));
+            document.querySelector('.form-title').textContent = currentRole === 'admin' ? 'Staff Login' : 'Employee Login';
+        });
+    });
+
+    /* Password Visibility Toggle */
+    const pwdIn  = document.getElementById('adminPassword');
+    const eyeBtn = document.getElementById('eyeToggle');
+    eyeBtn.addEventListener('click', () => {
+        const show = pwdIn.type === 'password';
+        pwdIn.type = show ? 'text' : 'password';
+        eyeBtn.textContent = show ? '🙈' : '👁';
+    });
+
+    /* Remember Me */
+    const rememberBox = document.getElementById('rememberBox');
+    rememberBox.addEventListener('click', () => {
+        const checked = rememberBox.getAttribute('aria-checked') === 'true';
+        rememberBox.setAttribute('aria-checked', String(!checked));
+        rememberBox.classList.toggle('checked', !checked);
+        document.getElementById('rememberMe').checked = !checked;
+    });
+
+    /* 2FA Toggle */
+    const enable2faBtn   = document.getElementById('enable2fa');
+    const twofaSection   = document.getElementById('twofaSection');
+    let twofaEnabled     = false;
+    enable2faBtn.addEventListener('click', () => {
+        twofaEnabled = !twofaEnabled;
+        twofaSection.classList.toggle('show', twofaEnabled);
+        enable2faBtn.textContent = twofaEnabled ? 'Disable 2FA' : 'Enable 2FA';
+        if (twofaEnabled) twofaSection.querySelector('.twofa-dot-in').focus();
+    });
+
+    /* 2FA digit auto-advance */
+    document.querySelectorAll('.twofa-dot-in').forEach((inp, idx, all) => {
+        inp.addEventListener('input', () => {
+            if (inp.value && idx < all.length - 1) all[idx + 1].focus();
+        });
+        inp.addEventListener('keydown', e => {
+            if (e.key === 'Backspace' && !inp.value && idx > 0) all[idx - 1].focus();
+        });
+    });
+
+    /* Forgot Password */
+    function handleForgotPassword(e) {
+        e.preventDefault();
+        showMsg('success', '✉ Password reset instructions have been sent to your work email.');
+    }
+
+    /* Message helpers */
+    function showMsg(type, text) {
+        const err  = document.getElementById('formError');
+        const succ = document.getElementById('formSuccess');
+        err.style.display  = 'none';
+        succ.style.display = 'none';
+        if (type === 'error') {
+            document.getElementById('errorText').textContent = text;
+            err.style.display = 'flex';
+        } else {
+            document.getElementById('successText').textContent = text;
+            succ.style.display = 'flex';
+        }
+    }
+    function hideMsg() {
+        document.getElementById('formError').style.display  = 'none';
+        document.getElementById('formSuccess').style.display = 'none';
+    }
+
+    /* Field validation */
+    function validateField(input) {
+        const valid = input.checkValidity() && input.value.trim() !== '';
+        input.classList.toggle('error', !valid);
+        return valid;
+    }
+
+    /* Form Submit */
+    document.getElementById('adminForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        hideMsg();
+
+        const email = document.getElementById('adminEmail');
+        const pwd   = document.getElementById('adminPassword');
+        let ok = true;
+
+        if (!validateField(email))       ok = false;
+        if (!validateField(pwd))         ok = false;
+        if (currentRole === 'employee') {
+            const empId = document.getElementById('empId');
+            if (!validateField(empId))   ok = false;
+        }
+
+        if (!ok) { showMsg('error', '⚠ Please fill in all required fields correctly.'); return; }
+
+        if (twofaEnabled) {
+            const digits = [...document.querySelectorAll('.twofa-dot-in')].map(i=>i.value).join('');
+            if (digits.length < 6) { showMsg('error', '⚠ Please enter all 6 digits of your 2FA code.'); return; }
+        }
+
+        /* Client-side authentication (static hosting) */
+        const btn = document.getElementById('submitBtn');
+        btn.classList.add('loading');
+        btn.disabled = true;
+
+        const ADMIN_EMAIL = 'admin@thekpihub.com';
+        const ADMIN_HASH  = '7d31cd218582b3e58259243e322da33e84792ec2a265ac58b177bb9bea034fdc';
+
+        async function sha256(str) {
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+        }
+
+        sha256(pwd.value).then(pwdHash => {
+            if (email.value !== ADMIN_EMAIL || pwdHash !== ADMIN_HASH) {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                showMsg('error', '⚠ Invalid email or password.');
+                return;
+            }
+
+            const expiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+            localStorage.setItem('authToken', 'session_' + Date.now());
+            localStorage.setItem('userEmail', email.value);
+            localStorage.setItem('userRole', 'admin');
+            localStorage.setItem('tokenExpiry', expiry);
+
+            showMsg('success', '✓ Authentication successful. Loading your dashboard…');
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+        });
+    });
+
+    /* Live field validation on blur */
+    ['adminEmail','adminPassword'].forEach(id => {
+        document.getElementById(id).addEventListener('blur', function(){
+            if (this.value) validateField(this);
+        });
+    });
+</script>
+</body>
+</html>

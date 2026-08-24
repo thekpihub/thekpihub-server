@@ -1,0 +1,16 @@
+<svg viewBox="0 0 1195 1316" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <!-- This SVG serves as a wrapper for the KPI Hub logo -->
+  <!-- The logo image is embedded or referenced -->
+  <defs>
+    <style>
+      /* Favicon styling */
+      svg { background: #06071A; }
+    </style>
+  </defs>
+
+  <!-- Logo background -->
+  <rect width="1195" height="1316" fill="#06071A"/>
+
+  <!-- Logo text indicator (for favicon display) -->
+  <text x="597.5" y="658" font-family="Arial, sans-serif" font-size="200" font-weight="bold" fill="#E9A123" text-anchor="middle" dominant-baseline="middle">KPI</text>
+</svg>

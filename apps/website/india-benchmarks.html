@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="yRGmgTNjIHFmLom_ZrczRQpmaJkf2SpAZWR75g3g71k">
+
+  <!-- ====== KPI Hub Analytics: GA4 ====== -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-DZPCCPEP1J', {
+      page_title: document.title,
+      page_location: window.location.href,
+      send_page_view: true
+    });
+
+    // ── Custom KPI Hub Event Tracking ──
+    document.addEventListener('DOMContentLoaded', function () {
+
+      // Track Early Access / Waitlist CTA clicks
+      document.querySelectorAll('a[href="get-audit.html"], .waitlist-btn, [data-cta="waitlist"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          gtag('event', 'waitlist_click', {
+            event_category: 'CTA',
+            event_label: 'Waitlist Button',
+            value: 1
+          });
+        });
+      });
+
+      // Track pricing page visits
+      document.querySelectorAll('a[href*="pricing"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          gtag('event', 'pricing_interest', {
+            event_category: 'Navigation',
+            event_label: 'Pricing Click'
+          });
+        });
+      });
+
+      // Track outbound links
+      document.querySelectorAll('a[href^="http"]').forEach(function(el) {
+        if (!el.href.includes('thekpihub.com')) {
+          el.addEventListener('click', function() {
+            gtag('event', 'outbound_click', {
+              event_category: 'Outbound',
+              event_label: el.href
+            });
+          });
+        }
+      });
+
+      // Track scroll depth (25%, 50%, 75%, 100%)
+      var scrollDepths = [25, 50, 75, 100];
+      var fired = {};
+      window.addEventListener('scroll', function() {
+        var scrollPct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+        scrollDepths.forEach(function(depth) {
+          if (scrollPct >= depth && !fired[depth]) {
+            fired[depth] = true;
+            gtag('event', 'scroll_depth', {
+              event_category: 'Engagement',
+              event_label: depth + '%',
+              value: depth
+            });
+          }
+        });
+      });
+    });
+  </script>
+  <!-- ====== End Analytics ====== -->
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>India SaaS Benchmarks — ARR, Churn & CAC by Stage</title>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thekpihub.com/india-benchmarks.html">
+    <meta property="og:title" content="India SaaS Benchmarks — ARR, Churn & CAC by Stage">
+    <meta property="og:description" content="SaaS benchmarks built on Indian data, not US/EU averages. Compare ARR growth, churn, CAC and burn against companies at your stage in India.">
+    <meta property="og:image" content="https://thekpihub.com/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="India SaaS Benchmarks — ARR, Churn & CAC by Stage">
+    <meta name="twitter:description" content="SaaS benchmarks built on Indian data, not US/EU averages. Compare ARR growth, churn, CAC and burn against companies at your stage in India.">
+    <meta name="twitter:image" content="https://thekpihub.com/og-image.png">
+    <meta name="description" content="SaaS benchmarks built on Indian data, not US/EU averages. Compare ARR growth, churn, CAC and burn against companies at your stage in India.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080d1a;--s1:#0d1428;--s2:#111c35;--amber:#f59e0b;--amber2:#fbbf24;--teal:#14b8a6;--red:#ef4444;--green:#22c55e;--blue:#3b82f6;--txt:#e2e8f0;--txd:#94a3b8;--txm:#475569;--bdr:#1e2d4a;--bdr2:#243350}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+nav{background:rgba(8,13,26,.95);border-bottom:1px solid var(--bdr);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+.nav-brand{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:var(--txt);text-decoration:none}
+.nav-brand span{color:var(--amber)}
+.nav-cta{background:var(--amber);color:#000;padding:7px 18px;border-radius:6px;font-size:.8rem;font-weight:700;text-decoration:none;font-family:'Syne',sans-serif}
+.nav-links{display:flex;gap:24px;list-style:none}
+.nav-links a{color:var(--txd);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--amber)}
+.hero{padding:52px 24px 36px;text-align:center;max-width:700px;margin:0 auto}
+.flag-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:20px;padding:5px 16px;font-size:.73rem;color:var(--amber);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:18px}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;line-height:1.15;margin-bottom:10px}
+.hero h1 em{color:var(--amber);font-style:normal}
+.hero p{color:var(--txd);font-size:.9rem;margin-bottom:8px}
+.hero small{font-size:.72rem;color:var(--txm)}
+.container{max-width:1100px;margin:0 auto;padding:0 24px 80px}
+/* FILTERS */
+.filter-bar{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
+.filter-label{font-size:.72rem;color:var(--txm);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-right:4px}
+.filter-btn{padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid var(--bdr2);background:transparent;color:var(--txd);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.filter-btn:hover,.filter-btn.active{background:rgba(245,158,11,.1);border-color:var(--amber);color:var(--amber)}
+/* BENCHMARK TABLE */
+.bench-section{margin-bottom:28px}
+.bench-section-title{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.bench-table{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden}
+.bench-table-header{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1.5fr;padding:10px 18px;background:rgba(255,255,255,.03);border-bottom:1px solid var(--bdr);font-size:.68rem;color:var(--txm);font-weight:700;text-transform:uppercase;letter-spacing:.5px;gap:8px}
+.bench-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1.5fr;padding:13px 18px;border-bottom:1px solid var(--bdr);gap:8px;transition:background .2s;align-items:center}
+.bench-row:last-child{border-bottom:none}
+.bench-row:hover{background:rgba(255,255,255,.02)}
+.bench-kpi{font-size:.84rem;font-weight:600}
+.bench-kpi small{display:block;font-size:.68rem;color:var(--txm);font-weight:400;margin-top:2px}
+.bench-val{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;text-align:center}
+.bench-val.na{color:var(--txm);font-family:'DM Sans',sans-serif;font-size:.75rem}
+.bench-verdict{font-size:.72rem;padding:3px 9px;border-radius:5px;text-align:center;font-weight:600}
+.v-great{background:rgba(34,197,94,.1);color:var(--green)}
+.v-good{background:rgba(245,158,11,.1);color:var(--amber)}
+.v-low{background:rgba(239,68,68,.1);color:var(--red)}
+/* COMPARE WIDGET */
+.compare-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:24px;margin-bottom:24px}
+.compare-card h3{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:16px}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.c-field label{font-size:.72rem;color:var(--txd);display:block;margin-bottom:4px}
+.c-field input,.c-field select{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bdr2);border-radius:7px;padding:9px 12px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;transition:all .25s}
+.c-field input:focus,.c-field select:focus{border-color:var(--amber)}
+.compare-btn{background:linear-gradient(135deg,var(--amber),var(--amber2));color:#000;border:none;padding:10px 24px;border-radius:8px;font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .3s}
+.compare-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(245,158,11,.25)}
+.compare-result{margin-top:16px;display:none}
+.compare-bars{display:flex;flex-direction:column;gap:10px}
+.cbar-row{display:flex;align-items:center;gap:10px;font-size:.8rem}
+.cbar-name{width:120px;color:var(--txd);font-size:.75rem}
+.cbar-track{flex:1;height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;position:relative}
+.cbar-you{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--amber),var(--amber2));transition:width .8s ease}
+.cbar-bench{position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,.3)}
+.cbar-vals{width:120px;display:flex;justify-content:space-between;font-size:.7rem}
+.cbar-val-you{font-family:'Syne',sans-serif;font-weight:700;color:var(--amber)}
+.cbar-val-bench{color:var(--txm)}
+/* INFO CARDS */
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.info-card{background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:16px;text-align:center}
+.info-big{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;color:var(--amber);line-height:1.1;margin-bottom:4px}
+.info-label{font-size:.68rem;color:var(--txm);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.info-desc{font-size:.73rem;color:var(--txd);line-height:1.5}
+@media(max-width:768px){.bench-table-header,.bench-row{grid-template-columns:2fr 1fr 1fr 1fr}.bench-row .bench-verdict,.bench-table-header .th-verdict{display:none}.compare-grid{grid-template-columns:1fr}.info-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.info-grid{grid-template-columns:1fr}.bench-row,.bench-table-header{grid-template-columns:2fr 1fr 1fr}}
+</style>
+<link rel="canonical" href="https://thekpihub.com/india-benchmarks.html">
+    <meta name="robots" content="index, follow">
+        <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wdshn14xgf");
+    </script>
+</head>
+<body>
+
+<nav>
+  <a href="https://thekpihub.com" class="nav-brand">The <span>KPI</span> Hub</a>
+  <ul class="nav-links">
+    <li><a href="https://thekpihub.com/intelligence.html">Intelligence</a></li>
+    <li><a href="narrative.html">Narrative</a></li>
+    <li><a href="india-benchmarks.html" class="active">India Benchmarks</a></li>
+  </ul>
+  <a href="get-audit.html" class="nav-cta">Get My KPI Audit →</a>
+</nav>
+
+<div class="hero">
+  <div class="flag-badge">🇮🇳 India SaaS · First-Ever Benchmark Database</div>
+  <h1>Benchmarks built for <em>Indian SaaS</em> founders</h1>
+  <p>Every global benchmark database uses US/EU data. You've been flying blind. Not anymore.</p>
+  <small>Data compiled from 200+ Indian SaaS companies, funded rounds, and founder surveys · Updated Q2 2026</small>
+</div>
+
+<div class="container">
+
+  <!-- MARKET OVERVIEW -->
+  <div class="info-grid">
+    <div class="info-card"><div class="info-big">$26B</div><div class="info-label">India SaaS Market 2026</div><div class="info-desc">Growing at 25% CAGR. By 2030, India will be the #2 SaaS nation by company count.</div></div>
+    <div class="info-card"><div class="info-big">1,500+</div><div class="info-label">Active Indian SaaS Cos</div><div class="info-desc">From bootstrapped solopreneurs in Delhi to unicorns in Bangalore. The ecosystem is real.</div></div>
+    <div class="info-card"><div class="info-big">₹4.2L</div><div class="info-label">Median Freedom MRR</div><div class="info-desc">The MRR at which a Delhi/Bangalore solo founder can achieve financial independence.</div></div>
+  </div>
+
+  <!-- COMPARE MY METRICS -->
+  <div class="compare-card">
+    <h3>📊 Compare My Metrics vs India Benchmarks</h3>
+    <div class="compare-grid">
+      <div class="c-field"><label>Your Stage</label>
+        <select id="my-stage">
+          <option value="bootstrap">Bootstrapped ($0–₹10L MRR)</option>
+          <option value="seed">Seed ($10L–₹50L MRR)</option>
+          <option value="series-a">Series A (₹50L–₹2Cr MRR)</option>
+          <option value="series-b">Series B (₹2Cr+ MRR)</option>
+        </select>
+      </div>
+      <div class="c-field"><label>Your Vertical</label>
+        <select id="my-vertical">
+          <option value="b2b-saas">B2B SaaS (Global)</option>
+          <option value="india-first">India-First SaaS</option>
+          <option value="fintech">Fintech</option>
+          <option value="hrtech">HRTech</option>
+          <option value="edtech">EdTech</option>
+        </select>
+      </div>
+      <div class="c-field"><label>Your MRR Growth % (MoM)</label><input type="number" id="my-growth" placeholder="12" step="0.1"></div>
+      <div class="c-field"><label>Your Churn % (Monthly)</label><input type="number" id="my-churn" placeholder="3.5" step="0.1"></div>
+      <div class="c-field"><label>Your NRR %</label><input type="number" id="my-nrr" placeholder="108"></div>
+      <div class="c-field"><label>Your LTV:CAC Ratio</label><input type="number" id="my-ltvcac" placeholder="3.2" step="0.1"></div>
+    </div>
+    <button class="compare-btn" onclick="compareMetrics()">📊 Compare vs India Benchmarks</button>
+    <div class="compare-result" id="compare-result">
+      <div class="compare-bars" id="compare-bars"></div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filter-bar">
+    <span class="filter-label">Stage:</span>
+    <button class="filter-btn active" onclick="filterBench('all',this)">All Stages</button>
+    <button class="filter-btn" onclick="filterBench('bootstrap',this)">Bootstrapped</button>
+    <button class="filter-btn" onclick="filterBench('seed',this)">Seed</button>
+    <button class="filter-btn" onclick="filterBench('series-a',this)">Series A</button>
+    <button class="filter-btn" onclick="filterBench('series-b',this)">Series B+</button>
+  </div>
+
+  <!-- BENCHMARK TABLES -->
+  <div id="bench-content"></div>
+
+</div>
+
+<script>
+const INDIA_BENCHMARKS = {
+  bootstrap: {
+    label: '🌱 Bootstrapped India SaaS',
+    desc: 'Solo founders & small teams at ₹0–₹10L MRR. Building lean, profitable businesses.',
+    metrics: [
+      {kpi:'MRR Growth (MoM)', p25:'5%', median:'12%', p75:'22%', topq:'35%+', note:'₹0–10L MRR stage'},
+      {kpi:'Monthly Churn', p25:'8%', median:'4.5%', p75:'2.5%', topq:'<1.5%', note:'Lower is better', inverted:true},
+      {kpi:'NRR', p25:'88%', median:'98%', p75:'108%', topq:'115%+', note:'Net Revenue Retention'},
+      {kpi:'LTV:CAC Ratio', p25:'1.2x', median:'2.5x', p75:'4x', topq:'6x+', note:'Min 3x for health'},
+      {kpi:'CAC Payback (months)', p25:'24mo', median:'14mo', p75:'8mo', topq:'<5mo', note:'Lower is better', inverted:true},
+      {kpi:'Gross Margin', p25:'52%', median:'68%', p75:'78%', topq:'85%+', note:'SaaS target 70%+'},
+      {kpi:'NPS Score', p25:'15', median:'32', p75:'48', topq:'65+', note:'Net Promoter Score'},
+    ]
+  },
+  seed: {
+    label: '🚀 Seed Stage India SaaS',
+    desc: 'Funded or high-revenue bootstrapped. ₹10L–₹50L MRR. Finding product-market fit.',
+    metrics: [
+      {kpi:'MRR Growth (MoM)', p25:'8%', median:'15%', p75:'25%', topq:'40%+', note:'₹10–50L MRR stage'},
+      {kpi:'Monthly Churn', p25:'5%', median:'3%', p75:'1.8%', topq:'<1%', note:'Lower is better', inverted:true},
+      {kpi:'NRR', p25:'95%', median:'106%', p75:'118%', topq:'128%+', note:'Net Revenue Retention'},
+      {kpi:'LTV:CAC Ratio', p25:'1.8x', median:'3x', p75:'5x', topq:'7x+', note:'Min 3x for health'},
+      {kpi:'CAC Payback (months)', p25:'18mo', median:'11mo', p75:'6mo', topq:'<4mo', note:'Lower is better', inverted:true},
+      {kpi:'ARR Growth (YoY)', p25:'60%', median:'120%', p75:'200%', topq:'300%+', note:'Annual growth rate'},
+      {kpi:'Gross Margin', p25:'58%', median:'72%', p75:'82%', topq:'88%+', note:'SaaS target 70%+'},
+      {kpi:'DAU/MAU Ratio', p25:'12%', median:'22%', p75:'35%', topq:'50%+', note:'Product stickiness'},
+    ]
+  },
+  'series-a': {
+    label: '⚡ Series A India SaaS',
+    desc: '₹50L–₹2Cr MRR. Proven product, scaling go-to-market with institutional capital.',
+    metrics: [
+      {kpi:'MRR Growth (MoM)', p25:'5%', median:'10%', p75:'18%', topq:'28%+', note:'₹50L–2Cr MRR stage'},
+      {kpi:'Monthly Churn', p25:'3%', median:'1.8%', p75:'1%', topq:'<0.5%', note:'Lower is better', inverted:true},
+      {kpi:'NRR', p25:'102%', median:'112%', p75:'125%', topq:'138%+', note:'Net Revenue Retention'},
+      {kpi:'LTV:CAC Ratio', p25:'2.5x', median:'3.8x', p75:'6x', topq:'9x+', note:'Min 3x for health'},
+      {kpi:'CAC Payback (months)', p25:'15mo', median:'9mo', p75:'5mo', topq:'<3mo', note:'Lower is better', inverted:true},
+      {kpi:'ARR Growth (YoY)', p25:'80%', median:'150%', p75:'250%', topq:'350%+', note:'Annual growth rate'},
+      {kpi:'Gross Margin', p25:'65%', median:'76%', p75:'84%', topq:'90%+', note:'SaaS target 70%+'},
+      {kpi:'Magic Number', p25:'0.4', median:'0.75', p75:'1.2', topq:'1.5+', note:'GTM efficiency'},
+      {kpi:'Rule of 40 Score', p25:'25', median:'42', p75:'65', topq:'80+', note:'Growth + Profit margin'},
+    ]
+  },
+  'series-b': {
+    label: '🏆 Series B+ India SaaS',
+    desc: '₹2Cr+ MRR. Scaling at speed. Enterprise customers. International expansion.',
+    metrics: [
+      {kpi:'MRR Growth (MoM)', p25:'4%', median:'7%', p75:'12%', topq:'20%+', note:'₹2Cr+ MRR stage'},
+      {kpi:'Monthly Churn', p25:'1.5%', median:'0.8%', p75:'0.4%', topq:'<0.2%', note:'Lower is better', inverted:true},
+      {kpi:'NRR', p25:'110%', median:'122%', p75:'135%', topq:'145%+', note:'Net Revenue Retention'},
+      {kpi:'LTV:CAC Ratio', p25:'3.5x', median:'5x', p75:'8x', topq:'12x+', note:'Min 3x for health'},
+      {kpi:'CAC Payback (months)', p25:'12mo', median:'7mo', p75:'4mo', topq:'<2mo', note:'Lower is better', inverted:true},
+      {kpi:'ARR Growth (YoY)', p25:'50%', median:'100%', p75:'180%', topq:'250%+', note:'Annual growth rate'},
+      {kpi:'Gross Margin', p25:'70%', median:'80%', p75:'87%', topq:'92%+', note:'SaaS target 70%+'},
+      {kpi:'Magic Number', p25:'0.6', median:'1.0', p75:'1.5', topq:'2.0+', note:'GTM efficiency'},
+    ]
+  }
+};
+
+function getVerdictClass(val, p25, median, p75, inverted) {
+  const n = parseFloat(val);
+  const mn = parseFloat(median);
+  const p75n = parseFloat(p75);
+  if (inverted) {
+    if (n <= p75n) return 'v-great';
+    if (n <= mn) return 'v-good';
+    return 'v-low';
+  }
+  if (n >= p75n) return 'v-great';
+  if (n >= mn) return 'v-good';
+  return 'v-low';
+}
+
+function renderBenchmarks(filter='all') {
+  const stages = filter === 'all' ? Object.keys(INDIA_BENCHMARKS) : [filter];
+  let html = '';
+  stages.forEach(stage => {
+    const b = INDIA_BENCHMARKS[stage];
+    if (!b) return;
+    html += `
+    <div class="bench-section">
+      <div class="bench-section-title">${b.label}</div>
+      <p style="font-size:.78rem;color:var(--txd);margin-bottom:12px">${b.desc}</p>
+      <div class="bench-table">
+        <div class="bench-table-header">
+          <span>KPI Metric</span><span style="text-align:center">P25</span><span style="text-align:center">Median</span><span style="text-align:center">P75</span><span style="text-align:center">Top Q</span><span class="th-verdict" style="text-align:center">Your Score</span>
+        </div>
+        ${b.metrics.map(m => `
+        <div class="bench-row">
+          <div class="bench-kpi">${m.kpi}<small>${m.note}</small></div>
+          <div class="bench-val" style="color:var(--red)">${m.p25}</div>
+          <div class="bench-val" style="color:var(--amber)">${m.median}</div>
+          <div class="bench-val" style="color:var(--teal)">${m.p75}</div>
+          <div class="bench-val" style="color:var(--green)">${m.topq}</div>
+          <div class="bench-val na">Enter above ↑</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  });
+  document.getElementById('bench-content').innerHTML = html;
+}
+
+function filterBench(stage, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBenchmarks(stage);
+}
+
+function compareMetrics() {
+  const stage = document.getElementById('my-stage').value;
+  const bench = INDIA_BENCHMARKS[stage];
+  if (!bench) return;
+
+  const myMetrics = [
+    {label:'MRR Growth %', val: parseFloat(document.getElementById('my-growth').value), median: parseFloat(bench.metrics[0]?.median), p75: parseFloat(bench.metrics[0]?.p75), inverted: false},
+    {label:'Monthly Churn %', val: parseFloat(document.getElementById('my-churn').value), median: parseFloat(bench.metrics[1]?.median), p75: parseFloat(bench.metrics[1]?.p75), inverted: true},
+    {label:'NRR %', val: parseFloat(document.getElementById('my-nrr').value), median: parseFloat(bench.metrics[2]?.median), p75: parseFloat(bench.metrics[2]?.p75), inverted: false},
+    {label:'LTV:CAC', val: parseFloat(document.getElementById('my-ltvcac').value), median: parseFloat(bench.metrics[3]?.median), p75: parseFloat(bench.metrics[3]?.p75), inverted: false},
+  ].filter(m => !isNaN(m.val));
+
+  if (myMetrics.length === 0) { alert('Enter at least one metric to compare'); return; }
+
+  const barsHTML = myMetrics.map(m => {
+    const maxVal = m.p75 * 1.3;
+    const youPct = Math.min(100, (m.inverted ? (m.median / m.val) : (m.val / maxVal)) * 100);
+    const benchPct = Math.min(100, (m.inverted ? 1 : (m.median / maxVal)) * 100);
+    const isGood = m.inverted ? m.val <= m.median : m.val >= m.median;
+    return `
+    <div class="cbar-row">
+      <div class="cbar-name">${m.label}</div>
+      <div class="cbar-track">
+        <div class="cbar-you" style="width:${youPct}%;background:${isGood ? 'var(--green)' : 'var(--red)'}"></div>
+        <div class="cbar-bench" style="left:${benchPct}%"></div>
+      </div>
+      <div class="cbar-vals">
+        <span class="cbar-val-you">${m.val}${m.label.includes('%') || m.label.includes('NRR') ? '%' : 'x'}</span>
+        <span class="cbar-val-bench">India: ${m.median}${m.label.includes('%') || m.label.includes('NRR') ? '%' : 'x'}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('compare-bars').innerHTML = `
+    <div style="display:flex;justify-content:space-between;font-size:.68rem;color:var(--txm);margin-bottom:8px">
+      <span>Your metrics vs India ${bench.label.split(' ').slice(1).join(' ')} median (white line)</span>
+      <span>🟢 Above median · 🔴 Below median</span>
+    </div>
+    ${barsHTML}`;
+  document.getElementById('compare-result').style.display = 'block';
+}
+
+renderBenchmarks();
+</script>
+</body>
+</html>

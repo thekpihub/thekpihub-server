@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account · The KPI Hub</title>
+    <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="assets/favicon-new.svg?v=d6470a38" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d1117;
+      --surface:  #161b22;
+      --border:   #30363d;
+      --text:     #e6edf3;
+      --muted:    #8b949e;
+      --accent:   #0ea5e9;
+      --accent-h: #38bdf8;
+      --danger:   #f85149;
+      --success:  #3fb950;
+      --radius:   10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px 24px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 520px;
+    }
+
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
+    .logo-mark {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 18px; color: #fff;
+    }
+    .logo-text { font-size: 18px; font-weight: 700; }
+
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+
+    /* Steps */
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 32px;
+    }
+    .step {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 500;
+    }
+    .step-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      color: var(--muted);
+      transition: all .3s;
+    }
+    .step.active .step-num { border-color: var(--accent); color: var(--accent); }
+    .step.done .step-num   { border-color: var(--success); background: var(--success); color: #fff; }
+    .step-label { color: var(--muted); transition: color .3s; }
+    .step.active .step-label { color: var(--text); }
+    .step-line { flex: 1; height: 1px; background: var(--border); margin: 0 12px; }
+
+    /* Form panels */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .field { margin-bottom: 18px; }
+    label {
+      display: block;
+      font-size: 13px; font-weight: 500;
+      color: var(--muted); margin-bottom: 6px;
+    }
+    .input-wrap { position: relative; }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: inherit; font-size: 14px;
+      transition: border-color .2s;
+      outline: none;
+    }
+    input:focus { border-color: var(--accent); }
+    input.err   { border-color: var(--danger); }
+
+    .pw-toggle {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--muted); padding: 0;
+    }
+    .pw-toggle:hover { color: var(--text); }
+
+    /* Password strength */
+    .strength-bar {
+      display: flex; gap: 4px; margin-top: 6px;
+    }
+    .strength-seg {
+      flex: 1; height: 3px; border-radius: 2px;
+      background: var(--border);
+      transition: background .3s;
+    }
+    .strength-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* Role cards */
+    .role-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .role-card {
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      user-select: none;
+    }
+    .role-card:hover { border-color: var(--accent); background: rgba(14,165,233,.05); }
+    .role-card.selected {
+      border-color: var(--accent);
+      background: rgba(14,165,233,.1);
+    }
+    .role-card input[type="radio"] { display: none; }
+    .role-icon { font-size: 22px; margin-bottom: 8px; }
+    .role-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .role-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+    /* Terms */
+    .terms-label {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 13px; color: var(--muted);
+      cursor: pointer; margin-bottom: 22px;
+    }
+    .terms-label input { margin-top: 2px; accent-color: var(--accent); flex-shrink: 0; }
+    .terms-label a { color: var(--accent); text-decoration: none; }
+
+    /* Buttons */
+    .btn-row { display: flex; gap: 12px; }
+    .btn {
+      padding: 11px 20px;
+      border-radius: var(--radius);
+      border: none;
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      transition: background .2s, opacity .2s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; flex: 1; }
+    .btn-primary:hover { background: var(--accent-h); }
+    .btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-ghost {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-ghost:hover { background: var(--border); }
+
+    .alert {
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      font-size: 13px;
+      margin-bottom: 18px;
+      display: none;
+    }
+    .alert.error   { background: rgba(248,81,73,.12); border: 1px solid rgba(248,81,73,.4); color: #fca5a5; }
+    .alert.success { background: rgba(63,185,80,.12);  border: 1px solid rgba(63,185,80,.4);  color: #86efac; }
+    .alert.show    { display: block; }
+
+    .signin-link {
+      text-align: center; font-size: 14px; color: var(--muted); margin-top: 20px;
+    }
+    .signin-link a { color: var(--accent); text-decoration: none; }
+
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+      border-radius: 50%; animation: spin .7s linear infinite;
+      vertical-align: middle; margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 480px) {
+      .card { padding: 28px 20px; }
+      .row-2 { grid-template-columns: 1fr; }
+      .role-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-DZPCCPEP1J");
+  </script>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-mark">K</div>
+    <span class="logo-text">The KPI Hub</span>
+  </div>
+
+  <h1>Create your account</h1>
+  <p class="subtitle">Start your free Starter plan — no credit card required</p>
+
+  <!-- Step indicator -->
+  <div class="steps">
+    <div class="step active" id="s1">
+      <div class="step-num">1</div>
+      <span class="step-label">Your Info</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="s2">
+      <div class="step-num">2</div>
+      <span class="step-label">Your Role</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" id="s3">
+      <div class="step-num">3</div>
+      <span class="step-label">Password</span>
+    </div>
+  </div>
+
+  <div class="alert error" id="alertBox"></div>
+
+  <!-- Panel 1: Basic info -->
+  <div class="panel active" id="panel1">
+    <div class="row-2">
+      <div class="field">
+        <label for="firstName">First name</label>
+        <input type="text" id="firstName" placeholder="Jane" autocomplete="given-name">
+      </div>
+      <div class="field">
+        <label for="lastName">Last name</label>
+        <input type="text" id="lastName" placeholder="Smith" autocomplete="family-name">
+      </div>
+    </div>
+    <div class="field">
+      <label for="email">Work email</label>
+      <input type="email" id="email" placeholder="jane@company.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label for="org">Organization</label>
+      <input type="text" id="org" placeholder="Acme Corp">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goToStep2()">Continue</button>
+    </div>
+  </div>
+
+  <!-- Panel 2: Role -->
+  <div class="panel" id="panel2">
+    <div class="field">
+      <label>Select your role</label>
+    </div>
+    <div class="role-grid">
+      <label class="role-card" id="card-executive">
+        <input type="radio" name="role" value="executive">
+        <div class="role-icon">🏢</div>
+        <div class="role-name">Executive</div>
+        <div class="role-desc">Company-wide KPIs, revenue, strategy metrics</div>
+      </label>
+      <label class="role-card" id="card-manager">
+        <input type="radio" name="role" value="manager">
+        <div class="role-icon">📋</div>
+        <div class="role-name">Manager</div>
+        <div class="role-desc">Team performance, project milestones, resource tracking</div>
+      </label>
+      <label class="role-card" id="card-contributor">
+        <input type="radio" name="role" value="contributor">
+        <div class="role-icon">⚡</div>
+        <div class="role-name">Contributor</div>
+        <div class="role-desc">Personal goals, task completion, individual KPIs</div>
+      </label>
+      <label class="role-card" id="card-analyst">
+        <input type="radio" name="role" value="analyst">
+        <div class="role-icon">📊</div>
+        <div class="role-name">Analyst</div>
+        <div class="role-desc">Data exploration, trend analysis, custom reports &amp; exports</div>
+      </label>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goToStep(1)">Back</button>
+      <button class="btn btn-primary" onclick="goToStep3()">Continue</button>
+    </div>
+  </div>
+
+  <!-- Panel 3: Password -->
+  <div class="panel" id="panel3">
+    <div class="field">
+      <label for="password">Password</label>
+      <div class="input-wrap">
+        <input type="password" id="password" placeholder="At least 8 characters" autocomplete="new-password" oninput="checkStrength(this.value)">
+        <button type="button" class="pw-toggle" onclick="togglePw('password')">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+      <div class="strength-bar">
+        <div class="strength-seg" id="seg1"></div>
+        <div class="strength-seg" id="seg2"></div>
+        <div class="strength-seg" id="seg3"></div>
+        <div class="strength-seg" id="seg4"></div>
+      </div>
+      <div class="strength-label" id="strengthLabel"></div>
+    </div>
+    <div class="field">
+      <label for="confirmPassword">Confirm password</label>
+      <div class="input-wrap">
+        <input type="password" id="confirmPassword" placeholder="Repeat password" autocomplete="new-password">
+        <button type="button" class="pw-toggle" onclick="togglePw('confirmPassword')">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <label class="terms-label">
+      <input type="checkbox" id="terms">
+      I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+    </label>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="goToStep(2)">Back</button>
+      <button class="btn btn-primary" id="submitBtn" onclick="submit()">Create Account</button>
+    </div>
+  </div>
+
+  <div class="signin-link">Already have an account? <a href="login.html">Sign in</a></div>
+
+  <div style="margin-top:20px; text-align:center; display:flex; justify-content:center; gap:20px;">
+    <a href="updates.html" style="font-size:12px; color:#8b949e; text-decoration:none;">Updates</a>
+    <a href="sitemap.html" style="font-size:12px; color:#8b949e; text-decoration:none;">Sitemap</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+  const { createClient } = supabase;
+  const sb = createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+
+  // Redirect if already signed in
+  (async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) window.location.href = CONFIG.app.dashboardUrl;
+  })();
+
+  const $ = id => document.getElementById(id);
+
+  function showError(msg) {
+    const el = $('alertBox');
+    el.textContent = msg;
+    el.className = 'alert error show';
+  }
+  function clearAlert() { $('alertBox').className = 'alert error'; }
+
+  // Role card selection
+  document.querySelectorAll('.role-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+    });
+  });
+
+  function goToStep(n) {
+    [1,2,3].forEach(i => {
+      $('panel' + i).className = 'panel' + (i === n ? ' active' : '');
+      const step = $('s' + i);
+      step.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
+      if (i < n) step.querySelector('.step-num').textContent = '✓';
+      else step.querySelector('.step-num').textContent = i;
+    });
+    clearAlert();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goToStep2() {
+    const first = $('firstName').value.trim();
+    const last  = $('lastName').value.trim();
+    const email = $('email').value.trim();
+    const org   = $('org').value.trim();
+
+    if (!first) { showError('First name is required.'); $('firstName').focus(); return; }
+    if (!last)  { showError('Last name is required.');  $('lastName').focus();  return; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showError('Please enter a valid email address.'); $('email').focus(); return;
+    }
+    if (!org) { showError('Organization is required.'); $('org').focus(); return; }
+    goToStep(2);
+  }
+
+  function goToStep3() {
+    const selected = document.querySelector('input[name="role"]:checked');
+    if (!selected) { showError('Please select your role.'); return; }
+    goToStep(3);
+  }
+
+  // Password strength
+  function checkStrength(pw) {
+    let score = 0;
+    if (pw.length >= 8)  score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+    const colors  = ['', '#f85149', '#d29922', '#3fb950', '#0ea5e9'];
+    const labels  = ['', 'Weak', 'Fair', 'Strong', 'Very strong'];
+    [1,2,3,4].forEach(i => {
+      $('seg' + i).style.background = i <= score ? colors[score] : 'var(--border)';
+    });
+    $('strengthLabel').textContent = pw.length ? labels[score] : '';
+    $('strengthLabel').style.color = colors[score];
+  }
+
+  function togglePw(id) {
+    const el = $(id);
+    el.type = el.type === 'password' ? 'text' : 'password';
+  }
+
+  async function submit() {
+    clearAlert();
+    const password = $('password').value;
+    const confirm  = $('confirmPassword').value;
+
+    if (password.length < 8) { showError('Password must be at least 8 characters.'); return; }
+    if (password !== confirm)  { showError('Passwords do not match.'); return; }
+    if (!$('terms').checked)   { showError('Please accept the Terms of Service.'); return; }
+
+    const btn = $('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Creating account…';
+
+    const email     = $('email').value.trim();
+    const firstName = $('firstName').value.trim();
+    const lastName  = $('lastName').value.trim();
+    const org       = $('org').value.trim();
+    const role      = document.querySelector('input[name="role"]:checked').value;
+
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: { data: { first_name: firstName, last_name: lastName } }
+    });
+
+    if (error) {
+      showError(error.message);
+      btn.disabled = false;
+      btn.textContent = 'Create Account';
+      return;
+    }
+
+    // Update profile with full info
+    if (data.user) {
+      await sb.from('profiles').upsert({
+        id:         data.user.id,
+        email,
+        first_name: firstName,
+        last_name:  lastName,
+        org,
+        role,
+        plan:       'starter'
+      });
+    }
+
+    // Redirect to dashboard (Supabase auto-confirms in some configs)
+    // or show check-email message if email confirmation is enabled
+    if (data.session) {
+      window.location.href = CONFIG.app.dashboardUrl;
+    } else {
+      btn.innerHTML = '✓ Check your email to confirm';
+      $('alertBox').textContent = 'We sent a confirmation link to ' + email + '. Click it to activate your account.';
+      $('alertBox').className = 'alert success show';
+    }
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:24px;background:var(--bg);color:var(--text);width:700px;box-sizing:border-box;display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;}
+  .box{background:rgba(255,255,255,0.04);border:1px solid var(--border);padding:20px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;min-width:96px;}
+  .r4{border-radius:4px;}.r6{border-radius:6px;}.r8{border-radius:8px;}.r12{border-radius:12px;}.r16{border-radius:16px;}.rp{border-radius:100px;}
+  .tag{font-family:var(--font-mono);font-size:10px;color:var(--text-3);}
+</style></head><body>
+  <div class="box r4"><span class="tag">4px · xs</span></div>
+  <div class="box r6"><span class="tag">6px · sm</span></div>
+  <div class="box r8"><span class="tag">8px · md</span></div>
+  <div class="box r12"><span class="tag">12px · lg</span></div>
+  <div class="box r16"><span class="tag">16px · xl</span></div>
+  <div class="box rp" style="padding:10px 22px;"><span class="tag">pill · 100px</span></div>
+</body></html>

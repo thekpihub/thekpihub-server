@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Platform Updates — The KPI Hub Changelog</title>
+    <link rel="canonical" href="https://thekpihub.com/updates.html">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thekpihub.com/updates.html">
+    <meta property="og:title" content="Platform Updates — The KPI Hub Changelog">
+    <meta property="og:description" content="A full record of every change made to The KPI Hub: what changed, why it was made, and when it shipped.">
+    <meta property="og:image" content="https://thekpihub.com/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Platform Updates — The KPI Hub Changelog">
+    <meta name="twitter:description" content="A full record of every change made to The KPI Hub: what changed, why it was made, and when it shipped.">
+    <meta name="twitter:image" content="https://thekpihub.com/og-image.png">
+    <meta name="description" content="A full record of every change made to The KPI Hub: what changed, why it was made, and when it shipped.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d1117;
+      --surface:   #161b22;
+      --surface-2: #21262d;
+      --border:    #30363d;
+      --text:      #e6edf3;
+      --muted:     #8b949e;
+      --accent:    #0ea5e9;
+      --success:   #3fb950;
+      --danger:    #f85149;
+      --warning:   #d29922;
+      --radius:    10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 0 80px;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header .logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    header nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      margin-left: 24px;
+      transition: color .2s;
+    }
+
+    header nav a:hover { color: var(--text); }
+
+    .hero {
+      max-width: 780px;
+      margin: 56px auto 0;
+      padding: 0 24px;
+    }
+
+    .hero h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .hero p {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-right: 6px;
+    }
+
+    .badge-fix      { background: #1c2d3a; color: var(--accent); border: 1px solid #0ea5e933; }
+    .badge-feat     { background: #1a2e1a; color: var(--success); border: 1px solid #3fb95033; }
+    .badge-infra    { background: #2d2a14; color: var(--warning); border: 1px solid #d2992233; }
+    .badge-security { background: #2d1a1a; color: var(--danger);  border: 1px solid #f8514933; }
+
+    .timeline {
+      max-width: 780px;
+      margin: 48px auto 0;
+      padding: 0 24px;
+      position: relative;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 44px;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: var(--border);
+    }
+
+    .day-group { margin-bottom: 48px; }
+
+    .day-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 20px;
+      padding-left: 68px;
+    }
+
+    .entry {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .entry-dot {
+      flex-shrink: 0;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--surface-2);
+      border: 2px solid var(--border);
+      margin-top: 6px;
+      position: relative;
+      z-index: 1;
+      left: 0;
+    }
+
+    .entry-dot.feat     { border-color: var(--success); background: #1a2e1a; }
+    .entry-dot.fix      { border-color: var(--accent);  background: #1c2d3a; }
+    .entry-dot.infra    { border-color: var(--warning); background: #2d2a14; }
+    .entry-dot.security { border-color: var(--danger);  background: #2d1a1a; }
+
+    .entry-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      flex: 1;
+      transition: border-color .2s;
+    }
+
+    .entry-card:hover { border-color: var(--accent); }
+
+    .entry-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .entry-meta {
+      display: flex;
+      gap: 16px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .entry-meta span {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .entry-meta .repeat {
+      color: var(--warning);
+      font-weight: 500;
+    }
+
+    .entry-body {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+
+    .entry-body strong { color: var(--text); }
+
+    .stat-row {
+      display: flex;
+      gap: 16px;
+      margin: 40px auto 0;
+      max-width: 780px;
+      padding: 0 24px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 24px;
+      flex: 1;
+      min-width: 140px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+  </style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-DZPCCPEP1J");
+  </script>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">The KPI Hub</a>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="login.html">Sign In</a>
+    <a href="updates.html">Updates</a>
+    <a href="sitemap.html">Sitemap</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>Platform Updates</h1>
+  <p>A full record of every change made to The KPI Hub — what changed, why it was made, the benefit it delivers, and how many times it was touched.</p>
+</div>
+
+<div class="stat-row">
+  <div class="stat">
+    <div class="stat-num">15</div>
+    <div class="stat-label">Total Changes</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">3</div>
+    <div class="stat-label">Days Active</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">2</div>
+    <div class="stat-label">Features Shipped</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">13</div>
+    <div class="stat-label">Fixes & Infra</div>
+  </div>
+</div>
+
+<div class="timeline">
+
+  <!-- ── Apr 26 ──────────────────────────────────────── -->
+  <div class="day-group">
+    <div class="day-label">Apr 26, 2026 — Today</div>
+
+    <div class="entry">
+      <div class="entry-dot infra"></div>
+      <div class="entry-card">
+        <div class="entry-title">
+          <span class="badge badge-infra">Infra</span>
+          Google OAuth — End-to-End Live
+        </div>
+        <div class="entry-body">
+          New OAuth 2.0 credentials created inside the correct GCP project (<strong>kpihub-live</strong>). Callback URL corrected from <code>/api/v1/auth/google/callback</code> to <code>/api/auth/google/callback</code>. Cloud Run updated with the real Client ID and Secret. Full login flow verified — tokens generated and returned to frontend.
+        </div>
+        <div class="entry-meta">
+          <span>Why: Previous credentials belonged to a different GCP project and had wrong redirect URIs</span>
+          <span class="repeat">× 3 attempts to get right</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-dot infra"></div>
+      <div class="entry-card">
+        <div class="entry-title">
+          <span class="badge badge-infra">Infra</span>
+          api.thekpihub.com — Custom Domain Live via Cloudflare Worker
+        </div>
+        <div class="entry-body">
+          Cloud Run domain mapping is unsupported in <strong>asia-south1</strong>. Solved using a <strong>Cloudflare Worker</strong> that proxies all traffic from <code>api.thekpihub.com</code> to the Cloud Run service. Domain verified via Google Search Console, nameservers moved to Cloudflare, Worker route added.
+        </div>
+        <div class="entry-meta">
+          <span>Why: GCP asia-south1 doesn't support domain mappings — workaround required</span>
+          <span class="repeat">× 4 steps to complete</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-dot fix"></div>
+      <div class="entry-card">
+        <div class="entry-title">
+          <span class="badge badge-fix">Fix</span>
+          connect-redis v7 CJS Import Corrected
+        </div>
+        <div class="entry-body">
+          <code>connect-redis</code> v7 changed its export from a named export to a <strong>default export</strong>. The import was updated from <code>require('connect-redis')</code> to <code>require('connect-redis').default</code>. Without this fix, the session store crashed on startup.
+        </div>
+        <div class="entry-meta">
+          <span>Why: Breaking change in connect-redis v7 API</span>
+          <span class="repeat">× 3 deploys (including 2 cache busts)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-dot fix"></div>
+      <div class="entry-card">
+        <div class="entry-title">
+          <span class="badge badge-fix">Fix</span>
+          Redis Made Optional at Startup
+        </div>
+        <div class="entry-body">
+          The backend was crashing if Redis (Memorystore) was unavailable. Redis is not yet set up in production, so the app was changed to <strong>warn instead of crash</strong> — sessions fall back gracefully until Memorystore is provisioned.
+        </div>
+        <div class="entry-meta">
+          <span>Why: Prevent hard crash when Redis is not yet configured in production</span>
+          <span class="repeat">× 1</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-dot fix"></div>
+      <div class="entry-card">
+        <div class="entry-title">
+          <span class="badge badge-fix">Fix</span>
+          Docker Auth for Artifact Registry
+        </div>
+        <div class="entry-body">
+          Cloud Build was failing to push Docker images to <strong>asia-south1 Artifact Registry</strong> due to missing authentication. Added explicit Docker login using an OAuth token before the push step.
+        </div>
+        <div class="entry-meta">
+          <span>Why: Artifact Registry in asia-south1 requires explicit auth in Cloud Build</span>
+          <span class="repeat">× 3 iterations</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-dot fix"></div>
+      <div class="entry-card">
+        <div class="entry-title">
+          <span class="badge badge-fix">Fix</span>
+          package-lock.json Added to Dockerfile
+        </div>
+        <div class="entry-body">
+          <code>npm ci</code> inside the Docker build requires a <code>package-lock.json</code> file to be present. The file was missing from the build context, causing the Docker step to fail.
+        </div>
+        <div class="entry-meta">
+          <span>Why: npm ci is stricter than npm install and requires the lockfile</span>
+          <span class="repeat">× 1</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-dot fix"></div>
+      <div class="entry-card">
+        <div class="entry-title">
+          <span class="badge badge-fix">Fix</span>
+          Cloud Build Substitution — SHORT_SHA → _TAG
+        </div>
+        <div class="entry-body">
+          <code>$SHORT_SHA</code> is only available in Cloud Build when triggered by a Git push. For manual builds via <code>gcloud builds submit</code>, a custom substitution variable <code>$_TAG</code> is required.
+        </div>
+        <div class="entry-meta">
+          <span>Why: Manual builds don't inject $SHORT_SHA automatically</span>
+          <span class="repeat">× 1</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Apr 25 ──────────────────────────────────────── -->
+  <div class="day-group">
+    <div class="day-label">Apr 25, 2026</div>
+
+    <div class="entry">
+      <div class="entry-dot feat"></div>
+      <div class="entry-card">
+        <div class="entry-title">
+          <span class="badge badge-feat">Feature</span>
+          Complete Node.js + PostgreSQL Backend Deployed to Cloud Run
+        </div>
+        <div class="entry-body">
+          Full production backend deployed on <strong>Google Cloud Run</strong> (asia-south1). Includes: JWT auth, Google &amp; GitHub OAuth, role-based access control, billing (Razorpay + Stripe), KPI management, AI integration, audit logging, and session management. <strong>18 database tables</strong> across 7 schemas migrated and seeded on Cloud SQL PostgreSQL.
+        </div>
+        <div class="entry-meta">
+          <span>Why: First production deployment of the KPIHub backend</span>
+          <span class="repeat">× 1</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-dot fix"></div>
+      <div class="entry-card">
+        <div class="entry-title">
+          <span class="badge badge-fix">Fix</span>
+          Cloud Run PORT Environment Variable
+        </div>
+        <div class="entry-body">
+          Cloud Run injects the <code>PORT</code> environment variable at runtime (default 8080). The app was hardcoded to port 4000. Updated to read <code>process.env.PORT</code> so Cloud Run can manage port assignment dynamically.
+        </div>
+        <div class="entry-meta">
+          <span>Why: Cloud Run requires the app to listen on the PORT it provides</span>
+          <span class="repeat">× 1</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-dot infra"></div>
+      <div class="entry-card">
+        <div class="entry-title">
+          <span class="badge badge-infra">Infra</span>
+          Cloud Build Config Simplified
+        </div>
+        <div class="entry-body">
+          The <code>cloudbuild.yaml</code> was simplified by removing a custom Docker login step that was causing build failures. Cloud Build's default service account already has the necessary permissions for the project's Artifact Registry.
+        </div>
+        <div class="entry-meta">
+          <span>Why: Redundant auth step was conflicting with Cloud Build's built-in credentials</span>
+          <span class="repeat">× 1</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Apr 24 ──────────────────────────────────────── -->
+  <div class="day-group">
+    <div class="day-label">Apr 24, 2026 — Day One</div>
+
+    <div class="entry">
+      <div class="entry-dot feat"></div>
+      <div class="entry-card">
+        <div class="entry-title">
+          <span class="badge badge-feat">Feature</span>
+          Initial SaaS Frontend Built
+        </div>
+        <div class="entry-body">
+          Complete production SaaS frontend built: authentication pages (login, register), role-based dashboards, Stripe billing integration, upgrade flow, and a full landing page. Merged as the first working version of The KPI Hub web app.
+        </div>
+        <div class="entry-meta">
+          <span>Why: Foundation of the product — first commit to production</span>
+          <span class="repeat">× 1</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

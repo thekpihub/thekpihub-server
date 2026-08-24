@@ -1,0 +1,31 @@
+name: Deploy to Firebase Hosting
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+concurrency:
+  group: firebase-deploy
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create config.js from secrets
+        run: |
+          cat > config.js <<CFGEOF
+          const CONFIG = {
+            supabase: { url: '${{ secrets.CONFIG_SUPABASE_URL }}', anonKey: '${{ secrets.CONFIG_SUPABASE_ANON_KEY }}' },
+            stripe: {
+              publishableKey: '${{ secrets.CONFIG_STRIPE_PUB_KEY }}',
+              prices: { starter: '${{ secrets.CONFIG_STRIPE_PRICE_STARTER }}', growth: '${{ secrets.CONFIG_STRIPE_PRICE_GROWTH }}', enterprise: '${{ secrets.CONFIG_STRIPE_PRICE_ENT }}' }
+            },
+            app: { url: 'https://thekpihub.com', loginUrl: '/login.html', upgradeUrl: '/upgrade.html', dashboardUrl: '/dashboard.html' }
+          };
+          CFGEOF
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+      - name: Deploy
+        run: firebase deploy --only hosting --token "$FIREBASE_TOKEN" --project thekpihub
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="yRGmgTNjIHFmLom_ZrczRQpmaJkf2SpAZWR75g3g71k">
+
+  <!-- ====== KPI Hub Analytics: GA4 ====== -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-DZPCCPEP1J', {
+      page_title: document.title,
+      page_location: window.location.href,
+      send_page_view: true
+    });
+
+    // ── Custom KPI Hub Event Tracking ──
+    document.addEventListener('DOMContentLoaded', function () {
+
+      // Track Early Access / Waitlist CTA clicks
+      document.querySelectorAll('a[href="#waitlist"], .waitlist-btn, [data-cta="waitlist"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          gtag('event', 'waitlist_click', {
+            event_category: 'CTA',
+            event_label: 'Waitlist Button',
+            value: 1
+          });
+        });
+      });
+
+      // Track pricing page visits
+      document.querySelectorAll('a[href*="pricing"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          gtag('event', 'pricing_interest', {
+            event_category: 'Navigation',
+            event_label: 'Pricing Click'
+          });
+        });
+      });
+
+      // Track outbound links
+      document.querySelectorAll('a[href^="http"]').forEach(function(el) {
+        if (!el.href.includes('thekpihub.com')) {
+          el.addEventListener('click', function() {
+            gtag('event', 'outbound_click', {
+              event_category: 'Outbound',
+              event_label: el.href
+            });
+          });
+        }
+      });
+
+      // Track scroll depth (25%, 50%, 75%, 100%)
+      var scrollDepths = [25, 50, 75, 100];
+      var fired = {};
+      window.addEventListener('scroll', function() {
+        var scrollPct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+        scrollDepths.forEach(function(depth) {
+          if (scrollPct >= depth && !fired[depth]) {
+            fired[depth] = true;
+            gtag('event', 'scroll_depth', {
+              event_category: 'Engagement',
+              event_label: depth + '%',
+              value: depth
+            });
+          }
+        });
+      });
+    });
+  </script>
+  <!-- ====== End Analytics ====== -->
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KPI Narrative Engine — Your Metrics in Plain English</title>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thekpihub.com/narrative.html">
+    <meta property="og:title" content="KPI Narrative Engine — Your Metrics in Plain English">
+    <meta property="og:description" content="Turn your KPIs into plain English: what happened, why it matters, and what to do next. Enter your metrics and get the story behind the numbers.">
+    <meta property="og:image" content="https://thekpihub.com/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="KPI Narrative Engine — Your Metrics in Plain English">
+    <meta name="twitter:description" content="Turn your KPIs into plain English: what happened, why it matters, and what to do next. Enter your metrics and get the story behind the numbers.">
+    <meta name="twitter:image" content="https://thekpihub.com/og-image.png">
+    <meta name="description" content="Turn your KPIs into plain English: what happened, why it matters, and what to do next. Enter your metrics and get the story behind the numbers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080d1a;--s1:#0d1428;--s2:#111c35;--s3:#162040;--amber:#f59e0b;--amber2:#fbbf24;--teal:#14b8a6;--red:#ef4444;--green:#22c55e;--blue:#3b82f6;--txt:#e2e8f0;--txd:#94a3b8;--txm:#475569;--bdr:#1e2d4a;--bdr2:#243350}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.6}
+/* NAV */
+nav{background:rgba(8,13,26,.95);border-bottom:1px solid var(--bdr);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+.nav-brand{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:var(--txt);text-decoration:none;letter-spacing:.5px}
+.nav-brand span{color:var(--amber)}
+.nav-links{display:flex;gap:24px;list-style:none}
+.nav-links a{color:var(--txd);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--amber)}
+.nav-cta{background:var(--amber);color:#000;padding:7px 18px;border-radius:6px;font-size:.8rem;font-weight:700;text-decoration:none;font-family:'Syne',sans-serif;letter-spacing:.3px;transition:all .2s}
+.nav-cta:hover{background:var(--amber2);transform:translateY(-1px)}
+/* HERO */
+.hero{padding:60px 24px 40px;text-align:center;max-width:700px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:20px;padding:4px 14px;font-size:.73rem;color:var(--amber);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:20px}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,4vw,3rem);font-weight:800;line-height:1.15;margin-bottom:12px}
+.hero h1 em{color:var(--amber);font-style:normal}
+.hero p{color:var(--txd);font-size:.95rem;max-width:520px;margin:0 auto 32px}
+/* MAIN LAYOUT */
+.container{max-width:1100px;margin:0 auto;padding:0 24px 80px}
+.two-col{display:grid;grid-template-columns:1fr 1.4fr;gap:20px;align-items:start}
+/* INPUT PANEL */
+.panel{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:24px}
+.panel-title{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:.75rem;color:var(--txd);font-weight:500;margin-bottom:5px;letter-spacing:.3px}
+.field input,.field select,.field textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bdr2);border-radius:8px;padding:10px 13px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:.88rem;outline:none;transition:all .25s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--amber);background:rgba(245,158,11,.04)}
+.field select option{background:#111c35}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.kpi-input-card{background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:9px;padding:10px 12px;cursor:pointer;transition:all .25s}
+.kpi-input-card.selected{border-color:var(--amber);background:rgba(245,158,11,.06)}
+.kpi-input-card label{font-size:.68rem;color:var(--txd);display:block;margin-bottom:4px;cursor:pointer;letter-spacing:.2px}
+.kpi-input-card input[type=number]{background:none;border:none;color:var(--txt);font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;width:100%;outline:none;padding:0}
+.kpi-input-card .unit{font-size:.65rem;color:var(--txm)}
+.btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--amber),var(--amber2));color:#000;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(245,158,11,.25)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+/* OUTPUT PANEL */
+.output-panel{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;min-height:500px}
+.output-header{padding:18px 24px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.output-header h3{font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;color:var(--txt)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.output-body{padding:24px}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;text-align:center;color:var(--txm)}
+.empty-icon{font-size:2.5rem;margin-bottom:12px;opacity:.5}
+.empty-state p{font-size:.82rem;max-width:220px;line-height:1.6}
+/* NARRATIVE CARDS */
+.narrative-kpi{background:var(--s2);border:1px solid var(--bdr2);border-radius:11px;padding:18px;margin-bottom:14px;animation:slideUp .4s ease both}
+.narrative-kpi:nth-child(2){animation-delay:.08s}
+.narrative-kpi:nth-child(3){animation-delay:.16s}
+.narrative-kpi:nth-child(4){animation-delay:.24s}
+.narrative-kpi:nth-child(5){animation-delay:.32s}
+.nk-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:12px}
+.nk-name{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:var(--amber)}
+.nk-value{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;line-height:1}
+.nk-status{display:flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:.68rem;font-weight:700;letter-spacing:.5px;flex-shrink:0}
+.nk-status.healthy{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.nk-status.warning{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.nk-status.danger{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.nk-benchmark{font-size:.72rem;color:var(--txm);margin-bottom:10px}
+.nk-benchmark span{color:var(--txd)}
+.nk-story{font-size:.82rem;color:var(--txd);line-height:1.7;margin-bottom:12px;border-left:2px solid var(--bdr2);padding-left:10px}
+.nk-actions{display:flex;flex-direction:column;gap:6px}
+.nk-action{display:flex;align-items:flex-start;gap:8px;font-size:.78rem;color:var(--txt);background:rgba(255,255,255,.03);border:1px solid var(--bdr);border-radius:7px;padding:8px 10px}
+.nk-action-num{font-family:'Syne',sans-serif;font-weight:700;color:var(--amber);font-size:.7rem;flex-shrink:0;margin-top:1px}
+.summary-box{background:linear-gradient(135deg,rgba(245,158,11,.06),rgba(20,184,166,.04));border:1px solid rgba(245,158,11,.18);border-radius:11px;padding:16px;margin-bottom:14px}
+.summary-box h4{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;color:var(--amber);margin-bottom:8px;letter-spacing:.5px;text-transform:uppercase}
+.summary-box p{font-size:.82rem;color:var(--txd);line-height:1.7}
+/* LOADER */
+.loader{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:400px;gap:16px}
+.loader-dots{display:flex;gap:6px}
+.loader-dots span{width:8px;height:8px;border-radius:50%;background:var(--amber);animation:bounce .8s ease-in-out infinite}
+.loader-dots span:nth-child(2){animation-delay:.15s}
+.loader-dots span:nth-child(3){animation-delay:.3s}
+.loader-text{font-size:.8rem;color:var(--txm)}
+/* SCORE RING */
+.score-section{display:flex;align-items:center;gap:20px;margin-bottom:20px;padding:16px;background:var(--s2);border:1px solid var(--bdr2);border-radius:11px}
+.score-ring{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+.score-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+.score-num{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;z-index:1}
+.score-info h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:4px}
+.score-info p{font-size:.78rem;color:var(--txd);line-height:1.5}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@media(max-width:768px){.two-col{grid-template-columns:1fr}.hero{padding:40px 16px 24px}.container{padding:0 16px 60px}}
+</style>
+<link rel="canonical" href="https://thekpihub.com/narrative.html">
+    <meta name="robots" content="index, follow">
+        <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wdshn14xgf");
+    </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+</head>
+<body>
+
+<nav>
+  <a href="https://thekpihub.com" class="nav-brand">The <span>KPI</span> Hub</a>
+  <ul class="nav-links">
+    <li><a href="https://thekpihub.com/intelligence.html">Intelligence</a></li>
+    <li><a href="https://thekpihub.com/directory.html">Discovery</a></li>
+    <li><a href="https://thekpihub.com/benchmarks.html">Benchmarks</a></li>
+    <li><a href="narrative.html" class="active">Narrative</a></li>
+  </ul>
+  <a href="get-audit.html" class="nav-cta">Get My KPI Audit →</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">🧠 KPI Narrative Engine · P0 Weapon</div>
+  <h1>Your KPIs, <em>explained</em> in plain English</h1>
+  <p>Enter your metrics. Get the story behind the numbers — what happened, why it matters, and exactly what to do next. No dashboards. Just signal.</p>
+</div>
+
+<div class="container">
+  <div class="two-col">
+
+    <!-- INPUT -->
+    <div class="panel">
+      <div class="panel-title">📊 Enter Your KPIs</div>
+
+      <div class="field">
+        <label>Company Stage</label>
+        <select id="stage">
+          <option value="pre-seed">Pre-Seed / Idea Stage</option>
+          <option value="seed">Seed ($0–$1M ARR)</option>
+          <option value="series-a" selected>Series A ($1M–$5M ARR)</option>
+          <option value="series-b">Series B ($5M–$20M ARR)</option>
+          <option value="growth">Growth ($20M+ ARR)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Industry Vertical</label>
+        <select id="vertical">
+          <option value="b2b-saas">B2B SaaS</option>
+          <option value="b2c-saas">B2C SaaS</option>
+          <option value="marketplace">Marketplace</option>
+          <option value="fintech">Fintech</option>
+          <option value="edtech">EdTech</option>
+          <option value="hrtech">HRTech</option>
+          <option value="devtools">DevTools</option>
+          <option value="india-saas">India SaaS</option>
+        </select>
+      </div>
+
+      <div class="panel-title" style="margin-top:8px">Revenue Metrics</div>
+      <div class="kpi-grid">
+        <div class="kpi-input-card">
+          <label>MRR (₹ or $)</label>
+          <input type="number" id="mrr" placeholder="85,000" value="">
+          <div class="unit">Monthly Recurring Revenue</div>
+        </div>
+        <div class="kpi-input-card">
+          <label>MRR Growth %</label>
+          <input type="number" id="mrr-growth" placeholder="12" value="" step="0.1">
+          <div class="unit">Month over month</div>
+        </div>
+        <div class="kpi-input-card">
+          <label>NRR %</label>
+          <input type="number" id="nrr" placeholder="108" value="" step="0.1">
+          <div class="unit">Net Revenue Retention</div>
+        </div>
+        <div class="kpi-input-card">
+          <label>Churn Rate %</label>
+          <input type="number" id="churn" placeholder="3.2" value="" step="0.1">
+          <div class="unit">Monthly customer churn</div>
+        </div>
+      </div>
+
+      <div class="panel-title" style="margin-top:4px">Acquisition Metrics</div>
+      <div class="kpi-grid">
+        <div class="kpi-input-card">
+          <label>CAC (₹ or $)</label>
+          <input type="number" id="cac" placeholder="2500" value="">
+          <div class="unit">Customer Acquisition Cost</div>
+        </div>
+        <div class="kpi-input-card">
+          <label>LTV (₹ or $)</label>
+          <input type="number" id="ltv" placeholder="12000" value="">
+          <div class="unit">Customer Lifetime Value</div>
+        </div>
+        <div class="kpi-input-card">
+          <label>Payback Period</label>
+          <input type="number" id="payback" placeholder="8" value="">
+          <div class="unit">Months to recover CAC</div>
+        </div>
+        <div class="kpi-input-card">
+          <label>Conv. Rate %</label>
+          <input type="number" id="conv" placeholder="3.5" value="" step="0.1">
+          <div class="unit">Trial to paid conversion</div>
+        </div>
+      </div>
+
+      <div class="panel-title" style="margin-top:4px">Product Metrics</div>
+      <div class="kpi-grid">
+        <div class="kpi-input-card">
+          <label>DAU/MAU %</label>
+          <input type="number" id="daumau" placeholder="28" value="" step="0.1">
+          <div class="unit">Daily / Monthly active users</div>
+        </div>
+        <div class="kpi-input-card">
+          <label>NPS Score</label>
+          <input type="number" id="nps" placeholder="42" value="">
+          <div class="unit">Net Promoter Score</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Context (optional — what changed recently?)</label>
+        <textarea id="context" rows="2" placeholder="e.g. We raised prices last month, lost a big customer, launched a new feature..."></textarea>
+      </div>
+
+      <div class="field" style="margin: 1.5rem 0 1.2rem 0; text-align: left;">
+        <label style="color:var(--amber);margin-bottom:8px;display:block;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Select AI Intelligence Engine</label>
+        <select id="ai-model-selector">
+          <option value="google/gemini-2.0-flash-lite:free">Gemini 2.0 Flash Lite (Free Tier)</option>
+          <option value="google/gemini-flash-1.5">Gemini 1.5 Flash (Free Tier)</option>
+          <option value="claude-direct">Claude 3.5 Sonnet (Direct - Premium)</option>
+          <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (OpenRouter - Premium)</option>
+          <option value="openai/gpt-4o">GPT-4o (OpenRouter - Premium)</option>
+          <option value="deepseek/deepseek-chat">DeepSeek V3 (OpenRouter - Premium)</option>
+          <option value="deepseek/deepseek-reasoner">DeepSeek R1 (OpenRouter - Premium)</option>
+        </select>
+      </div>
+
+      <button class="btn" id="analyze-btn" onclick="analyzeKPIs()">
+        🧠 Generate KPI Narrative
+      </button>
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="output-panel">
+      <div class="output-header">
+        <h3>KPI Narrative Report</h3>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.72rem;color:var(--txd)">
+          <div class="status-dot"></div>
+          <span id="engine-badge">AI-Powered · Claude</span>
+        </div>
+      </div>
+      <div class="output-body" id="output-body">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <p>Enter your KPIs and click Generate to see your narrative analysis with action recommendations</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const { createClient } = supabase;
+const sb = createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+
+// ─── BENCHMARKS DATABASE ───
+const BENCHMARKS = {
+  'series-a': {
+    mrr_growth: {good: 15, ok: 8, label: 'MoM Growth'},
+    nrr: {good: 110, ok: 100, label: 'NRR'},
+    churn: {good: 2, ok: 5, label: 'Monthly Churn', inverted: true},
+    ltv_cac: {good: 3, ok: 1.5, label: 'LTV:CAC'},
+    payback: {good: 12, ok: 18, label: 'Payback Months', inverted: true},
+    daumau: {good: 30, ok: 15, label: 'DAU/MAU'},
+    nps: {good: 40, ok: 20, label: 'NPS'},
+    conv: {good: 5, ok: 2, label: 'Conv Rate'},
+  },
+  'seed': {
+    mrr_growth: {good: 20, ok: 10, label: 'MoM Growth'},
+    nrr: {good: 105, ok: 95, label: 'NRR'},
+    churn: {good: 3, ok: 8, label: 'Monthly Churn', inverted: true},
+    ltv_cac: {good: 2.5, ok: 1.2, label: 'LTV:CAC'},
+    payback: {good: 15, ok: 24, label: 'Payback Months', inverted: true},
+    daumau: {good: 25, ok: 12, label: 'DAU/MAU'},
+    nps: {good: 35, ok: 15, label: 'NPS'},
+    conv: {good: 4, ok: 1.5, label: 'Conv Rate'},
+  },
+  'series-b': {
+    mrr_growth: {good: 10, ok: 5, label: 'MoM Growth'},
+    nrr: {good: 120, ok: 108, label: 'NRR'},
+    churn: {good: 1.5, ok: 3, label: 'Monthly Churn', inverted: true},
+    ltv_cac: {good: 4, ok: 2.5, label: 'LTV:CAC'},
+    payback: {good: 10, ok: 16, label: 'Payback Months', inverted: true},
+    daumau: {good: 35, ok: 20, label: 'DAU/MAU'},
+    nps: {good: 50, ok: 30, label: 'NPS'},
+    conv: {good: 6, ok: 3, label: 'Conv Rate'},
+  },
+  'growth': {
+    mrr_growth: {good: 8, ok: 3, label: 'MoM Growth'},
+    nrr: {good: 125, ok: 115, label: 'NRR'},
+    churn: {good: 1, ok: 2, label: 'Monthly Churn', inverted: true},
+    ltv_cac: {good: 5, ok: 3, label: 'LTV:CAC'},
+    payback: {good: 8, ok: 14, label: 'Payback Months', inverted: true},
+    daumau: {good: 40, ok: 25, label: 'DAU/MAU'},
+    nps: {good: 55, ok: 35, label: 'NPS'},
+    conv: {good: 8, ok: 4, label: 'Conv Rate'},
+  },
+  'pre-seed': {
+    mrr_growth: {good: 25, ok: 12, label: 'MoM Growth'},
+    nrr: {good: 100, ok: 90, label: 'NRR'},
+    churn: {good: 5, ok: 12, label: 'Monthly Churn', inverted: true},
+    ltv_cac: {good: 2, ok: 1, label: 'LTV:CAC'},
+    payback: {good: 18, ok: 30, label: 'Payback Months', inverted: true},
+    daumau: {good: 20, ok: 8, label: 'DAU/MAU'},
+    nps: {good: 30, ok: 10, label: 'NPS'},
+    conv: {good: 3, ok: 1, label: 'Conv Rate'},
+  }
+};
+
+function getStatus(val, bench, inverted=false) {
+  if (!val) return null;
+  if (inverted) {
+    if (val <= bench.good) return 'healthy';
+    if (val <= bench.ok) return 'warning';
+    return 'danger';
+  }
+  if (val >= bench.good) return 'healthy';
+  if (val >= bench.ok) return 'warning';
+  return 'danger';
+}
+
+function statusLabel(s) {
+  return {healthy:'✅ Healthy', warning:'⚠️ Watch', danger:'🚨 Action Required'}[s] || '—';
+}
+
+function getVal(id) {
+  const v = parseFloat(document.getElementById(id)?.value);
+  return isNaN(v) ? null : v;
+}
+
+function getMetrics() {
+  return {
+    mrr: getVal('mrr'),
+    mrr_growth: getVal('mrr-growth'),
+    nrr: getVal('nrr'),
+    churn: getVal('churn'),
+    cac: getVal('cac'),
+    ltv: getVal('ltv'),
+    payback: getVal('payback'),
+    conv: getVal('conv'),
+    daumau: getVal('daumau'),
+    nps: getVal('nps'),
+    stage: document.getElementById('stage').value,
+    vertical: document.getElementById('vertical').value,
+    context: document.getElementById('context').value
+  };
+}
+
+async function analyzeKPIs() {
+  const m = getMetrics();
+  const hasAny = Object.values(m).some((v,i) => typeof v === 'number' && v !== null);
+  if (!hasAny) { alert('Please enter at least a few KPI values.'); return; }
+
+  // Guard: must be logged in
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    window.location.href = 'login.html';
+    return;
+  }
+  const token = session.access_token;
+  const model = document.getElementById('ai-model-selector')?.value || 'google/gemini-2.0-flash-lite:free';
+
+  // Update engine badge
+  const engineLabel = model.includes('claude') ? 'Claude' : model.includes('gemini') ? 'Gemini' : model.includes('gpt') ? 'GPT-4o' : model.includes('deepseek') ? 'DeepSeek' : 'AI';
+  if (document.getElementById('engine-badge')) {
+    document.getElementById('engine-badge').textContent = 'AI-Powered · ' + engineLabel;
+  }
+
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader-dots"><span></span><span></span><span></span></span> Analyzing...';
+
+  document.getElementById('output-body').innerHTML = `
+    <div class="loader">
+      <div class="loader-dots"><span></span><span></span><span></span></div>
+      <div class="loader-text">Synthesizing your KPI narrative with AI...</div>
+    </div>`;
+
+  const bench = BENCHMARKS[m.stage] || BENCHMARKS['series-a'];
+  const ltv_cac = m.ltv && m.cac ? +(m.ltv/m.cac).toFixed(1) : null;
+
+  // Build KPI summary for AI
+  const kpiSummary = [
+    m.mrr_growth ? `MRR Growth: ${m.mrr_growth}% MoM (benchmark: ${bench.mrr_growth.good}%+ healthy)` : '',
+    m.nrr ? `NRR: ${m.nrr}% (benchmark: ${bench.nrr.good}%+ healthy)` : '',
+    m.churn ? `Monthly Churn: ${m.churn}% (benchmark: <${bench.churn.good}% healthy)` : '',
+    ltv_cac ? `LTV:CAC Ratio: ${ltv_cac}x (benchmark: ${bench.ltv_cac.good}x+ healthy)` : '',
+    m.payback ? `CAC Payback: ${m.payback} months (benchmark: <${bench.payback.good} months healthy)` : '',
+    m.daumau ? `DAU/MAU: ${m.daumau}% (benchmark: ${bench.daumau.good}%+ healthy)` : '',
+    m.nps ? `NPS: ${m.nps} (benchmark: ${bench.nps.good}+ healthy)` : '',
+    m.conv ? `Trial Conversion: ${m.conv}% (benchmark: ${bench.conv.good}%+ healthy)` : '',
+    m.context ? `Context: ${m.context}` : ''
+  ].filter(Boolean).join('\n');
+
+  try {
+    const response = await fetch('/pages/api/ai-gateway.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({
+        prompt: `Analyze these KPIs for a ${m.stage} ${m.vertical} company and return a JSON object with this exact structure:
+{
+  "overall_score": <number 0-100>,
+  "overall_verdict": "<2 sentence plain English summary of what's happening in this business right now>",
+  "immediate_priority": "<the single most important thing to fix this week>",
+  "metrics": [
+    {
+      "name": "<KPI name>",
+      "status": "<healthy|warning|danger>",
+      "story": "<2 sentence plain English explanation of what this metric tells us about the business>",
+      "actions": ["<specific action 1>", "<specific action 2>", "<specific action 3 if needed>"]
+    }
+  ]
+}
+
+KPI Data:
+${kpiSummary}
+
+Stage: ${m.stage}, Vertical: ${m.vertical}
+Return only metrics that were provided. Return valid JSON only.`,
+        system: 'You are a world-class SaaS CFO and growth advisor. You analyze KPI data and write short, plain-English narratives that explain what the numbers mean, why they matter, and what specific actions to take. Return only valid JSON, no markdown, no backticks.',
+        model: model
+      })
+    });
+
+    if (!response.ok) {
+      if (response.status === 402) {
+        window.location.href = 'upgrade.html?reason=premium_only';
+        throw new Error('Upgrade required');
+      }
+      throw new Error('Gateway API error');
+    }
+
+    const data = await response.json();
+    let result;
+    try {
+      const raw = data.text.replace(/```json|```/g,'').trim();
+      result = JSON.parse(raw);
+    } catch(e) {
+      result = buildFallback(m, bench, ltv_cac);
+    }
+
+    renderOutput(result, m, bench, ltv_cac);
+  } catch(err) {
+    if (err.message.includes('Upgrade required')) return;
+    renderOutput(buildFallback(m, bench, ltv_cac), m, bench, ltv_cac);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '🧠 Generate KPI Narrative';
+}
+
+function buildFallback(m, bench, ltv_cac) {
+  const metrics = [];
+  if (m.nrr) metrics.push({name:'NRR', status: getStatus(m.nrr, bench.nrr), story:`Your Net Revenue Retention of ${m.nrr}% shows how much revenue you're keeping and growing from existing customers. ${m.nrr >= bench.nrr.good ? 'This is excellent — your existing customers are expanding.' : 'This needs attention — you are losing more than you are expanding.'}`, actions:['Segment customers by NRR cohort to find who is churning','Run quarterly business reviews with at-risk accounts','Build an expansion playbook for your top 20% customers']});
+  if (m.churn) metrics.push({name:'Churn Rate', status: getStatus(m.churn, bench.churn, true), story:`Monthly churn of ${m.churn}% means you lose about ${(m.churn*12).toFixed(0)}% of customers per year. ${m.churn <= bench.churn.good ? 'This is healthy — customers are staying.' : 'This is too high — investigate why customers are leaving.'}`, actions:['Conduct exit interviews with churned accounts this week','Create a 30-60-90 day health score dashboard','Add quarterly check-in calls for accounts below health threshold']});
+  if (ltv_cac) metrics.push({name:'LTV:CAC Ratio', status: getStatus(ltv_cac, bench.ltv_cac), story:`Your ${ltv_cac}x LTV:CAC means you earn ${ltv_cac}x back for every dollar spent acquiring a customer. ${ltv_cac >= bench.ltv_cac.good ? 'This is strong — your go-to-market is efficient.' : 'Below target — your acquisition cost is too high relative to value delivered.'}`, actions:['Identify your top 2 most efficient acquisition channels','Test reducing CAC through referral programs','Improve onboarding to boost LTV by reducing early churn']});
+  return {
+    overall_score: Math.round(metrics.reduce((a,b) => a + (b.status==='healthy'?85:b.status==='warning'?60:35), 0) / Math.max(metrics.length,1)),
+    overall_verdict: `Your ${m.stage} business has ${metrics.filter(m=>m.status==='healthy').length} healthy KPIs and ${metrics.filter(m=>m.status!=='healthy').length} areas needing attention. Focus on the danger metrics immediately.`,
+    immediate_priority: metrics.find(m=>m.status==='danger')?.name || 'Continue optimizing your strongest metrics',
+    metrics
+  };
+}
+
+function renderOutput(result, m, bench, ltv_cac) {
+  const scoreColor = result.overall_score >= 70 ? '#22c55e' : result.overall_score >= 50 ? '#f59e0b' : '#ef4444';
+  const circumference = 2 * Math.PI * 34;
+  const dashoffset = circumference * (1 - result.overall_score/100);
+
+  let html = `
+  <div class="score-section">
+    <div class="score-ring" style="background:rgba(255,255,255,.03);border:1px solid var(--bdr2)">
+      <svg width="80" height="80" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r="34" fill="none" stroke="var(--bdr2)" stroke-width="5"/>
+        <circle cx="40" cy="40" r="34" fill="none" stroke="${scoreColor}" stroke-width="5"
+          stroke-dasharray="${circumference}" stroke-dashoffset="${dashoffset}"
+          stroke-linecap="round" style="transition:stroke-dashoffset .8s ease"/>
+      </svg>
+      <div class="score-num" style="color:${scoreColor}">${result.overall_score}</div>
+    </div>
+    <div class="score-info">
+      <h3>Business Health Score</h3>
+      <p style="font-size:.78rem;color:var(--txd);line-height:1.5">${result.overall_verdict}</p>
+      ${result.immediate_priority ? `<div style="margin-top:8px;font-size:.72rem;color:var(--amber);font-weight:600">⚡ Priority: ${result.immediate_priority}</div>` : ''}
+    </div>
+  </div>`;
+
+  if (result.metrics && result.metrics.length > 0) {
+    result.metrics.forEach(metric => {
+      html += `
+      <div class="narrative-kpi">
+        <div class="nk-header">
+          <div>
+            <div class="nk-name">${metric.name}</div>
+          </div>
+          <div class="nk-status ${metric.status}">${statusLabel(metric.status)}</div>
+        </div>
+        <div class="nk-story">${metric.story}</div>
+        <div class="nk-actions">
+          ${(metric.actions||[]).map((a,i) => `<div class="nk-action"><span class="nk-action-num">${i+1}</span>${a}</div>`).join('')}
+        </div>
+      </div>`;
+    });
+  }
+
+  if (result.overall_score < 80) {
+    html += `
+    <div class="cfo-upsell-box" id="cfo-upsell" style="margin-top:20px;background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(13,20,40,.95));border:2px solid var(--amber);border-radius:12px;padding:24px;text-align:center;box-shadow:0 8px 32px rgba(245,158,11,.1);">
+      <h4 style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--amber);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">🧠 CFO-Grade KPI Remediation Plan</h4>
+      <p style="font-size:.88rem;color:var(--txt);line-height:1.6;margin-bottom:18px;max-width:580px;margin-left:auto;margin-right:auto;">
+        Your business health score indicates operational leaks that are actively burning capital. Lock in a dedicated 1-on-1 KPI Remediation package with our founding team to audit your exact GTM efficiency, restructure CAC/LTV, and deploy high-performance metric reporting systems.
+      </p>
+      <div style="font-size:1.6rem;font-weight:800;color:var(--amber);margin-bottom:18px;font-family:'Syne',sans-serif;">$2,500 <span style="font-size:.8rem;color:var(--txd);font-weight:400;">/ full strategic intervention</span></div>
+      <a href="https://calendly.com/thekpihub/remediation" target="_blank" class="cfo-btn" style="display:inline-block;padding:12px 28px;background:var(--amber);color:#000;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.5px;text-decoration:none;transition:all .3s;box-shadow:0 4px 14px rgba(245,158,11,.4);cursor:pointer;">
+        📅 Secure CFO Remediation Package
+      </a>
+    </div>`;
+  }
+
+  document.getElementById('output-body').innerHTML = html;
+}
+</script>
+<script src="/gk-shortcut.js?v=a3bb6e13"></script>
+</body>
+</html>

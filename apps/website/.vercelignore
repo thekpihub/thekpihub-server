@@ -1,0 +1,23 @@
+*.py
+requirements.txt
+pyproject.toml
+pipeline.py
+.git
+.github
+.agents
+backups
+docs
+incoming-review
+production-fixes
+production-fixes-review
+screenshots-reference
+tools
+node_modules/.cache
+
+# Separate repository, not part of the site build (see .gitignore)
+platform
+
+# Internal business notes, never served
+revenue-sprint-week1
+Attention Required
+articles

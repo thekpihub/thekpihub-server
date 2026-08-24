@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:0;background:var(--bg);color:var(--text);width:700px;height:200px;box-sizing:border-box;position:relative;overflow:hidden;}
+  .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(233,161,35,0.08) 1px,transparent 1px),linear-gradient(90deg,rgba(233,161,35,0.08) 1px,transparent 1px);background-size:40px 40px;}
+  .glow{position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:500px;height:300px;background:radial-gradient(ellipse,rgba(233,161,35,0.2) 0%,rgba(0,201,167,0.06) 45%,transparent 72%);pointer-events:none;}
+  .content{position:relative;z-index:2;display:flex;align-items:center;justify-content:center;height:100%;padding:24px;}
+  .tag{font-family:var(--font-body);font-size:11px;color:var(--text-3);letter-spacing:0.12em;text-transform:uppercase;}
+</style></head><body>
+  <div class="grid"></div>
+  <div class="glow"></div>
+  <div class="content"><span class="tag">Hero background · 64px gold grid + radial glow (gold→teal)</span></div>
+</body></html>

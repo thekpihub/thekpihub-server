@@ -1,0 +1,69 @@
+# rsync exclude list for the Hostinger deploy (.github/workflows/deploy-hostinger.yml)
+#
+# Two jobs in one list:
+#  1. Files NOT served by the site (don't upload them).
+#  2. SERVER-ONLY files that live on Hostinger but are NOT in this repo
+#     (config.js with real keys, .htaccess with SetEnv secrets, the WordPress
+#     blog). Because rsync runs WITHOUT --delete-excluded, anything listed here
+#     is PROTECTED from deletion on the server. NEVER remove those lines.
+
+# ── Version control & CI ────────────────────────────────
+.git/
+.github/
+.gitignore
+.gitattributes
+.deploy-exclude
+
+# ── Build tooling / sources (not served) ────────────────
+node_modules/
+package.json
+package-lock.json
+.babelrc
+landing/*.jsx
+
+
+# ── Python (runs in CI, not served) + relocated scripts ─
+*.py
+tools/
+requirements.txt
+__pycache__/
+
+# ── Docs & meta (not served) ────────────────────────────
+docs/
+*.md
+
+# ── Dead Firebase path / GitHub Pages bits ──────────────
+firebase.json
+.firebaserc
+.nojekyll
+CNAME
+
+# ── Examples / templates ────────────────────────────────
+config.example.js
+*.example.*
+
+# ── Local env ───────────────────────────────────────────
+.env
+.env.*
+
+# ── WordPress plugin source (installed into WP separately)
+wp-plugin/
+
+# ════════════════════════════════════════════════════════
+# SERVER-ONLY — present on Hostinger, NOT in repo.
+# Protected from --delete. DO NOT REMOVE.
+# ════════════════════════════════════════════════════════
+config.js
+.htaccess
+
+# WordPress blog (protect if it shares the webroot)
+wp-admin/
+wp-content/
+wp-includes/
+wp-*.php
+xmlrpc.php
+
+# Runtime / uploads / verification
+uploads/
+cgi-bin/
+.well-known/

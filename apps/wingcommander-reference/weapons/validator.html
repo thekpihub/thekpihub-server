@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Idea Validator — KPI Hub</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0d0f;--s:#16161a;--s2:#1e1e24;--b:#2a2a35;--p:#7c3aed;--pl:#a78bfa;--a:#22d3ee;--t:#f1f0f5;--m:#8b8b9a;--g:#10b981}
+body{background:var(--bg);color:var(--t);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;padding:2rem 1rem}
+.container{max-width:760px;margin:0 auto}
+.header{text-align:center;margin-bottom:2rem}
+.badge{display:inline-block;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.3);color:var(--pl);font-size:.65rem;letter-spacing:.15em;padding:.3rem .8rem;border-radius:100px;margin-bottom:1rem;text-transform:uppercase;font-weight:700}
+h1{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;margin-bottom:.5rem}
+.desc{color:var(--m);font-size:.9rem;line-height:1.6}
+.card{background:var(--s);border:1px solid var(--b);border-radius:14px;padding:1.5rem;margin-bottom:1.25rem}
+.field{margin-bottom:1.1rem}
+label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--m);margin-bottom:.4rem}
+input,textarea,select{width:100%;background:var(--s2);border:1px solid var(--b);border-radius:8px;color:var(--t);font-size:.9rem;padding:.7rem .9rem;outline:none;transition:border-color .2s;font-family:inherit}
+input:focus,textarea:focus,select:focus{border-color:var(--p)}
+textarea{resize:vertical;min-height:90px;line-height:1.5}
+select option{background:var(--s2)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:500px){.row{grid-template-columns:1fr}}
+.btn{width:100%;background:var(--p);color:#fff;border:none;border-radius:8px;padding:.85rem;font-size:.9rem;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:background .15s,transform .1s;margin-top:.25rem}
+.btn:hover{background:var(--pl)}.btn:active{transform:scale(.99)}.btn:disabled{background:#2e2e3e;cursor:not-allowed;transform:none}
+.oc{background:var(--s);border:1px solid var(--b);border-radius:14px;overflow:hidden}
+.oh{background:var(--s2);border-bottom:1px solid var(--b);padding:.65rem 1.25rem;font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--m);display:flex;align-items:center;gap:.5rem}
+.oh::before{content:'';width:6px;height:6px;background:var(--g);border-radius:50%}
+.ob{padding:1.25rem;line-height:1.75;font-size:.92rem}
+.ob h1,.ob h2,.ob h3{margin:1rem 0 .4rem;letter-spacing:-.01em}
+.ob h2{font-size:1.05rem;color:var(--pl)}.ob h3{font-size:.95rem;color:var(--a)}
+.ob p{margin-bottom:.65rem;color:#d0d0e0}.ob ul,.ob ol{margin:.4rem 0 .65rem 1.4rem}.ob li{margin-bottom:.2rem;color:#d0d0e0}
+.ob strong{color:var(--t);font-weight:600}.ob em{color:var(--a);font-style:normal}
+.ob code{background:var(--s2);border:1px solid var(--b);border-radius:4px;padding:.1rem .35rem;font-size:.82em;font-family:'Courier New',monospace}
+.loader{display:flex;align-items:center;gap:.75rem;padding:1.5rem 1.25rem;color:var(--m);font-size:.88rem}
+.spinner{width:18px;height:18px;border:2px solid var(--b);border-top-color:var(--p);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error{padding:1.25rem;color:#f87171;font-size:.88rem}
+.nav{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:2rem;justify-content:center}
+.nav a{color:var(--m);font-size:.75rem;text-decoration:none;padding:.3rem .7rem;border:1px solid var(--b);border-radius:6px;transition:color .2s,border-color .2s}
+.nav a:hover{color:var(--pl);border-color:var(--p)}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="nav">
+    <a href="narrative.html">Narrative</a><a href="freedom.html">Freedom</a>
+    <a href="india-benchmarks.html">India Benchmarks</a><a href="today.html">Today</a>
+    <a href="stack-scorer.html">Stack Scorer</a><a href="cohort.html">Cohort</a>
+    <a href="auditor.html">Auditor</a><a href="validator.html">Validator</a>
+  </div>
+  <div class="header">
+    <div class="badge">KPI Hub Weapon</div>
+    <h1>🧪 Idea Validator</h1>
+    <p class="desc">Stress-test your business idea like a VC would. Kill the bad ones fast. Double down on the real ones.</p>
+  </div>
+  <div class="card">
+    <form id="form">
+      <div class="field">
+        <label>The Idea (describe it clearly)</label>
+        <textarea id="idea" placeholder="A B2B SaaS platform that helps Indian SMEs manage their GST compliance automatically — connecting with Tally, syncing invoices, auto-filing returns, and flagging mismatches before the deadline." required></textarea>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Target Customer (be specific)</label>
+          <input type="text" id="customer" placeholder="CA firms with 10-50 clients, or SME finance teams with ₹5-50Cr revenue">
+        </div>
+        <div class="field">
+          <label>Problem Being Solved</label>
+          <input type="text" id="problem" placeholder="GST filing takes 20+ hours/month per client, error rate is high, penalties are common">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Revenue Model</label>
+          <select id="model">
+            <option>SaaS subscription (monthly/annual)</option>
+            <option>Usage-based pricing</option>
+            <option>Per-seat / per-user</option>
+            <option>Freemium + paid upgrade</option>
+            <option>Marketplace / commission</option>
+            <option>One-time + support</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Expected Price Point</label>
+          <input type="text" id="price" placeholder="₹2,999/month per firm">
+        </div>
+      </div>
+      <div class="field">
+        <label>Existing Competition</label>
+        <input type="text" id="competition" placeholder="ClearTax, Zoho Books, manual Excel + CA workflow — none solve end-to-end automation">
+      </div>
+      <div class="field">
+        <label>Your Unfair Advantage</label>
+        <input type="text" id="advantage" placeholder="10 years in GST consulting, direct relationships with 50 CA firms, ex-GSTN employee on team">
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Market Size Estimate</label>
+          <input type="text" id="market" placeholder="1.4Cr registered GST filers, ~10L active businesses">
+        </div>
+        <div class="field">
+          <label>Stage</label>
+          <select id="stage">
+            <option>Just an idea</option><option>Researching / validating</option>
+            <option>Building MVP</option><option>Have early users</option>
+            <option>Generating revenue</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>What must be true in 90 days for this to be viable</label>
+        <input type="text" id="hypothesis" placeholder="10 paying CA firms at ₹2,999/month, NPS > 40, CAC < ₹15,000">
+      </div>
+      <button type="submit" class="btn" id="btn">⚡ Validate This Idea</button>
+    </form>
+  </div>
+  <div class="oc" id="oc" style="display:none">
+    <div class="oh">Claude Output — Idea Validation Report</div>
+    <div id="ob"></div>
+  </div>
+</div>
+<script>
+const WORKER_URL = 'YOUR_CLOUDFLARE_WORKER_URL_HERE';
+
+function md(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/^[-*] (.+)$/gm,'<li>$1</li>').replace(/^\d+\. (.+)$/gm,'<li>$1</li>')
+    .split(/\n{2,}/).map(b=>{b=b.trim();if(!b)return'';return b.startsWith('<')?b:`<p>${b}</p>`;}).join('\n');
+}
+
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn=document.getElementById('btn'),oc=document.getElementById('oc'),ob=document.getElementById('ob');
+  const f = id => document.getElementById(id).value;
+
+  const SYS = `You are a top-tier VC partner and serial entrepreneur who has seen 10,000 pitches and built 5 companies.
+You are brutally honest. Your job is to kill bad ideas fast and help the good ones get stronger.
+Be direct, specific, and India-aware in your analysis. Don't soften your feedback.`;
+
+  const USR = `Validate this business idea.
+
+IDEA: ${f('idea')}
+TARGET CUSTOMER: ${f('customer')}
+PROBLEM: ${f('problem')}
+REVENUE MODEL: ${f('model')} at ${f('price')||'unspecified price'}
+COMPETITION: ${f('competition')||'not specified'}
+UNFAIR ADVANTAGE: ${f('advantage')||'not specified'}
+MARKET SIZE: ${f('market')||'not specified'}
+STAGE: ${f('stage')}
+90-DAY HYPOTHESIS: ${f('hypothesis')||'not specified'}
+
+Give me a complete validation report:
+
+## Verdict: PURSUE / PIVOT / KILL
+(one clear recommendation with 2-sentence rationale)
+
+## The 3 Biggest Reasons This Could Be Huge
+(genuine upside — what makes this interesting)
+
+## The 3 Biggest Risks / Ways This Fails
+(ranked by probability — be specific)
+
+## The Assumption Most Likely to Be Wrong
+(the thing founders in this space always get wrong)
+
+## 5 Questions I'd Need Answered Before Investing
+(what would change your mind — specific, testable)
+
+## 30-Day Validation Sprint
+(exactly how to test the core hypothesis in 30 days with < ₹1L spend)
+
+## The Pivot That Makes This 10x Better
+(if there's one, what is it?)`;
+
+  btn.disabled=true; btn.textContent='⏳ Validating...';
+  oc.style.display='block';
+  ob.innerHTML='<div class="loader"><div class="spinner"></div>Claude is stress-testing your idea...</div>';
+
+  try {
+    const res = await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-opus-4-7',max_tokens:2048,system:SYS,messages:[{role:'user',content:USR}]})});
+    if(!res.ok) throw new Error('Worker returned '+res.status);
+    const data = await res.json();
+    ob.innerHTML='<div class="ob">'+md(data.content[0].text)+'</div>';
+  } catch(err) {
+    ob.innerHTML='<div class="error">⚠️ '+err.message+'<br>Set WORKER_URL to your Cloudflare Worker URL.</div>';
+  } finally {
+    btn.disabled=false; btn.textContent='⚡ Validate This Idea';
+  }
+});
+</script>
+</body>
+</html>

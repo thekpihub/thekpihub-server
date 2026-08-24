@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:24px;background:var(--bg);color:var(--text);width:700px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;}
+  .email-in{width:100%;padding:14px 18px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;box-sizing:border-box;}
+  .email-in::placeholder{color:var(--text-3);}
+  .email-in.focus{border-color:var(--gold);}
+  .row{display:flex;gap:10px;}
+  .row .email-in{flex:1;}
+  .btn{padding:14px 24px;background:var(--gold);color:var(--bg);font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;border:none;border-radius:8px;cursor:pointer;}
+  .lbl{font-family:var(--font-head);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-3);}
+</style></head><body>
+  <div><div class="lbl" style="margin-bottom:6px;">Default</div><input class="email-in" placeholder="Enter your work email"></div>
+  <div><div class="lbl" style="margin-bottom:6px;">Focus</div><input class="email-in focus" value="himanshu@thekpihub.com"></div>
+  <div><div class="lbl" style="margin-bottom:6px;">Inline CTA</div><div class="row"><input class="email-in" placeholder="Enter your work email"><button class="btn">Join →</button></div></div>
+</body></html>

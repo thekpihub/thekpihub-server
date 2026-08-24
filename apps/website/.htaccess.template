@@ -1,0 +1,204 @@
+# The KPI Hub — .htaccess for Hostinger
+# SECURITY: This file contains SetEnv directives for server-side secrets.
+# NEVER commit this file to GitHub. Deploy manually to Hostinger.
+# Reference: .deploy-exclude marks this as SERVER-ONLY protected during rsync.
+
+# ════════════════════════════════════════════════════════════════════════════
+# 1. SERVER-SIDE SECRETS (SetEnv) — Fill with real values on Hostinger
+# ════════════════════════════════════════════════════════════════════════════
+
+# Anthropic API (used by api-key-modal.js, browser-side)
+# SetEnv ANTHROPIC_API_KEY your_actual_api_key_here
+
+# Supabase (used in config.js)
+# SetEnv SUPABASE_URL https://eeuwkislidznpgdbvvbo.supabase.co
+# SetEnv SUPABASE_ANON_KEY your_actual_anon_key_here
+# SetEnv SUPABASE_SERVICE_ROLE_KEY your_actual_service_role_key_here
+
+# Stripe (used in config.js)
+# SetEnv STRIPE_PUBLIC_KEY your_actual_stripe_public_key_here
+# SetEnv STRIPE_SECRET_KEY your_actual_stripe_secret_key_here
+
+# Formspree (used in contact/newsletter forms)
+# SetEnv FORMSPREE_CONTACT xvzdbban
+# SetEnv FORMSPREE_WAITLIST xnjoevjk
+# SetEnv FORMSPREE_BLOG xgojpynr
+
+# Wingman (AI agent backend)
+# SetEnv WINGMAN_API_URL https://agent.thekpihub.com
+# SetEnv WINGMAN_HANDOFF_SECRET your_actual_handoff_secret_here
+
+# Google Analytics
+# SetEnv GA4_ID G-DZPCCPEP1J
+
+# Microsoft Clarity
+# SetEnv CLARITY_ID your_actual_clarity_id_here
+
+# ════════════════════════════════════════════════════════════════════════════
+# 2. COMPRESSION & PERFORMANCE
+# ════════════════════════════════════════════════════════════════════════════
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript application/json
+  AddOutputFilter DEFLATE js css xml
+</IfModule>
+
+# ════════════════════════════════════════════════════════════════════════════
+# 3. CACHING HEADERS — Reduce server load & improve perceived performance
+# ════════════════════════════════════════════════════════════════════════════
+
+<IfModule mod_headers.c>
+  # Assets ARE fingerprinted: tools/version-assets.mjs stamps every reference with
+  # ?v=<sha256 of the file content>, so changing a file changes its URL. That makes
+  # a one-year immutable cache correct rather than dangerous -- the browser skips
+  # revalidation entirely, and it can never serve a stale asset, because the old
+  # URL is simply no longer referenced by any page.
+  <FilesMatch "\.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # config.js is the one exception. It holds the live keys, exists only on this
+  # server (see .deploy-exclude) and so is never fingerprinted -- it has no ?v=.
+  # Without this override the rule above would pin it for a year and any edit here
+  # would not reach returning visitors. Must stay AFTER that block: Header set
+  # lets the later matching directive win.
+  <FilesMatch "^config\.js$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+
+  # HTML must always revalidate so a deploy is picked up immediately.
+  <FilesMatch "\.(html)$">
+    Header set Cache-Control "public, no-cache, must-revalidate"
+  </FilesMatch>
+
+  # No cache for config files & APIs
+  <FilesMatch "\.(php|json)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+
+  # Security headers
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set X-XSS-Protection "1; mode=block"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  # HTTPS is already enforced; tell browsers to never try HTTP again.
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+# ════════════════════════════════════════════════════════════════════════════
+# 4. ROUTING & SPA-LIKE BEHAVIOR
+# ════════════════════════════════════════════════════════════════════════════
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Remove .html extension from URLs (optional, only if desired)
+  # RewriteCond %{REQUEST_FILENAME} !-f
+  # RewriteCond %{REQUEST_FILENAME} !-d
+  # RewriteRule ^([^\.]+)$ $1.html [NC, L]
+
+  # Redirect /index.html to / (clean root)
+  RewriteCond %{REQUEST_URI} ^/index\.html$
+  RewriteRule ^index\.html$ / [R=301,L]
+
+  # Prevent access to hidden files & directories
+  RewriteRule "^\." - [F]
+
+  # Redirect HTTP to HTTPS (if enabled on Hostinger)
+  # RewriteCond %{HTTPS} off
+  # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+  # Add trailing slash to directories (prevents duplicate content)
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteCond %{REQUEST_URI} !/$
+  RewriteRule ^(.+)$ $1/ [R=301,L]
+</IfModule>
+
+# ════════════════════════════════════════════════════════════════════════════
+# 5a. SOURCE & DOC FILES — never web content
+# ════════════════════════════════════════════════════════════════════════════
+# STATUS 2026-08-19: present in this template, NOT YET APPLIED on the server.
+# Apply via hPanel → File Manager, then verify. Until then these paths are
+# publicly readable in production.
+#
+# Why this cannot be fixed by a push: these files shipped to the web root before
+# .deploy-exclude covered them, and rsync runs --delete WITHOUT
+# --delete-excluded, so the exclusion PROTECTS the deployed copy rather than
+# removing it. Un-excluding does not help either — the paths still exist in the
+# repo, so rsync would upload them instead of deleting them. Blocking here is
+# the fix, and it also covers anything similar that ships in future.
+#
+# Verified live 2026-08-19 (all returned 200): /CLAUDE.md /README.md
+# /docs/*.md /pipeline.py /landing/*.jsx /package.json /package-lock.json
+# /vercel.json /firebase.json /requirements.txt /config.example.js /CNAME
+#
+# config.js is deliberately NOT matched — it is the public client config and
+# must keep returning 200. Neither pattern below touches it.
+#
+# The IfModule pair matters: bare "Deny from all" is Apache 2.2 syntax and 500s
+# the whole domain on 2.4 without mod_access_compat. This works on both.
+
+<FilesMatch "\.(md|markdown|py|pyc|pyo|jsx|mjs|map|sh|bash|sql|ini|log|bak|old|orig|swp|template|yml|yaml|toml|lock|doc|docx)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+<FilesMatch "^(package\.json|package-lock\.json|vercel\.json|firebase\.json|composer\.json|composer\.lock|requirements\.txt|config\.example\.js|CNAME|LICENSE|Dockerfile|Procfile|Makefile)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# ════════════════════════════════════════════════════════════════════════════
+# 5. WORDPRESS (if running on same domain)
+# ════════════════════════════════════════════════════════════════════════════
+
+# Protect WordPress directories from direct access
+<FilesMatch "^(wp-|xmlrpc)">
+  Deny from all
+</FilesMatch>
+
+# ════════════════════════════════════════════════════════════════════════════
+# 6. CUSTOM ERROR PAGES
+# ════════════════════════════════════════════════════════════════════════════
+
+ErrorDocument 404 /404.html
+ErrorDocument 403 /404.html
+ErrorDocument 500 /404.html
+
+# ════════════════════════════════════════════════════════════════════════════
+# 7. PHP CONFIGURATION (if needed)
+# ════════════════════════════════════════════════════════════════════════════
+
+<IfModule mod_php.c>
+  # Increase upload size for file-based uploads
+  php_value upload_max_filesize 50M
+  php_value post_max_size 50M
+
+  # Set timezone
+  php_value date.timezone "Asia/Kolkata"
+
+  # Security: Disable function execution in upload dirs
+  php_value disable_functions "exec,passthru,shell_exec,system,proc_open,proc_close,proc_get_status,popen,fsockopen,eval"
+</IfModule>
+
+# ════════════════════════════════════════════════════════════════════════════
+# 8. MIME TYPES (for files that might not be recognized)
+# ════════════════════════════════════════════════════════════════════════════
+
+AddType video/mp4 .mp4
+AddType video/webm .webm
+AddType application/manifest+json .webmanifest
+AddType application/wasm .wasm
+AddEncoding gzip .svgz
+
+# ════════════════════════════════════════════════════════════════════════════
+# END .htaccess
+# ════════════════════════════════════════════════════════════════════════════

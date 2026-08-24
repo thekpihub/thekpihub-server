@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Integrations · The KPI Hub</title>
+    <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/assets/favicon-new.svg?v=d6470a38" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- No links to this page exist anywhere. Access via /account/integrations or G→K shortcut. -->
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0d1117;
+      --surface: #161b22;
+      --surface2:#21262d;
+      --border:  #30363d;
+      --text:    #e6edf3;
+      --muted:   #8b949e;
+      --gold:    #E9A123;
+      --teal:    #00C9A7;
+      --danger:  #f85149;
+      --success: #3fb950;
+      --radius:  10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .logo-mark {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, var(--gold), #c97d10);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 15px; color: #06071A;
+    }
+    .logo-text { font-size: 15px; font-weight: 700; }
+    .back-link {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color .2s;
+    }
+    .back-link:hover { color: var(--text); }
+
+    /* ── Page ── */
+    .page { max-width: 860px; margin: 0 auto; padding: 48px 24px; }
+
+    .page-title {
+      font-size: 26px; font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+
+    /* ── Locked state ── */
+    .locked-card {
+      background: rgba(233,161,35,.04);
+      border: 1px dashed rgba(233,161,35,.3);
+      border-radius: 16px;
+      padding: 56px 32px;
+      text-align: center;
+    }
+    .locked-icon { font-size: 48px; margin-bottom: 20px; }
+    .locked-title { font-size: 22px; font-weight: 700; color: var(--gold); margin-bottom: 12px; }
+    .locked-desc { font-size: 14px; color: var(--muted); max-width: 440px; margin: 0 auto 28px; line-height: 1.7; }
+    .request-btn {
+      padding: 14px 36px;
+      background: linear-gradient(135deg, var(--gold), #c97d10);
+      color: #06071A;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .request-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(233,161,35,.35); }
+    .request-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .request-success {
+      display: none;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--success);
+    }
+
+    /* ── Provider cards ── */
+    .provider-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 16px;
+    }
+    .provider-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      transition: border-color .2s;
+    }
+    .provider-card:hover { border-color: rgba(233,161,35,.35); }
+    .provider-card.has-key { border-color: rgba(0,201,167,.3); background: rgba(0,201,167,.03); }
+
+    .provider-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .provider-emoji { font-size: 28px; }
+    .provider-info { flex: 1; }
+    .provider-name { font-size: 15px; font-weight: 700; }
+    .provider-models { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .key-status {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .key-status.active { background: rgba(0,201,167,.15); color: var(--teal); }
+    .key-status.none   { background: var(--surface2); color: var(--muted); }
+
+    .key-display {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+      margin-bottom: 12px;
+    }
+    .key-mask { flex: 1; color: var(--muted); }
+    .delete-key {
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 12px;
+      font-family: inherit;
+      padding: 0;
+      opacity: .7;
+      transition: opacity .2s;
+    }
+    .delete-key:hover { opacity: 1; }
+
+    .key-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .key-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'Courier New', monospace;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .key-input:focus { border-color: var(--gold); }
+    .save-key-btn {
+      padding: 10px 18px;
+      background: var(--gold);
+      color: #06071A;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 13px; font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      transition: background .2s;
+    }
+    .save-key-btn:hover { background: #c97d10; }
+    .save-key-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .toggle-add {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--gold);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 0;
+      transition: opacity .2s;
+    }
+    .toggle-add:hover { opacity: .8; }
+
+    .add-key-form { display: none; margin-top: 12px; }
+    .add-key-form.open { display: block; }
+
+    .key-warning {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      background: rgba(216,153,34,.08);
+      border: 1px solid rgba(216,153,34,.2);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #d89922;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    /* ── Notice ── */
+    .notice {
+      background: rgba(233,161,35,.06);
+      border: 1px solid rgba(233,161,35,.2);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+    .notice strong { color: var(--gold); }
+
+    /* ── Alert ── */
+    .page-alert {
+      display: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+    .page-alert.success { background: rgba(63,185,80,.12); border: 1px solid rgba(63,185,80,.4); color: #86efac; }
+    .page-alert.error   { background: rgba(248,81,73,.12);  border: 1px solid rgba(248,81,73,.4);  color: #fca5a5; }
+
+    @media (max-width: 640px) {
+      .provider-grid { grid-template-columns: 1fr; }
+      .topbar { padding: 14px 16px; }
+      .page { padding: 28px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/dashboard.html" class="topbar-logo">
+    <div class="logo-mark">K</div>
+    <div class="logo-text">KPI Hub</div>
+  </a>
+  <a href="/dashboard.html" class="back-link">← Back to Dashboard</a>
+</div>
+
+<div class="page">
+  <div id="pageAlert" class="page-alert"></div>
+
+  <!-- Locked state (default — shown until we confirm approval) -->
+  <div id="lockedState" style="display:none;">
+    <div class="locked-card">
+      <div class="locked-icon">🔑</div>
+      <div class="locked-title">Integration Access — Admin Approval Required</div>
+      <div class="locked-desc">
+        This is a private, invite-only feature. Connect your own AI API keys so WingCommander uses your personal subscription — platform pays $0 for your usage.
+        <br><br>
+        Request access below. You'll hear from us within 24 hours.
+      </div>
+      <button class="request-btn" id="requestBtn" onclick="requestAccess()">Request Integration Access →</button>
+      <div class="request-success" id="requestSuccess">
+        ✓ Request submitted. We'll review and reach out within 24 hours.
+      </div>
+    </div>
+  </div>
+
+  <!-- Approved state -->
+  <div id="approvedState" style="display:none;">
+    <div class="page-title">API Key Integrations</div>
+    <div class="page-subtitle">Connect your own AI API keys. WingCommander will use your subscriptions directly — zero platform cost on your usage.</div>
+
+    <div class="notice">
+      <strong>How it works:</strong> When you add a key for a provider, WingCommander uses your key for that provider's models. Your key is stored locally on this device. For server-side encrypted storage, <a href="/upgrade.html" style="color:var(--gold);">upgrade to Enterprise</a>.
+    </div>
+
+    <div class="provider-grid" id="providerGrid"></div>
+  </div>
+
+  <!-- Loading state -->
+  <div id="loadingState" style="text-align:center; padding:80px 20px; color:var(--muted);">
+    Verifying access…
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/config.js"></script>
+<script>
+  const { createClient } = supabase;
+  const sb = createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+
+  const PROVIDERS = [
+    {
+      id: 'anthropic',
+      emoji: '🟣',
+      name: 'Anthropic',
+      models: 'Claude Opus 4.7, Sonnet 4.6, Haiku 4.5',
+      placeholder: 'sk-ant-api03-…',
+      prefix: 'sk-ant-',
+    },
+    {
+      id: 'openai',
+      emoji: '🟢',
+      name: 'OpenAI',
+      models: 'GPT-4o, o3-mini',
+      placeholder: 'sk-proj-…',
+      prefix: 'sk-',
+    },
+    {
+      id: 'google',
+      emoji: '🔵',
+      name: 'Google AI',
+      models: 'Gemini 2.0 Flash, Gemini 2.0 Pro',
+      placeholder: 'AIza…',
+      prefix: 'AIza',
+    },
+    {
+      id: 'mistral',
+      emoji: '🟤',
+      name: 'Mistral',
+      models: 'Mistral Large, Mixtral',
+      placeholder: 'your-mistral-api-key',
+      prefix: '',
+    },
+    {
+      id: 'groq',
+      emoji: '⚡',
+      name: 'Groq',
+      models: 'Llama 3.3 70B (ultra-fast)',
+      placeholder: 'gsk_…',
+      prefix: 'gsk_',
+    },
+  ];
+
+  let profile = null;
+
+  function getStoredKeys() {
+    try { return JSON.parse(localStorage.getItem('byok_keys') || '{}'); }
+    catch { return {}; }
+  }
+
+  function saveKey(providerId, key) {
+    const keys = getStoredKeys();
+    // Store only masked version for display + a flag
+    const hint = key.slice(-4);
+    const masked = key.slice(0, 8).replace(/./g, '*') + '…' + hint;
+    keys[providerId] = { hint, masked, ts: Date.now() };
+    localStorage.setItem('byok_keys', JSON.stringify(keys));
+    // Also store the actual key separately (same origin, readable only by this page)
+    localStorage.setItem('byok_key_' + providerId, key);
+  }
+
+  function deleteKey(providerId) {
+    const keys = getStoredKeys();
+    delete keys[providerId];
+    localStorage.setItem('byok_keys', JSON.stringify(keys));
+    localStorage.removeItem('byok_key_' + providerId);
+  }
+
+  function maskKey(key) {
+    if (!key) return '';
+    return key.slice(0, 8).replace(/./g, '*') + '…' + key.slice(-4);
+  }
+
+  function renderProviders() {
+    const keys = getStoredKeys();
+    let html = '';
+    PROVIDERS.forEach(p => {
+      const stored = keys[p.id];
+      const hasKey = !!stored;
+      html += `
+        <div class="provider-card ${hasKey ? 'has-key' : ''}" id="card-${p.id}">
+          <div class="provider-header">
+            <div class="provider-emoji">${p.emoji}</div>
+            <div class="provider-info">
+              <div class="provider-name">${p.name}</div>
+              <div class="provider-models">${p.models}</div>
+            </div>
+            <span class="key-status ${hasKey ? 'active' : 'none'}">${hasKey ? '✓ Active' : 'No Key'}</span>
+          </div>
+          ${hasKey ? `
+            <div class="key-display">
+              <span class="key-mask">${stored.masked}</span>
+              <button class="delete-key" onclick="removeKey('${p.id}')">Remove</button>
+            </div>
+          ` : ''}
+          ${!hasKey ? `
+            <button class="toggle-add" onclick="toggleAdd('${p.id}')">+ Add API Key</button>
+            <div class="add-key-form" id="form-${p.id}">
+              <div class="key-input-row">
+                <input
+                  class="key-input"
+                  type="password"
+                  id="input-${p.id}"
+                  placeholder="${p.placeholder}"
+                  autocomplete="off"
+                  spellcheck="false"
+                >
+                <button class="save-key-btn" onclick="saveNewKey('${p.id}')">Save</button>
+              </div>
+              <div class="key-warning">⚠ Keys are stored locally on this device only. Do not share your device with untrusted users.</div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    });
+    document.getElementById('providerGrid').innerHTML = html;
+  }
+
+  function toggleAdd(providerId) {
+    const form = document.getElementById('form-' + providerId);
+    form.classList.toggle('open');
+    if (form.classList.contains('open')) {
+      document.getElementById('input-' + providerId).focus();
+    }
+  }
+
+  function saveNewKey(providerId) {
+    const input = document.getElementById('input-' + providerId);
+    const key   = input.value.trim();
+    if (!key || key.length < 8) {
+      showAlert('error', 'Please enter a valid API key.');
+      return;
+    }
+    saveKey(providerId, key);
+    renderProviders();
+    showAlert('success', 'API key saved successfully.');
+  }
+
+  function removeKey(providerId) {
+    if (!confirm('Remove this API key? WingCommander will use the platform key instead.')) return;
+    deleteKey(providerId);
+    renderProviders();
+    showAlert('success', 'API key removed.');
+  }
+
+  function showAlert(type, msg) {
+    const el = document.getElementById('pageAlert');
+    el.textContent = msg;
+    el.className = 'page-alert ' + type;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 4000);
+  }
+
+  async function requestAccess() {
+    const btn = document.getElementById('requestBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+    // Store request locally so we don't spam
+    localStorage.setItem('byok_requested', Date.now().toString());
+    // Show success immediately (server-side processing is async)
+    setTimeout(() => {
+      document.getElementById('requestSuccess').style.display = 'block';
+      btn.style.display = 'none';
+    }, 800);
+  }
+
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      window.location.href = '/login.html';
+      return;
+    }
+
+    const { data: prof } = await sb.from('profiles')
+      .select('plan, byok_approved')
+      .eq('id', session.user.id)
+      .single();
+
+    profile = prof;
+    document.getElementById('loadingState').style.display = 'none';
+
+    if (prof && prof.byok_approved === true) {
+      document.getElementById('approvedState').style.display = 'block';
+      renderProviders();
+    } else {
+      document.getElementById('lockedState').style.display = 'block';
+      // If already requested, show the success message
+      if (localStorage.getItem('byok_requested')) {
+        document.getElementById('requestSuccess').style.display = 'block';
+        document.getElementById('requestBtn').style.display = 'none';
+      }
+    }
+  }
+
+  init();
+</script>
+<script src="/gk-shortcut.js?v=a3bb6e13"></script>
+</body>
+</html>

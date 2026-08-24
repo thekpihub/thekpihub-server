@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  body{margin:0;padding:22px;background:var(--bg);color:var(--text);width:700px;box-sizing:border-box;}
+  .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;}
+  .cell{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 8px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,0.02);}
+  .tile{width:44px;height:44px;border-radius:10px;background:rgba(233,161,35,0.18);border:1px solid rgba(233,161,35,0.28);display:flex;align-items:center;justify-content:center;}
+  .name{font-family:var(--font-head);font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-2);text-align:center;}
+  .caption{font-family:var(--font-body);font-size:11px;color:var(--text-3);margin-top:14px;text-align:center;}
+</style></head><body>
+  <div class="grid">
+    <div class="cell"><div class="tile"><i data-lucide="brain" style="width:22px;height:22px;stroke:#E9A123;stroke-width:1.5;fill:none;"></i></div><div class="name">brain</div></div>
+    <div class="cell"><div class="tile"><i data-lucide="target" style="width:22px;height:22px;stroke:#E9A123;stroke-width:1.5;fill:none;"></i></div><div class="name">target</div></div>
+    <div class="cell"><div class="tile"><i data-lucide="zap" style="width:22px;height:22px;stroke:#E9A123;stroke-width:1.5;fill:none;"></i></div><div class="name">zap</div></div>
+    <div class="cell"><div class="tile"><i data-lucide="trending-up" style="width:22px;height:22px;stroke:#E9A123;stroke-width:1.5;fill:none;"></i></div><div class="name">trending-up</div></div>
+    <div class="cell"><div class="tile"><i data-lucide="bar-chart-2" style="width:22px;height:22px;stroke:#E9A123;stroke-width:1.5;fill:none;"></i></div><div class="name">bar-chart</div></div>
+    <div class="cell"><div class="tile"><i data-lucide="search" style="width:22px;height:22px;stroke:#E9A123;stroke-width:1.5;fill:none;"></i></div><div class="name">search</div></div>
+    <div class="cell"><div class="tile"><i data-lucide="bot" style="width:22px;height:22px;stroke:#E9A123;stroke-width:1.5;fill:none;"></i></div><div class="name">bot</div></div>
+    <div class="cell"><div class="tile"><i data-lucide="bell" style="width:22px;height:22px;stroke:#E9A123;stroke-width:1.5;fill:none;"></i></div><div class="name">bell</div></div>
+    <div class="cell"><div class="tile"><i data-lucide="lightbulb" style="width:22px;height:22px;stroke:#E9A123;stroke-width:1.5;fill:none;"></i></div><div class="name">lightbulb</div></div>
+    <div class="cell"><div class="tile"><i data-lucide="shield-check" style="width:22px;height:22px;stroke:#E9A123;stroke-width:1.5;fill:none;"></i></div><div class="name">shield-check</div></div>
+  </div>
+  <div class="caption">Lucide · stroke 1.5 · gold #E9A123 · always stroke, never fill</div>
+<script>lucide.createIcons();</script>
+</body></html>

@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="yRGmgTNjIHFmLom_ZrczRQpmaJkf2SpAZWR75g3g71k">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="The KPI Hub Pricing — Start with our KPI Audit (₹2,999) to uncover growth opportunities, then scale with Growth or Enterprise plans.">
+    <title>Pricing — Start Your KPI Audit for Rs.2,999</title>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thekpihub.com/pricing.html">
+    <meta property="og:title" content="Pricing — Start Your KPI Audit for Rs.2,999">
+    <meta property="og:description" content="The KPI Hub Pricing — Start with our KPI Audit (₹2,999) to uncover growth opportunities, then scale with Growth or Enterprise plans.">
+    <meta property="og:image" content="https://thekpihub.com/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Pricing — Start Your KPI Audit for Rs.2,999">
+    <meta name="twitter:description" content="The KPI Hub Pricing — Start with our KPI Audit (₹2,999) to uncover growth opportunities, then scale with Growth or Enterprise plans.">
+    <meta name="twitter:image" content="https://thekpihub.com/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+
+    <style>
+        /* =============================================
+           VARIABLES
+        ============================================= */
+        :root {
+            --bg:        #06071A;
+            --bg2:       #0C0E28;
+            --card:      rgba(255,255,255,0.04);
+            --gold:      #E9A123;
+            --gold-glow: rgba(233,161,35,0.18);
+            --gold-rim:  rgba(233,161,35,0.28);
+            --teal:      #00C9A7;
+            --teal-glow: rgba(0,201,167,0.12);
+            --red:       #FF6B6B;
+            --text:      #EAEDF5;
+            --text2:     rgba(234,237,245,0.62);
+            --text3:     rgba(234,237,245,0.32);
+            --border:    rgba(255,255,255,0.08);
+            --r:         12px;
+            --max:       1180px;
+            --display:   'Cormorant Garamond', serif;
+            --head:      'Syne', sans-serif;
+            --body:      'DM Sans', sans-serif;
+        }
+
+        /* =============================================
+           RESET
+        ============================================= */
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; font-size:16px; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--body);
+            font-weight: 400;
+            line-height: 1.65;
+            overflow-x: hidden;
+        }
+        a { color:inherit; text-decoration:none; }
+        img { max-width:100%; display:block; }
+        button { cursor:pointer; }
+
+        ::-webkit-scrollbar { width:5px; }
+        ::-webkit-scrollbar-track { background:var(--bg); }
+        ::-webkit-scrollbar-thumb { background:var(--gold); border-radius:3px; }
+
+        /* =============================================
+           ANIMATIONS
+        ============================================= */
+        @keyframes fadeUp {
+            from { opacity:0; transform:translateY(22px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        @keyframes fadeDown {
+            from { opacity:0; transform:translateY(-16px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        @keyframes blink {
+            0%,100% { opacity:1; } 50% { opacity:0.3; }
+        }
+        @keyframes gridBreath {
+            0%,100% { opacity:0.5; } 50% { opacity:1; }
+        }
+
+        /* =============================================
+           NAV
+        ============================================= */
+        nav {
+            position: fixed; top:0; left:0; right:0; z-index:100;
+            padding: 18px 48px;
+            display: flex; align-items:center; justify-content:space-between;
+            background: rgba(6,7,26,0.88);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border);
+            animation: fadeDown 0.8s ease both;
+        }
+        .logo {
+            font-family: var(--head);
+            font-size: 1.25rem; font-weight:800;
+            letter-spacing:-0.02em;
+            display:flex; align-items:center; gap:9px;
+        }
+        .logo-accent { color:var(--gold); }
+        .logo-dot {
+            width:8px; height:8px; border-radius:50%;
+            background:var(--gold);
+            animation: blink 2s ease infinite;
+        }
+        .nav-links {
+            display:flex; gap:36px; list-style:none;
+        }
+        .nav-links a {
+            font-family:var(--head); font-size:0.78rem; font-weight:600;
+            letter-spacing:0.07em; text-transform:uppercase;
+            color:var(--text2); transition:color 0.2s;
+        }
+        .nav-links a:hover { color:var(--text); }
+        .nav-links a.active { color:var(--gold); }
+        .nav-btn {
+            font-family:var(--head); font-size:0.78rem; font-weight:700;
+            letter-spacing:0.06em; text-transform:uppercase;
+            padding:10px 26px; background:var(--gold); color:var(--bg);
+            border-radius:6px; border:none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .nav-btn:hover {
+            transform:translateY(-1px);
+            box-shadow: 0 8px 30px rgba(233,161,35,0.4);
+        }
+
+        /* =============================================
+           PAGE WRAPPER
+        ============================================= */
+        .wrap {
+            max-width: var(--max);
+            margin: 0 auto;
+            padding: 0 48px;
+        }
+
+        /* =============================================
+           HERO
+        ============================================= */
+        .page-hero {
+            padding: 160px 48px 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-grid {
+            position:absolute; inset:0;
+            background-image:
+                linear-gradient(rgba(233,161,35,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(233,161,35,0.04) 1px, transparent 1px);
+            background-size:64px 64px;
+            animation: gridBreath 6s ease infinite;
+            pointer-events:none;
+        }
+        .hero-glow {
+            position:absolute; top:-100px; left:50%; transform:translateX(-50%);
+            width:800px; height:500px;
+            background: radial-gradient(ellipse, rgba(233,161,35,0.1) 0%, rgba(0,201,167,0.04) 50%, transparent 72%);
+            pointer-events:none;
+        }
+        .page-hero .inner {
+            position:relative; z-index:2;
+            max-width:680px; margin:0 auto;
+        }
+        .hero-badge {
+            display:inline-flex; align-items:center; gap:9px;
+            padding:7px 18px;
+            border:1px solid var(--gold-rim); border-radius:100px;
+            background:var(--gold-glow);
+            font-family:var(--head); font-size:0.71rem; font-weight:700;
+            letter-spacing:0.1em; text-transform:uppercase; color:var(--gold);
+            margin-bottom:32px;
+            animation: fadeUp 0.7s 0.1s ease both;
+        }
+        .badge-dot {
+            width:6px; height:6px; border-radius:50%;
+            background:var(--teal);
+            animation: blink 1.5s ease infinite;
+        }
+        .page-hero h1 {
+            font-family: var(--display);
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight:700; line-height:1.06;
+            letter-spacing:-0.02em;
+            margin-bottom:20px;
+            animation: fadeUp 0.7s 0.25s ease both;
+        }
+        .page-hero p.sub {
+            font-size:1.1rem; font-weight:300; color:var(--text2);
+            line-height:1.75;
+            animation: fadeUp 0.7s 0.4s ease both;
+        }
+
+        /* =============================================
+           SECTION BASICS
+        ============================================= */
+        section { padding: 80px 0; }
+        .section-label {
+            font-family:var(--head); font-size:0.7rem; font-weight:700;
+            letter-spacing:0.14em; text-transform:uppercase;
+            color:var(--teal); margin-bottom:14px;
+        }
+        .section-title {
+            font-family:var(--display);
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            font-weight:700; line-height:1.12;
+            letter-spacing:-0.015em;
+            margin-bottom:16px;
+        }
+        .section-sub {
+            font-size:1rem; color:var(--text2); font-weight:300; line-height:1.7;
+            max-width:560px;
+        }
+        .section-head { margin-bottom:56px; }
+        .section-head.centered { text-align:center; }
+        .section-head.centered .section-sub { margin:0 auto; }
+
+        /* =============================================
+           PRICING BANNER
+        ============================================= */
+        .pricing-banner {
+            background: linear-gradient(90deg, var(--gold-glow), rgba(0,201,167,0.06), var(--gold-glow));
+            border: 1px solid var(--gold-rim);
+            border-radius: var(--r);
+            padding: 18px 32px;
+            text-align:center;
+            margin-bottom: 60px;
+            animation: fadeUp 0.7s 0.55s ease both;
+        }
+        .pricing-banner p {
+            font-family: var(--head);
+            font-size: 0.9rem; font-weight:600;
+            color: var(--gold);
+            letter-spacing:0.02em;
+        }
+        .pricing-banner p span {
+            color: var(--text);
+            font-weight:400;
+        }
+
+        /* =============================================
+           PRICING GRID
+        ============================================= */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 56px;
+        }
+        .pricing-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 36px 32px;
+            display: flex; flex-direction:column;
+            transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+        .pricing-card::before {
+            content:'';
+            position:absolute; top:0; left:0; right:0; height:2px;
+            background: var(--border);
+            transition: background 0.3s;
+        }
+        .pricing-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255,255,255,0.14);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+        }
+        .pricing-card.featured {
+            border-color: var(--gold-rim);
+            background: linear-gradient(160deg, rgba(233,161,35,0.06) 0%, var(--card) 60%);
+        }
+        .pricing-card.featured::before {
+            background: linear-gradient(90deg, var(--gold), rgba(233,161,35,0.3));
+        }
+        .pricing-card.featured:hover {
+            border-color: rgba(233,161,35,0.45);
+            box-shadow: 0 20px 56px rgba(233,161,35,0.15);
+        }
+        .plan-badge {
+            display:inline-flex; align-items:center; gap:6px;
+            font-family:var(--head); font-size:0.65rem; font-weight:700;
+            letter-spacing:0.1em; text-transform:uppercase;
+            padding:4px 12px; border-radius:100px;
+            margin-bottom:22px; align-self:flex-start;
+        }
+        .plan-badge.free { background:rgba(0,201,167,0.12); color:var(--teal); border:1px solid rgba(0,201,167,0.2); }
+        .plan-badge.pro  { background:var(--gold-glow); color:var(--gold); border:1px solid var(--gold-rim); }
+        .plan-badge.ent  { background:rgba(255,107,107,0.1); color:var(--red); border:1px solid rgba(255,107,107,0.2); }
+        .plan-name {
+            font-family:var(--head); font-size:1.5rem; font-weight:800;
+            margin-bottom:6px;
+        }
+        .plan-price {
+            font-family:var(--display); font-size:2.4rem; font-weight:700;
+            line-height:1.1; margin-bottom:8px;
+            color:var(--gold);
+        }
+        .plan-price small {
+            font-family:var(--body); font-size:0.85rem; font-weight:400;
+            color:var(--text3); vertical-align:middle; margin-left:4px;
+        }
+        .plan-tagline {
+            font-size:0.9rem; color:var(--text2); margin-bottom:28px;
+            font-weight:300; line-height:1.55;
+        }
+        .plan-divider {
+            border:none; border-top:1px solid var(--border);
+            margin-bottom:24px;
+        }
+        .plan-features {
+            list-style:none; flex:1; margin-bottom:32px;
+        }
+        .plan-features li {
+            display:flex; align-items:flex-start; gap:10px;
+            font-size:0.9rem; color:var(--text2);
+            padding: 7px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .plan-features li:last-child { border-bottom:none; }
+        .plan-features li .check {
+            flex-shrink:0; width:18px; height:18px;
+            border-radius:50%;
+            background:rgba(0,201,167,0.12); color:var(--teal);
+            display:flex; align-items:center; justify-content:center;
+            font-size:0.65rem; margin-top:2px;
+        }
+        .plan-features li .check.gold { background:var(--gold-glow); color:var(--gold); }
+        .plan-cta {
+            font-family:var(--head); font-size:0.82rem; font-weight:700;
+            letter-spacing:0.06em; text-transform:uppercase;
+            padding:14px 24px;
+            border-radius:8px; border:none;
+            width:100%;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+        .plan-cta.teal {
+            background: rgba(0,201,167,0.12);
+            color: var(--teal);
+            border: 1px solid rgba(0,201,167,0.25);
+        }
+        .plan-cta.teal:hover {
+            background: rgba(0,201,167,0.2);
+            transform:translateY(-1px);
+        }
+        .plan-cta.gold {
+            background: var(--gold);
+            color: var(--bg);
+        }
+        .plan-cta.gold:hover {
+            transform:translateY(-2px);
+            box-shadow: 0 10px 32px rgba(233,161,35,0.4);
+        }
+        .plan-cta.outline {
+            background: transparent;
+            color: var(--text2);
+            border: 1px solid var(--border);
+        }
+        .plan-cta.outline:hover {
+            border-color: rgba(255,255,255,0.2);
+            color: var(--text);
+            transform:translateY(-1px);
+        }
+
+        /* =============================================
+           WAITLIST NOTE
+        ============================================= */
+        .waitlist-note {
+            text-align:center;
+            padding: 28px 40px;
+            background: var(--card);
+            border: 1px solid var(--gold-rim);
+            border-radius: var(--r);
+            margin-bottom: 80px;
+        }
+        .waitlist-note p {
+            font-family:var(--head); font-size:0.95rem; font-weight:600;
+            color:var(--text2); line-height:1.6;
+        }
+        .waitlist-note p strong { color:var(--gold); }
+        .waitlist-note a {
+            color:var(--teal); text-decoration:underline; text-underline-offset:3px;
+        }
+        .waitlist-note a:hover { color:var(--text); }
+
+        /* =============================================
+           FAQ
+        ============================================= */
+        .faq-list {
+            display:grid; grid-template-columns:1fr 1fr; gap:20px;
+            margin-bottom:0;
+        }
+        .faq-item {
+            background:var(--card);
+            border:1px solid var(--border);
+            border-radius:var(--r);
+            padding:28px 30px;
+            transition: border-color 0.2s;
+        }
+        .faq-item:hover { border-color:rgba(255,255,255,0.14); }
+        .faq-q {
+            font-family:var(--head); font-size:0.95rem; font-weight:700;
+            color:var(--text); margin-bottom:10px;
+        }
+        .faq-a {
+            font-size:0.92rem; color:var(--text2); line-height:1.65; font-weight:300;
+        }
+
+        /* =============================================
+           BOTTOM CTA
+        ============================================= */
+        .cta-section {
+            padding:100px 0;
+            text-align:center;
+        }
+        .cta-inner {
+            max-width:680px; margin:0 auto;
+            background: var(--bg2);
+            border:1px solid var(--gold-rim);
+            border-radius:20px;
+            padding:64px 56px;
+            position:relative; overflow:hidden;
+        }
+        .cta-inner::before {
+            content:'';
+            position:absolute; top:-60px; left:50%; transform:translateX(-50%);
+            width:400px; height:300px;
+            background:radial-gradient(ellipse, rgba(233,161,35,0.12) 0%, transparent 70%);
+            pointer-events:none;
+        }
+        .cta-inner .section-label { margin-bottom:16px; }
+        .cta-inner h2 {
+            font-family:var(--display); font-size:clamp(2rem, 4vw, 2.8rem);
+            font-weight:700; line-height:1.12; letter-spacing:-0.015em;
+            margin-bottom:18px;
+        }
+        .cta-inner h2 em { font-style:italic; color:var(--gold); }
+        .cta-inner p {
+            font-size:1rem; color:var(--text2); font-weight:300; line-height:1.7;
+            margin-bottom:36px;
+        }
+        .cta-btn {
+            font-family:var(--head); font-size:0.85rem; font-weight:700;
+            letter-spacing:0.06em; text-transform:uppercase;
+            padding:16px 44px;
+            background:var(--gold); color:var(--bg);
+            border-radius:8px; border:none;
+            display:inline-block;
+            transition:transform 0.2s, box-shadow 0.2s;
+        }
+        .cta-btn:hover {
+            transform:translateY(-2px);
+            box-shadow:0 12px 40px rgba(233,161,35,0.45);
+        }
+
+        /* =============================================
+           FOOTER
+        ============================================= */
+        footer {
+            background:var(--bg2);
+            border-top:1px solid var(--border);
+            padding:64px 0 0;
+        }
+        footer .wrap { max-width:var(--max); margin:0 auto; padding:0 48px; }
+        .foot-top {
+            display:grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap:48px;
+            padding-bottom:48px;
+            border-bottom:1px solid var(--border);
+        }
+        .foot-brand .logo { margin-bottom:14px; }
+        .foot-tag {
+            font-size:0.88rem; color:var(--text3); line-height:1.65; max-width:280px;
+        }
+        .foot-group h4 {
+            font-family:var(--head); font-size:0.72rem; font-weight:700;
+            letter-spacing:0.1em; text-transform:uppercase;
+            color:var(--text3); margin-bottom:16px;
+        }
+        .foot-group ul { list-style:none; }
+        .foot-group ul li { margin-bottom:10px; }
+        .foot-group ul li a {
+            font-size:0.9rem; color:var(--text2); transition:color 0.2s;
+        }
+        .foot-group ul li a:hover { color:var(--gold); }
+        .foot-bottom {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:22px 0;
+        }
+        .foot-copy { font-size:0.85rem; color:var(--text3); }
+        .foot-copy a { color:var(--text2); }
+        .foot-copy a:hover { color:var(--gold); }
+        .foot-made { font-size:0.82rem; color:var(--text3); }
+
+        /* =============================================
+           RESPONSIVE
+        ============================================= */
+        @media(max-width:900px) {
+            nav { padding:16px 24px; }
+            .nav-links { display:none; }
+            .wrap { padding:0 24px; }
+            .page-hero { padding:130px 24px 64px; }
+            .pricing-grid { grid-template-columns:1fr; max-width:420px; margin:0 auto 48px; }
+            .faq-list { grid-template-columns:1fr; }
+            .foot-top { grid-template-columns:1fr 1fr; }
+            .cta-inner { padding:44px 32px; }
+        }
+        @media(max-width:540px) {
+            .foot-top { grid-template-columns:1fr; }
+            .foot-bottom { flex-direction:column; gap:10px; text-align:center; }
+        }
+    </style>
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-DZPCCPEP1J');
+    </script>
+
+<link rel="canonical" href="https://thekpihub.com/pricing.html">
+    <meta name="robots" content="index, follow">
+        <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wdshn14xgf");
+    </script>
+</head>
+<body>
+
+    <!-- NAV -->
+    <nav>
+        <img src="assets/logo-wordmark.svg?v=3d541613" alt="The KPI Hub" class="logo-img" style="height:40px;width:auto;max-width:160px;">
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="intelligence.html">Intelligence</a></li>
+            <li><a href="directory.html">Directory</a></li>
+            <li><a href="about.html">About</a></li>
+        </ul>
+        <a href="get-audit.html"><button class="nav-btn">Get My KPI Audit →</button></a>
+    </nav>
+
+    <!-- HERO -->
+    <section class="page-hero">
+        <div class="hero-grid"></div>
+        <div class="hero-glow"></div>
+        <div class="inner">
+            <div class="hero-badge">
+                <div class="badge-dot"></div>
+                Transparent Pricing
+            </div>
+            <h1>Start Your KPI Audit</h1>
+            <p class="sub">Uncover growth opportunities with our audit-first approach. ₹2,999 to unlock your competitive edge.</p>
+        </div>
+    </section>
+
+    <!-- PRICING SECTION -->
+    <section style="padding-top:0;">
+        <div class="wrap">
+
+            <div class="pricing-banner">
+                <p><strong>Start with our KPI Audit Lite (₹2,999)</strong> <span>to identify your biggest growth levers. Add Growth or Enterprise features anytime.</span></p>
+            </div>
+
+            <div class="pricing-grid">
+
+                <!-- KPI AUDIT LITE (featured) -->
+                <div class="pricing-card featured">
+                    <span class="plan-badge pro">Start Here</span>
+                    <div class="plan-name">KPI Audit Lite</div>
+                    <div class="plan-price">₹2,999 <small>one-time</small></div>
+                    <p class="plan-tagline">For SaaS founders &amp; operators who want a clear picture of their KPIs.</p>
+                    <hr class="plan-divider">
+                    <ul class="plan-features">
+                        <li><span class="check gold">✓</span> Comprehensive KPI audit report</li>
+                        <li><span class="check gold">✓</span> Competitive benchmarking analysis</li>
+                        <li><span class="check gold">✓</span> Growth lever identification</li>
+                        <li><span class="check gold">✓</span> Remediation roadmap (30-page)</li>
+                        <li><span class="check gold">✓</span> 1:1 60-min remediation call</li>
+                    </ul>
+                    <a href="get-audit.html"><button class="plan-cta gold">Get My Audit</button></a>
+                </div>
+
+                <!-- GROWTH PLAN -->
+                <div class="pricing-card">
+                    <span class="plan-badge pro">Coming Q3 2026</span>
+                    <div class="plan-name">Growth</div>
+                    <div class="plan-price">₹5,999 <small>/mo</small></div>
+                    <p class="plan-tagline">Ongoing KPI tracking &amp; monthly intelligence for growing teams.</p>
+                    <hr class="plan-divider">
+                    <ul class="plan-features">
+                        <li><span class="check">✓</span> Monthly KPI intelligence feed</li>
+                        <li><span class="check">✓</span> Ongoing benchmarking updates</li>
+                        <li><span class="check">✓</span> AI synthesis reports</li>
+                        <li><span class="check">✓</span> Slack integration</li>
+                        <li><span class="check">✓</span> Quarterly strategy calls</li>
+                        <li><span class="check">✓</span> Priority support</li>
+                    </ul>
+                    <a href="get-audit.html"><button class="plan-cta teal">Express Interest</button></a>
+                </div>
+
+                <!-- ENTERPRISE -->
+                <div class="pricing-card">
+                    <span class="plan-badge ent">Enterprise</span>
+                    <div class="plan-name">Enterprise</div>
+                    <div class="plan-price">Custom <small>pricing</small></div>
+                    <p class="plan-tagline">White-glove intelligence for scale-ups &amp; PE/VC-backed companies.</p>
+                    <hr class="plan-divider">
+                    <ul class="plan-features">
+                        <li><span class="check">✓</span> Everything in Growth plan</li>
+                        <li><span class="check">✓</span> White-label reports</li>
+                        <li><span class="check">✓</span> Full API access</li>
+                        <li><span class="check">✓</span> Dedicated success manager</li>
+                        <li><span class="check">✓</span> Custom integrations</li>
+                        <li><span class="check">✓</span> SLA guarantees</li>
+                    </ul>
+                    <a href="contact.html"><button class="plan-cta outline">Contact Us</button></a>
+                </div>
+
+            </div>
+
+            <div class="waitlist-note">
+                <p><strong>Ready to unlock your KPI strategy?</strong> Start with our audit (₹2,999) to identify your top 3 growth levers. <a href="get-audit.html">Get your audit →</a></p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FAQ SECTION -->
+    <section style="background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+        <div class="wrap">
+            <div class="section-head centered">
+                <p class="section-label">FAQ</p>
+                <h2 class="section-title">Frequently Asked Questions</h2>
+                <p class="section-sub">Everything you need to know about The KPI Hub Audit &amp; pricing.</p>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <div class="faq-q">What exactly is the KPI Audit Lite?</div>
+                    <div class="faq-a">A comprehensive one-time audit (₹2,999) that analyzes your SaaS KPIs, benchmarks you against competitors, identifies your 3 biggest growth levers, and includes a 60-minute 1:1 remediation call with our team.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">How long does the audit take?</div>
+                    <div class="faq-a">We deliver your 30-page remediation roadmap within 7-10 business days. Your 1:1 call is scheduled at your convenience within 2 weeks of delivery.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">Is there a money-back guarantee?</div>
+                    <div class="faq-a">Yes — if you're not satisfied with your audit report within 30 days, we'll refund you in full. No questions asked. We're confident in the insights you'll gain.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q">When will Growth &amp; Enterprise plans launch?</div>
+                    <div class="faq-a">Growth (₹5,999/mo) and Enterprise plans are coming Q3 2026. Audit clients get priority access and special launch pricing.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BOTTOM CTA -->
+    <section class="cta-section">
+        <div class="wrap">
+            <div class="cta-inner">
+                <p class="section-label">Ready to Transform Your KPIs?</p>
+                <h2>Start your audit<br><em>identify your growth.</em></h2>
+                <p>Get the KPI Audit Lite (₹2,999) and discover your 3 biggest growth levers. Includes a 30-page remediation roadmap + 1:1 strategy call. No credit card required to start.</p>
+                <a href="get-audit.html"><button class="cta-btn">Get My Audit Now</button></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="wrap">
+            <div class="foot-top">
+                <div class="foot-brand">
+                    <img src="assets/logo-wordmark.svg?v=3d541613" alt="The KPI Hub" class="logo-img" style="height:40px;width:auto;max-width:160px;margin-bottom:14px;">
+                    <p class="foot-tag">Decision-Grade Intelligence for the modern SaaS professional.</p>
+                </div>
+                <div class="foot-group"><h4>Platform</h4><ul>
+                    <li><a href="intelligence.html">Intelligence Feed</a></li>
+                    <li><a href="directory.html">SaaS Discovery</a></li>
+                    <li><a href="benchmarks.html">Benchmarks</a></li>
+                </ul></div>
+                <div class="foot-group"><h4>Company</h4><ul>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul></div>
+                <div class="foot-group"><h4>Legal</h4><ul>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                    <li><a href="cookies.html">Cookie Policy</a></li>
+                </ul></div>
+            </div>
+            <div class="foot-bottom">
+                <p class="foot-copy">© 2026 <a href="index.html">The KPI Hub</a>. All rights reserved.</p>
+                <p class="foot-made">Made with ☕ in Delhi, India</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

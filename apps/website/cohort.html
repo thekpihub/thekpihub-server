@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="yRGmgTNjIHFmLom_ZrczRQpmaJkf2SpAZWR75g3g71k">
+
+  <!-- ====== KPI Hub Analytics: GA4 ====== -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-DZPCCPEP1J', {
+      page_title: document.title,
+      page_location: window.location.href,
+      send_page_view: true
+    });
+
+    // ── Custom KPI Hub Event Tracking ──
+    document.addEventListener('DOMContentLoaded', function () {
+
+      // Track Early Access / Waitlist CTA clicks
+      document.querySelectorAll('a[href="#waitlist"], .waitlist-btn, [data-cta="waitlist"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          gtag('event', 'waitlist_click', {
+            event_category: 'CTA',
+            event_label: 'Waitlist Button',
+            value: 1
+          });
+        });
+      });
+
+      // Track pricing page visits
+      document.querySelectorAll('a[href*="pricing"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          gtag('event', 'pricing_interest', {
+            event_category: 'Navigation',
+            event_label: 'Pricing Click'
+          });
+        });
+      });
+
+      // Track outbound links
+      document.querySelectorAll('a[href^="http"]').forEach(function(el) {
+        if (!el.href.includes('thekpihub.com')) {
+          el.addEventListener('click', function() {
+            gtag('event', 'outbound_click', {
+              event_category: 'Outbound',
+              event_label: el.href
+            });
+          });
+        }
+      });
+
+      // Track scroll depth (25%, 50%, 75%, 100%)
+      var scrollDepths = [25, 50, 75, 100];
+      var fired = {};
+      window.addEventListener('scroll', function() {
+        var scrollPct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+        scrollDepths.forEach(function(depth) {
+          if (scrollPct >= depth && !fired[depth]) {
+            fired[depth] = true;
+            gtag('event', 'scroll_depth', {
+              event_category: 'Engagement',
+              event_label: depth + '%',
+              value: depth
+            });
+          }
+        });
+      });
+    });
+  </script>
+  <!-- ====== End Analytics ====== -->
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Cohort Benchmarking — See Where Your Metrics Rank</title>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thekpihub.com/cohort.html">
+    <meta property="og:title" content="Cohort Benchmarking — See Where Your Metrics Rank">
+    <meta property="og:description" content="See exactly where you rank among peers at your stage. Enter your metrics and get your percentile against a cohort of comparable companies.">
+    <meta property="og:image" content="https://thekpihub.com/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Cohort Benchmarking — See Where Your Metrics Rank">
+    <meta name="twitter:description" content="See exactly where you rank among peers at your stage. Enter your metrics and get your percentile against a cohort of comparable companies.">
+    <meta name="twitter:image" content="https://thekpihub.com/og-image.png">
+    <meta name="description" content="See exactly where you rank among peers at your stage. Enter your metrics and get your percentile against a cohort of comparable companies.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080d1a;--s1:#0d1428;--s2:#111c35;--s3:#162040;--amber:#f59e0b;--amber2:#fbbf24;--teal:#14b8a6;--red:#ef4444;--green:#22c55e;--blue:#3b82f6;--purple:#a855f7;--txt:#e2e8f0;--txd:#94a3b8;--txm:#475569;--bdr:#1e2d4a;--bdr2:#243350}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.6}
+nav{background:rgba(8,13,26,.95);border-bottom:1px solid var(--bdr);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+.nav-brand{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:var(--txt);text-decoration:none}
+.nav-brand span{color:var(--amber)}
+.nav-links{display:flex;gap:22px;list-style:none}
+.nav-links a{color:var(--txd);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--amber)}
+.nav-cta{background:var(--amber);color:#000;padding:7px 18px;border-radius:6px;font-size:.8rem;font-weight:700;text-decoration:none;font-family:'Syne',sans-serif;letter-spacing:.3px;transition:all .2s}
+.nav-cta:hover{background:var(--amber2)}
+
+/* HERO */
+.hero{padding:54px 24px 36px;text-align:center;max-width:660px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.22);border-radius:20px;padding:5px 16px;font-size:.73rem;color:var(--blue);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:18px}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,4vw,2.9rem);font-weight:800;line-height:1.15;margin-bottom:12px}
+.hero h1 em{color:var(--amber);font-style:normal}
+.hero p{color:var(--txd);font-size:.9rem;max-width:520px;margin:0 auto}
+
+.container{max-width:1040px;margin:0 auto;padding:0 24px 80px}
+
+/* INPUT CARD */
+.input-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:26px;margin-bottom:18px}
+.card-title{font-family:'Syne',sans-serif;font-size:.77rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.field label{display:block;font-size:.72rem;color:var(--txd);margin-bottom:4px;font-weight:500;letter-spacing:.2px}
+.field input,.field select{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bdr2);border-radius:8px;padding:10px 12px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;transition:all .25s}
+.field input:focus,.field select:focus{border-color:var(--blue);background:rgba(59,130,246,.04)}
+.field select option{background:#111c35}
+.rank-btn{width:100%;padding:13px;background:linear-gradient(135deg,#1d4ed8,var(--blue));color:#fff;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-size:.86rem;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:8px}
+.rank-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(59,130,246,.28)}
+.rank-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* YOUR POSITION BANNER */
+.position-banner{background:linear-gradient(135deg,var(--s1),rgba(59,130,246,.07));border:1px solid rgba(59,130,246,.2);border-radius:14px;padding:22px 26px;margin-bottom:16px;display:none}
+.position-banner.visible{display:flex;align-items:center;gap:24px;flex-wrap:wrap;animation:fadeIn .4s ease}
+.position-rank{font-family:'Syne',sans-serif;font-size:3.8rem;font-weight:800;line-height:1;color:var(--amber);flex-shrink:0}
+.position-info h2{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:5px}
+.position-info p{font-size:.8rem;color:var(--txd);line-height:1.6;max-width:500px}
+.position-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ptag{padding:3px 12px;border-radius:20px;font-size:.7rem;font-weight:700}
+.ptag.top{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.ptag.mid{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.ptag.low{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.ptag.neutral{background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.2)}
+
+/* COHORT TABLE */
+.cohort-section{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;margin-bottom:16px;display:none}
+.cohort-section.visible{display:block;animation:fadeIn .4s ease}
+.cohort-section-header{padding:16px 22px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.cohort-section-header h3{font-family:'Syne',sans-serif;font-size:.84rem;font-weight:700}
+.cohort-subtitle{font-size:.75rem;color:var(--txd)}
+.cohort-table-wrap{overflow-x:auto}
+table.ctable{width:100%;border-collapse:collapse}
+table.ctable thead tr{background:rgba(255,255,255,.03)}
+table.ctable th{font-size:.66rem;text-transform:uppercase;letter-spacing:.6px;color:var(--txm);font-weight:700;text-align:left;padding:10px 14px;border-bottom:1px solid var(--bdr);white-space:nowrap}
+table.ctable th.center{text-align:center}
+table.ctable td{font-size:.82rem;padding:11px 14px;border-bottom:1px solid var(--bdr)}
+table.ctable tr:last-child td{border-bottom:none}
+table.ctable tr.you-row{background:rgba(245,158,11,.05)}
+table.ctable tr.you-row td.name-col{font-family:'Syne',sans-serif;font-weight:700;color:var(--amber)}
+.val-cell{font-family:'Syne',sans-serif;font-weight:700;text-align:center}
+.rank-cell{text-align:center}
+.rank-pill{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:22px;border-radius:5px;font-size:.68rem;font-weight:800;padding:0 6px}
+.rp-1{background:rgba(34,197,94,.15);color:var(--green)}
+.rp-top{background:rgba(245,158,11,.12);color:var(--amber)}
+.rp-mid{background:rgba(94,114,158,.15);color:var(--txd)}
+.rp-you{background:rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.3)}
+.perf-bar-wrap{display:flex;align-items:center;gap:8px}
+.perf-bar{flex:1;height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden}
+.perf-fill{height:100%;border-radius:3px;transition:width .8s ease}
+
+/* BREAKDOWN GRID */
+.breakdown-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;display:none}
+.breakdown-grid.visible{display:grid;animation:fadeIn .5s ease .1s both}
+.bdown-card{background:var(--s1);border:1px solid var(--bdr);border-radius:12px;padding:16px}
+.bdown-metric{font-size:.68rem;text-transform:uppercase;letter-spacing:.5px;color:var(--txm);margin-bottom:6px}
+.bdown-val{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;line-height:1;margin-bottom:6px}
+.bdown-bar{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-bottom:6px}
+.bdown-fill{height:100%;border-radius:3px;transition:width .9s ease}
+.bdown-vs{font-size:.72rem;color:var(--txd)}
+.bdown-vs strong{font-family:'Syne',sans-serif}
+
+/* INSIGHTS CARD */
+.insights-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:22px;margin-bottom:16px;display:none}
+.insights-card.visible{display:block;animation:fadeIn .4s ease .2s both}
+.insight-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--bdr)}
+.insight-item:last-child{border-bottom:none;padding-bottom:0}
+.insight-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+.insight-body h4{font-family:'Syne',sans-serif;font-size:.84rem;font-weight:700;margin-bottom:3px}
+.insight-body p{font-size:.78rem;color:var(--txd);line-height:1.65}
+.insight-cta{font-size:.74rem;color:var(--teal);font-weight:600;margin-top:5px;display:block}
+
+/* LOADER */
+.loader-wrap{text-align:center;padding:36px;display:none}
+.loader-wrap.visible{display:block}
+.spin{width:34px;height:34px;border:3px solid var(--bdr2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+.loader-text{font-size:.8rem;color:var(--txm)}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:768px){.form-grid{grid-template-columns:1fr 1fr}.breakdown-grid{grid-template-columns:1fr 1fr}.position-banner.visible{flex-direction:column;gap:12px}}
+@media(max-width:480px){.form-grid,.form-grid-2,.breakdown-grid{grid-template-columns:1fr}.container{padding:0 14px 60px}}
+</style>
+<link rel="canonical" href="https://thekpihub.com/cohort.html">
+    <meta name="robots" content="index, follow">
+        <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wdshn14xgf");
+    </script>
+</head>
+<body>
+
+<nav>
+  <a href="https://thekpihub.com" class="nav-brand">The <span>KPI</span> Hub</a>
+  <ul class="nav-links">
+    <li><a href="https://thekpihub.com/intelligence.html">Intelligence</a></li>
+    <li><a href="narrative.html">Narrative</a></li>
+    <li><a href="india-benchmarks.html">India Benchmarks</a></li>
+    <li><a href="cohort.html" class="active">Cohort Ranking</a></li>
+  </ul>
+  <a href="get-audit.html" class="nav-cta">Get My KPI Audit →</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">👥 Cohort-Based Peer Benchmarking · P2 Weapon</div>
+  <h1>See exactly where you <em>rank</em> among your peers</h1>
+  <p>Enter your metrics. We rank you against a simulated cohort of real-stage companies — bootstrapped founders, seed-stage teams, Series A — at your exact MRR range and vertical. No enterprise fluff. Just your actual peers.</p>
+</div>
+
+<div class="container">
+
+  <!-- INPUT -->
+  <div class="input-card">
+    <div class="card-title">👥 Define Your Cohort & Enter Metrics</div>
+
+    <div class="form-grid-2">
+      <div class="field">
+        <label>Stage</label>
+        <select id="c-stage">
+          <option value="bootstrap">Bootstrapped ($0–$10K MRR)</option>
+          <option value="seed" selected>Seed ($10K–$50K MRR)</option>
+          <option value="series-a">Series A ($50K–$200K MRR)</option>
+          <option value="series-b">Series B+ ($200K+ MRR)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Vertical</label>
+        <select id="c-vertical">
+          <option value="b2b-saas">B2B SaaS (Global)</option>
+          <option value="india-first">India-First SaaS</option>
+          <option value="fintech">Fintech</option>
+          <option value="devtools">DevTools</option>
+          <option value="hrtech">HRTech</option>
+          <option value="edtech">EdTech</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field"><label>Your MRR ($ or ₹)</label><input type="number" id="c-mrr" placeholder="28000"></div>
+      <div class="field"><label>MRR Growth % (MoM)</label><input type="number" id="c-growth" placeholder="14" step="0.1"></div>
+      <div class="field"><label>Monthly Churn %</label><input type="number" id="c-churn" placeholder="3.2" step="0.1"></div>
+      <div class="field"><label>NRR %</label><input type="number" id="c-nrr" placeholder="108" step="0.1"></div>
+      <div class="field"><label>LTV:CAC Ratio</label><input type="number" id="c-ltvcac" placeholder="3.5" step="0.1"></div>
+      <div class="field"><label>CAC Payback (months)</label><input type="number" id="c-payback" placeholder="9"></div>
+      <div class="field"><label>DAU/MAU %</label><input type="number" id="c-daumau" placeholder="26" step="0.1"></div>
+      <div class="field"><label>NPS Score</label><input type="number" id="c-nps" placeholder="38"></div>
+      <div class="field"><label>Gross Margin %</label><input type="number" id="c-gm" placeholder="72" step="0.1"></div>
+    </div>
+
+    <button class="rank-btn" id="rank-btn" onclick="rankMe()">
+      👥 Show My Cohort Ranking
+    </button>
+  </div>
+
+  <!-- LOADER -->
+  <div class="loader-wrap" id="cohort-loader">
+    <div class="spin"></div>
+    <div class="loader-text">Building your peer cohort and calculating rankings...</div>
+  </div>
+
+  <!-- POSITION BANNER -->
+  <div class="position-banner" id="position-banner">
+    <div class="position-rank" id="pos-rank">—</div>
+    <div class="position-info">
+      <h2 id="pos-headline">—</h2>
+      <p id="pos-desc">—</p>
+      <div class="position-tags" id="pos-tags"></div>
+    </div>
+  </div>
+
+  <!-- BREAKDOWN GRID -->
+  <div class="breakdown-grid" id="breakdown-grid"></div>
+
+  <!-- COHORT TABLE -->
+  <div class="cohort-section" id="cohort-section">
+    <div class="cohort-section-header">
+      <h3>Full Peer Cohort Rankings</h3>
+      <div class="cohort-subtitle" id="cohort-subtitle">—</div>
+    </div>
+    <div class="cohort-table-wrap">
+      <table class="ctable" id="cohort-table"></table>
+    </div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div class="insights-card" id="insights-card">
+    <div class="card-title" style="color:var(--teal)">💡 Personalized Cohort Insights</div>
+    <div id="insights-list"></div>
+  </div>
+
+</div>
+
+<script>
+// ── COHORT DATA GENERATOR ──────────────────────────────────────────────
+// Realistic peer cohorts based on stage + vertical
+const COHORT_CONFIGS = {
+  bootstrap: {
+    peers: [
+      {name:'Indie SaaS Builder A', mrr_g:8, churn:7.2, nrr:91, ltvcac:1.8, payback:22, daumau:14, nps:22, gm:60},
+      {name:'Solopreneur B', mrr_g:5, churn:9.5, nrr:85, ltvcac:1.2, payback:30, daumau:10, nps:15, gm:55},
+      {name:'Bootstrapped Tool C', mrr_g:18, churn:3.1, nrr:104, ltvcac:3.2, payback:10, daumau:28, nps:40, gm:74},
+      {name:'Indie Hacker D', mrr_g:12, churn:5.0, nrr:96, ltvcac:2.5, payback:14, daumau:20, nps:30, gm:68},
+      {name:'Solo Dev E', mrr_g:22, churn:2.8, nrr:108, ltvcac:4.0, payback:8, daumau:32, nps:48, gm:79},
+      {name:'Micro-SaaS F', mrr_g:6, churn:8.0, nrr:88, ltvcac:1.5, payback:25, daumau:12, nps:18, gm:58},
+      {name:'Ramen Profitable G', mrr_g:15, churn:4.2, nrr:100, ltvcac:2.8, payback:12, daumau:24, nps:35, gm:72},
+      {name:'Early Traction H', mrr_g:28, churn:1.8, nrr:112, ltvcac:5.0, payback:6, daumau:40, nps:55, gm:82},
+    ]
+  },
+  seed: {
+    peers: [
+      {name:'Seed Stage Co A', mrr_g:9, churn:4.5, nrr:98, ltvcac:2.2, payback:16, daumau:18, nps:28, gm:65},
+      {name:'Early PMF B', mrr_g:14, churn:3.0, nrr:106, ltvcac:3.5, payback:10, daumau:26, nps:40, gm:74},
+      {name:'Seed Round Co C', mrr_g:6, churn:6.0, nrr:90, ltvcac:1.6, payback:22, daumau:14, nps:20, gm:58},
+      {name:'Angel-Backed D', mrr_g:20, churn:2.0, nrr:115, ltvcac:5.0, payback:7, daumau:35, nps:52, gm:80},
+      {name:'Pre-Seed Grad E', mrr_g:11, churn:3.8, nrr:102, ltvcac:2.8, payback:13, daumau:22, nps:33, gm:70},
+      {name:'Bootstrapped-to-Seed F', mrr_g:25, churn:1.5, nrr:120, ltvcac:6.0, payback:5, daumau:42, nps:60, gm:85},
+      {name:'YC W26 G', mrr_g:30, churn:1.2, nrr:125, ltvcac:7.0, payback:4, daumau:48, nps:65, gm:88},
+      {name:'Early-Stage H', mrr_g:7, churn:5.5, nrr:93, ltvcac:1.8, payback:20, daumau:16, nps:22, gm:62},
+      {name:'India SaaS I', mrr_g:17, churn:2.8, nrr:110, ltvcac:4.0, payback:9, daumau:30, nps:45, gm:76},
+      {name:'Niche B2B J', mrr_g:10, churn:4.0, nrr:100, ltvcac:2.5, payback:14, daumau:20, nps:30, gm:68},
+    ]
+  },
+  'series-a': {
+    peers: [
+      {name:'Series A Co A', mrr_g:8, churn:2.5, nrr:108, ltvcac:3.2, payback:11, daumau:26, nps:38, gm:72},
+      {name:'Post-PMF B', mrr_g:12, churn:1.8, nrr:118, ltvcac:4.5, payback:8, daumau:34, nps:50, gm:80},
+      {name:'Scaling Co C', mrr_g:5, churn:3.2, nrr:102, ltvcac:2.5, payback:15, daumau:20, nps:28, gm:68},
+      {name:'Category Leader D', mrr_g:18, churn:1.2, nrr:128, ltvcac:6.0, payback:6, daumau:44, nps:62, gm:86},
+      {name:'Enterprise Push E', mrr_g:7, churn:2.0, nrr:112, ltvcac:3.8, payback:12, daumau:28, nps:42, gm:74},
+      {name:'PLG Leader F', mrr_g:22, churn:0.9, nrr:135, ltvcac:7.5, payback:4, daumau:52, nps:70, gm:88},
+      {name:'India Unicorn Path G', mrr_g:15, churn:1.5, nrr:122, ltvcac:5.0, payback:7, daumau:38, nps:55, gm:82},
+      {name:'Mid-Market H', mrr_g:9, churn:2.2, nrr:110, ltvcac:3.5, payback:10, daumau:30, nps:44, gm:76},
+    ]
+  },
+  'series-b': {
+    peers: [
+      {name:'Series B Co A', mrr_g:6, churn:1.2, nrr:118, ltvcac:4.5, payback:8, daumau:34, nps:50, gm:78},
+      {name:'Pre-IPO Path B', mrr_g:10, churn:0.7, nrr:130, ltvcac:6.5, payback:5, daumau:44, nps:65, gm:86},
+      {name:'Enterprise Leader C', mrr_g:5, churn:1.5, nrr:112, ltvcac:4.0, payback:10, daumau:28, nps:45, gm:74},
+      {name:'Category Creator D', mrr_g:14, churn:0.5, nrr:140, ltvcac:8.0, payback:3, daumau:55, nps:72, gm:90},
+      {name:'Late Stage E', mrr_g:4, churn:1.8, nrr:108, ltvcac:3.5, payback:12, daumau:25, nps:38, gm:72},
+      {name:'Rule-of-40 F', mrr_g:8, churn:0.9, nrr:125, ltvcac:5.5, payback:6, daumau:40, nps:58, gm:82},
+    ]
+  }
+};
+
+// Score a company (higher = better, accounts for inverted metrics)
+function calcScore(m) {
+  const weights = {mrr_g:0.2, nrr:0.2, churn:-0.15, ltvcac:0.15, payback:-0.1, daumau:0.1, nps:0.05, gm:0.05};
+  const norms = {mrr_g:{min:0,max:35}, nrr:{min:80,max:140}, churn:{min:0,max:15}, ltvcac:{min:0,max:10}, payback:{min:2,max:36}, daumau:{min:0,max:60}, nps:{min:0,max:80}, gm:{min:40,max:95}};
+  let score = 0, totalW = 0;
+  Object.entries(weights).forEach(([k, w]) => {
+    if (m[k] == null) return;
+    const n = norms[k];
+    let pct = (m[k]-n.min)/(n.max-n.min);
+    if (w < 0) pct = 1 - pct; // invert for bad metrics
+    score += Math.abs(w) * Math.max(0, Math.min(1, pct)) * 100;
+    totalW += Math.abs(w);
+  });
+  return totalW > 0 ? Math.round(score / totalW) : 50;
+}
+
+function getV(id){const v=parseFloat(document.getElementById(id)?.value);return isNaN(v)?null:v;}
+
+function rankMe() {
+  const stage = document.getElementById('c-stage').value;
+  const vertical = document.getElementById('c-vertical').value;
+  const you = {
+    mrr_g: getV('c-growth'),
+    churn: getV('c-churn'),
+    nrr: getV('c-nrr'),
+    ltvcac: getV('c-ltvcac'),
+    payback: getV('c-payback'),
+    daumau: getV('c-daumau'),
+    nps: getV('c-nps'),
+    gm: getV('c-gm'),
+  };
+
+  const filledCount = Object.values(you).filter(v=>v!==null).length;
+  if (filledCount < 2) { alert('Enter at least 2 KPI metrics to get ranked.'); return; }
+
+  document.getElementById('rank-btn').disabled = true;
+  document.getElementById('cohort-loader').classList.add('visible');
+  document.getElementById('position-banner').classList.remove('visible');
+  document.getElementById('cohort-section').classList.remove('visible');
+  document.getElementById('breakdown-grid').classList.remove('visible');
+  document.getElementById('insights-card').classList.remove('visible');
+
+  setTimeout(() => {
+    const cohortConfig = COHORT_CONFIGS[stage] || COHORT_CONFIGS.seed;
+    const peers = cohortConfig.peers.map(p => ({...p, isYou:false}));
+    const youEntry = {...you, name:'▶ You', isYou:true};
+
+    // Fill missing peer values with defaults
+    const all = [...peers, youEntry].map(p => ({
+      ...p,
+      score: calcScore(p)
+    }));
+
+    // Sort by score desc
+    all.sort((a,b) => b.score - a.score);
+    const yourRank = all.findIndex(p=>p.isYou) + 1;
+    const total = all.length;
+    const pctRank = Math.round((1 - (yourRank-1)/(total-1)) * 100);
+
+    renderCohort(all, yourRank, total, pctRank, you, stage, vertical);
+    document.getElementById('cohort-loader').classList.remove('visible');
+    document.getElementById('rank-btn').disabled = false;
+  }, 1400);
+}
+
+function pctLabel(pct) {
+  if (pct >= 80) return {txt:'Top 20%', cls:'top'};
+  if (pct >= 50) return {txt:'Top 50%', cls:'mid'};
+  return {txt:'Bottom 50%', cls:'low'};
+}
+
+function metricColor(val, key, inv=false) {
+  // rough thresholds
+  const ok = {mrr_g:12, nrr:105, churn:4, ltvcac:3, payback:12, daumau:25, nps:35, gm:70};
+  const great = {mrr_g:20, nrr:115, churn:2, ltvcac:5, payback:8, daumau:35, nps:50, gm:80};
+  if (!val) return 'var(--txm)';
+  const v = val, o = ok[key], g = great[key];
+  if (!o) return 'var(--txd)';
+  const isGood = inv ? (v <= g) : (v >= g);
+  const isOk = inv ? (v <= o) : (v >= o);
+  return isGood ? 'var(--green)' : isOk ? 'var(--amber)' : 'var(--red)';
+}
+
+const METRIC_DEFS = [
+  {key:'mrr_g', label:'MRR Growth', suffix:'%', inv:false},
+  {key:'nrr', label:'NRR', suffix:'%', inv:false},
+  {key:'churn', label:'Churn', suffix:'%', inv:true},
+  {key:'ltvcac', label:'LTV:CAC', suffix:'x', inv:false},
+  {key:'payback', label:'Payback', suffix:'mo', inv:true},
+  {key:'daumau', label:'DAU/MAU', suffix:'%', inv:false},
+  {key:'nps', label:'NPS', suffix:'', inv:false},
+  {key:'gm', label:'Gross Margin', suffix:'%', inv:false},
+];
+
+function renderCohort(all, yourRank, total, pctRank, you, stage, vertical) {
+  // POSITION BANNER
+  const label = pctLabel(pctRank);
+  document.getElementById('pos-rank').textContent = `#${yourRank}`;
+  document.getElementById('pos-headline').textContent = `You rank #${yourRank} of ${total} ${stage} companies`;
+  document.getElementById('pos-desc').textContent = `You're in the ${label.txt} of your peer cohort based on ${Object.values(you).filter(v=>v!==null).length} tracked KPIs. ${pctRank >= 75 ? 'Strong performance — keep the momentum.' : pctRank >= 50 ? 'Solid mid-field. 2-3 metrics are pulling your rank down — see breakdown below.' : 'Several key metrics need attention to move up the ranks.'}`;
+  const stageLabel = {'bootstrap':'Bootstrapped','seed':'Seed','series-a':'Series A','series-b':'Series B+'}[stage];
+  const tags = [
+    {txt:`${stageLabel} Stage`, cls:'neutral'},
+    {txt:vertical.replace('-',' ').replace(/\b\w/g,c=>c.toUpperCase()), cls:'neutral'},
+    {txt:label.txt, cls:label.cls},
+  ];
+  document.getElementById('pos-tags').innerHTML = tags.map(t=>`<span class="ptag ${t.cls}">${t.txt}</span>`).join('');
+  document.getElementById('position-banner').classList.add('visible');
+
+  // BREAKDOWN GRID
+  const filledMetrics = METRIC_DEFS.filter(m => you[m.key] !== null);
+  const peerVals = all.filter(p=>!p.isYou);
+
+  document.getElementById('breakdown-grid').innerHTML = filledMetrics.slice(0,6).map(m => {
+    const yourVal = you[m.key];
+    const peerMeds = peerVals.map(p=>p[m.key]).filter(v=>v!=null).sort((a,b)=>a-b);
+    const median = peerMeds[Math.floor(peerMeds.length/2)] || yourVal;
+    const maxVal = Math.max(...peerMeds, yourVal) || 1;
+    const barPct = m.inv ? Math.round((1-yourVal/maxVal)*100) : Math.round(yourVal/maxVal*100);
+    const col = metricColor(yourVal, m.key, m.inv);
+    const diff = yourVal - median;
+    const diffStr = (diff > 0 ? '+' : '') + diff.toFixed(1) + m.suffix;
+    const betterThan = Math.round(peerVals.filter(p => m.inv ? (p[m.key]||999) >= yourVal : (p[m.key]||0) <= yourVal).length / peerVals.length * 100);
+    return `<div class="bdown-card">
+      <div class="bdown-metric">${m.label}</div>
+      <div class="bdown-val" style="color:${col}">${yourVal}${m.suffix}</div>
+      <div class="bdown-bar"><div class="bdown-fill" style="width:${Math.max(5,barPct)}%;background:${col}"></div></div>
+      <div class="bdown-vs">vs median <strong style="color:${col}">${median}${m.suffix}</strong> (${diffStr}) · Better than ${betterThan}% of peers</div>
+    </div>`;
+  }).join('');
+  document.getElementById('breakdown-grid').classList.add('visible');
+
+  // COHORT TABLE
+  const youEntry = all.find(p=>p.isYou);
+  const topMetrics = METRIC_DEFS.filter(m=>you[m.key]!==null).slice(0,5);
+  const maxScore = Math.max(...all.map(p=>p.score));
+
+  document.getElementById('cohort-subtitle').textContent = `${total} companies · ${stageLabel} · Ranked by composite KPI score`;
+  const headers = ['Rank','Company','Score',...topMetrics.map(m=>m.label),'Performance'];
+  document.getElementById('cohort-table').innerHTML = `
+    <thead><tr>${headers.map(h=>`<th class="${['Score',...topMetrics.map(m=>m.label),'Performance'].includes(h)?'center':''}">${h}</th>`).join('')}</tr></thead>
+    <tbody>${all.map((p,i) => {
+      const rank = i+1;
+      const rankCls = rank===1?'rp-1':rank<=3?'rp-top':p.isYou?'rp-you':'rp-mid';
+      const rankTxt = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':(p.isYou?`#${rank} ★`:`#${rank}`);
+      const barPct = Math.round(p.score/maxScore*100);
+      const metricCells = topMetrics.map(m => {
+        const v = p[m.key];
+        const col = v!=null ? metricColor(v, m.key, m.inv) : 'var(--txm)';
+        return `<td class="val-cell" style="color:${col}">${v!=null?(v+m.suffix):'—'}</td>`;
+      }).join('');
+      return `<tr ${p.isYou?'class="you-row"':''}>
+        <td class="rank-cell"><span class="rank-pill ${rankCls}">${rankTxt}</span></td>
+        <td class="name-col">${p.name}</td>
+        <td class="val-cell" style="color:${p.score>=75?'var(--green)':p.score>=55?'var(--amber)':'var(--red)'}">${p.score}</td>
+        ${metricCells}
+        <td><div class="perf-bar-wrap"><div class="perf-bar"><div class="perf-fill" style="width:${barPct}%;background:${p.score>=75?'var(--green)':p.score>=55?'var(--amber)':'var(--red)'}"></div></div></div></td>
+      </tr>`;
+    }).join('')}</tbody>`;
+  document.getElementById('cohort-section').classList.add('visible');
+
+  // INSIGHTS
+  const insights = [];
+  const bestMetric = METRIC_DEFS.filter(m=>you[m.key]!=null).reduce((best,m)=>{
+    const betterThan = peerVals.filter(p=>m.inv?(p[m.key]||999)>=you[m.key]:(p[m.key]||0)<=you[m.key]).length/peerVals.length*100;
+    return betterThan > (best.pct||0) ? {...m, pct:betterThan} : best;
+  }, {});
+  const worstMetric = METRIC_DEFS.filter(m=>you[m.key]!=null).reduce((worst,m)=>{
+    const betterThan = peerVals.filter(p=>m.inv?(p[m.key]||999)>=you[m.key]:(p[m.key]||0)<=you[m.key]).length/peerVals.length*100;
+    return betterThan < (worst.pct??100) ? {...m, pct:betterThan} : worst;
+  }, {});
+
+  if (bestMetric.key) insights.push({icon:'🏆', title:`Your strongest metric: ${bestMetric.label}`, body:`You outperform ${Math.round(bestMetric.pct)}% of your peer cohort on ${bestMetric.label}. This is your moat — protect and highlight it in sales conversations and investor decks.`, cta:'→ Use this in your pitch deck as a key differentiator'});
+  if (worstMetric.key && worstMetric.key !== bestMetric.key) insights.push({icon:'🎯', title:`Fix this first: ${worstMetric.label}`, body:`You rank below most of your cohort on ${worstMetric.label}. This single metric is dragging your overall ranking down the most. A 20% improvement here would move you up ${Math.max(1,Math.round(total*0.15))} positions in the ranking.`, cta:`→ Set a specific ${worstMetric.label} improvement goal for Q2`});
+  if (yourRank <= 3) insights.push({icon:'🚀', title:'You\'re a top performer in your cohort', body:'You\'re in the top tier of your peer group. At this level, the risk is complacency — the companies behind you are closing the gap. Focus on widening your lead, not just maintaining it.', cta:'→ Consider raising funding or pricing to capture your category leadership'});
+  if (yourRank > total * 0.6) insights.push({icon:'⚡', title:'You have significant upside', body:`You're currently in the bottom 40% of your cohort. The gap to the median isn't insurmountable — the median company in your cohort likely made 2-3 focused improvements that compounded. Identify the same 2-3 levers and run at them.`, cta:'→ Pick your top 2 metrics and assign a dedicated sprint to each'});
+
+  document.getElementById('insights-list').innerHTML = insights.map(i=>`
+    <div class="insight-item">
+      <div class="insight-icon">${i.icon}</div>
+      <div class="insight-body">
+        <h4>${i.title}</h4>
+        <p>${i.body}</p>
+        <span class="insight-cta">${i.cta}</span>
+      </div>
+    </div>`).join('');
+  document.getElementById('insights-card').classList.add('visible');
+
+  // Scroll
+  document.getElementById('position-banner').scrollIntoView({behavior:'smooth', block:'start'});
+}
+</script>
+<script src="/gk-shortcut.js?v=a3bb6e13"></script>
+</body>
+</html>

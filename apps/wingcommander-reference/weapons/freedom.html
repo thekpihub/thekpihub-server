@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freedom Calculator — KPI Hub</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0d0f;--s:#16161a;--s2:#1e1e24;--b:#2a2a35;--p:#7c3aed;--pl:#a78bfa;--a:#22d3ee;--t:#f1f0f5;--m:#8b8b9a;--g:#10b981}
+body{background:var(--bg);color:var(--t);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;padding:2rem 1rem}
+.container{max-width:760px;margin:0 auto}
+.header{text-align:center;margin-bottom:2rem}
+.badge{display:inline-block;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.3);color:var(--pl);font-size:.65rem;letter-spacing:.15em;padding:.3rem .8rem;border-radius:100px;margin-bottom:1rem;text-transform:uppercase;font-weight:700}
+h1{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;margin-bottom:.5rem}
+.desc{color:var(--m);font-size:.9rem;line-height:1.6}
+.card{background:var(--s);border:1px solid var(--b);border-radius:14px;padding:1.5rem;margin-bottom:1.25rem}
+.field{margin-bottom:1.1rem}
+label{display:block;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--m);margin-bottom:.4rem}
+input,textarea,select{width:100%;background:var(--s2);border:1px solid var(--b);border-radius:8px;color:var(--t);font-size:.9rem;padding:.7rem .9rem;outline:none;transition:border-color .2s;font-family:inherit}
+input:focus,textarea:focus,select:focus{border-color:var(--p)}
+textarea{resize:vertical;min-height:90px;line-height:1.5}
+select option{background:var(--s2)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:500px){.row{grid-template-columns:1fr}}
+.btn{width:100%;background:var(--p);color:#fff;border:none;border-radius:8px;padding:.85rem;font-size:.9rem;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:background .15s,transform .1s;margin-top:.25rem}
+.btn:hover{background:var(--pl)}.btn:active{transform:scale(.99)}.btn:disabled{background:#2e2e3e;cursor:not-allowed;transform:none}
+.oc{background:var(--s);border:1px solid var(--b);border-radius:14px;overflow:hidden}
+.oh{background:var(--s2);border-bottom:1px solid var(--b);padding:.65rem 1.25rem;font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--m);display:flex;align-items:center;gap:.5rem}
+.oh::before{content:'';width:6px;height:6px;background:var(--g);border-radius:50%}
+.ob{padding:1.25rem;line-height:1.75;font-size:.92rem}
+.ob h1,.ob h2,.ob h3{margin:1rem 0 .4rem;letter-spacing:-.01em}
+.ob h2{font-size:1.05rem;color:var(--pl)}.ob h3{font-size:.95rem;color:var(--a)}
+.ob p{margin-bottom:.65rem;color:#d0d0e0}.ob ul,.ob ol{margin:.4rem 0 .65rem 1.4rem}.ob li{margin-bottom:.2rem;color:#d0d0e0}
+.ob strong{color:var(--t);font-weight:600}.ob em{color:var(--a);font-style:normal}
+.ob code{background:var(--s2);border:1px solid var(--b);border-radius:4px;padding:.1rem .35rem;font-size:.82em;font-family:'Courier New',monospace}
+.loader{display:flex;align-items:center;gap:.75rem;padding:1.5rem 1.25rem;color:var(--m);font-size:.88rem}
+.spinner{width:18px;height:18px;border:2px solid var(--b);border-top-color:var(--p);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error{padding:1.25rem;color:#f87171;font-size:.88rem}
+.nav{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:2rem;justify-content:center}
+.nav a{color:var(--m);font-size:.75rem;text-decoration:none;padding:.3rem .7rem;border:1px solid var(--b);border-radius:6px;transition:color .2s,border-color .2s}
+.nav a:hover{color:var(--pl);border-color:var(--p)}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="nav">
+    <a href="narrative.html">Narrative</a><a href="freedom.html">Freedom</a>
+    <a href="india-benchmarks.html">India Benchmarks</a><a href="today.html">Today</a>
+    <a href="stack-scorer.html">Stack Scorer</a><a href="cohort.html">Cohort</a>
+    <a href="auditor.html">Auditor</a><a href="validator.html">Validator</a>
+  </div>
+  <div class="header">
+    <div class="badge">KPI Hub Weapon</div>
+    <h1>🎯 Freedom Calculator</h1>
+    <p class="desc">Map your exact path to financial independence with a month-by-month roadmap.</p>
+  </div>
+  <div class="card">
+    <form id="form">
+      <div class="row">
+        <div class="field">
+          <label>Monthly Income (Net)</label>
+          <input type="text" id="income" placeholder="₹2,00,000" required>
+        </div>
+        <div class="field">
+          <label>Monthly Expenses</label>
+          <input type="text" id="expenses" placeholder="₹90,000" required>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Current Savings / Investments</label>
+          <input type="text" id="savings" placeholder="₹15,00,000">
+        </div>
+        <div class="field">
+          <label>Monthly Savings Amount</label>
+          <input type="text" id="monthly_save" placeholder="₹1,10,000">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Target (FIRE number or monthly passive income)</label>
+          <input type="text" id="target" placeholder="₹5Cr corpus or ₹1.5L/month passive">
+        </div>
+        <div class="field">
+          <label>Target Timeline (years)</label>
+          <input type="text" id="timeline" placeholder="10 years">
+        </div>
+      </div>
+      <div class="field">
+        <label>Additional Context (debts, dependents, risk appetite, goals)</label>
+        <textarea id="context" placeholder="Home loan of ₹50L, 2 kids, moderate risk appetite, want to travel and pursue passion projects..."></textarea>
+      </div>
+      <div class="field">
+        <label>Investment Style</label>
+        <select id="style">
+          <option value="conservative">Conservative (FDs, Debt funds, Gold)</option>
+          <option value="moderate" selected>Moderate (Mix of equity + debt)</option>
+          <option value="aggressive">Aggressive (Equity heavy, index funds, small-cap)</option>
+          <option value="entrepreneur">Entrepreneur (Business + equity)</option>
+        </select>
+      </div>
+      <button type="submit" class="btn" id="btn">⚡ Calculate My Freedom Path</button>
+    </form>
+  </div>
+  <div class="oc" id="oc" style="display:none">
+    <div class="oh">Claude Output — Freedom Roadmap</div>
+    <div id="ob"></div>
+  </div>
+</div>
+<script>
+const WORKER_URL = 'YOUR_CLOUDFLARE_WORKER_URL_HERE';
+
+function md(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/^[-*] (.+)$/gm,'<li>$1</li>')
+    .replace(/^\d+\. (.+)$/gm,'<li>$1</li>')
+    .split(/\n{2,}/)
+    .map(b=>{b=b.trim();if(!b)return'';return b.startsWith('<')?b:`<p>${b}</p>`;})
+    .join('\n');
+}
+
+document.getElementById('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('btn');
+  const oc = document.getElementById('oc');
+  const ob = document.getElementById('ob');
+
+  const income = document.getElementById('income').value;
+  const expenses = document.getElementById('expenses').value;
+  const savings = document.getElementById('savings').value;
+  const monthly_save = document.getElementById('monthly_save').value;
+  const target = document.getElementById('target').value;
+  const timeline = document.getElementById('timeline').value;
+  const context = document.getElementById('context').value;
+  const style = document.getElementById('style').value;
+
+  const SYS = `You are a top-tier financial independence advisor specializing in the Indian market.
+You create detailed, actionable roadmaps to financial freedom. Be specific with numbers,
+include realistic return assumptions (mention them), suggest actual instruments available in India,
+and give milestone checkpoints. Be motivating but honest about what it takes.`;
+
+  const USR = `Create a detailed financial freedom roadmap for me.
+
+FINANCIAL SNAPSHOT:
+- Monthly net income: ${income}
+- Monthly expenses: ${expenses}
+- Current savings/investments: ${savings || 'not specified'}
+- Monthly savings capacity: ${monthly_save || 'calculate from income minus expenses'}
+- Target: ${target}
+- Timeline: ${timeline}
+- Investment style: ${style}
+- Context: ${context || 'none'}
+
+Please provide:
+## Current State Analysis
+(savings rate, gaps, immediate observations)
+
+## The Freedom Number
+(exact corpus needed with calculation and assumptions)
+
+## Month-by-Month Action Plan (first 6 months)
+(specific, actionable steps)
+
+## Investment Allocation
+(specific instruments, percentages, why)
+
+## Yearly Milestones
+(what your portfolio looks like each year)
+
+## The 3 Biggest Risks to This Plan
+(and how to mitigate each)
+
+## The 1 Thing That Will Make or Break This
+(be direct)`;
+
+  btn.disabled = true; btn.textContent = '⏳ Calculating...';
+  oc.style.display = 'block';
+  ob.innerHTML = '<div class="loader"><div class="spinner"></div>Claude is mapping your freedom path...</div>';
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({model:'claude-opus-4-7',max_tokens:2048,system:SYS,messages:[{role:'user',content:USR}]})
+    });
+    if (!res.ok) throw new Error('Worker returned ' + res.status);
+    const data = await res.json();
+    ob.innerHTML = '<div class="ob">' + md(data.content[0].text) + '</div>';
+  } catch(err) {
+    ob.innerHTML = '<div class="error">⚠️ ' + err.message + '<br>Set WORKER_URL to your Cloudflare Worker URL.</div>';
+  } finally {
+    btn.disabled = false; btn.textContent = '⚡ Calculate My Freedom Path';
+  }
+});
+</script>
+</body>
+</html>

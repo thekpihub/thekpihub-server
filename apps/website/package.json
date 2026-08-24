@@ -1,0 +1,21 @@
+{
+  "name": "thekpihub-website",
+  "private": true,
+  "scripts": {
+    "build": "babel landing --extensions .jsx --out-dir landing --out-file-extension .js",
+    "build:css": "tailwindcss -i landing/tailwind-input.css -o landing/tailwind.css --minify",
+    "prerender": "node tools/prerender.mjs --src . --write-hydrate",
+    "version-assets": "node tools/version-assets.mjs --src .",
+    "check:assets": "node tools/version-assets.mjs --src . --check",
+    "build:site": "npm run build && npm run build:css && npm run prerender && npm run version-assets",
+    "watch:css": "tailwindcss -i landing/tailwind-input.css -o landing/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.24.0",
+    "@babel/core": "^7.24.0",
+    "@babel/preset-react": "^7.24.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "tailwindcss": "^3.4.0"
+  }
+}

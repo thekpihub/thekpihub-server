@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:28px 24px;background:var(--bg);color:var(--text);width:700px;box-sizing:border-box;display:flex;gap:32px;align-items:center;justify-content:space-around;}
+  .item{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .num{width:56px;height:56px;border-radius:50%;border:2px solid rgba(233,161,35,0.28);background:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:16px;font-weight:800;color:var(--gold);}
+  .step-title{font-family:var(--font-head);font-size:13px;font-weight:700;color:var(--text);}
+  .step-caption{font-family:var(--font-body);font-size:10px;color:var(--text-3);}
+  .line{position:absolute;top:56px;left:28%;right:28%;height:1px;background:rgba(233,161,35,0.28);z-index:0;}
+  .wrap{position:relative;width:100%;display:flex;justify-content:space-around;}
+</style></head><body>
+  <div class="wrap">
+    <div class="line"></div>
+    <div class="item"><div class="num">01</div><div class="step-title">Harvest</div><div class="step-caption">RSS · APIs</div></div>
+    <div class="item"><div class="num">02</div><div class="step-title">Synthesize</div><div class="step-caption">Claude · SerpAPI</div></div>
+    <div class="item"><div class="num">03</div><div class="step-title">Deliver</div><div class="step-caption">Feed · Report</div></div>
+  </div>
+</body></html>

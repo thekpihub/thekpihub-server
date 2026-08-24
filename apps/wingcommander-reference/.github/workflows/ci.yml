@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Frontend ───────────────────────────────────────────────────────────────
+  frontend:
+    name: Frontend — Type Check, Lint & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          npm install --workspace=frontend --include=dev
+          npm install --workspace=backend --include=dev
+
+      - name: Type check
+        working-directory: frontend
+        run: npx tsc --noEmit
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 7
+
+  # ── Backend ────────────────────────────────────────────────────────────────
+  backend:
+    name: Backend — Type Check & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: |
+          npm install --workspace=frontend --include=dev
+          npm install --workspace=backend --include=dev
+
+      - name: Type check
+        working-directory: backend
+        run: npm run build -- --noEmit
+
+      - name: Build
+        working-directory: backend
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-dist
+          path: backend/dist
+          retention-days: 7
+
+  # ── Summary gate ───────────────────────────────────────────────────────────
+  ci-pass:
+    name: All checks passed
+    needs: [frontend, backend]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Evaluate results
+        run: |
+          echo "Frontend: ${{ needs.frontend.result }}"
+          echo "Backend:  ${{ needs.backend.result }}"
+          if [[ "${{ needs.frontend.result }}" == "success" && "${{ needs.backend.result }}" == "success" ]]; then
+            echo "✅  All CI checks passed"
+          else
+            echo "❌  One or more checks failed"
+            exit 1
+          fi

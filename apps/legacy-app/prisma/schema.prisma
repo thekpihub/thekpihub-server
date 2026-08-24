@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PostSource {
+  MANUAL
+  AI_PIPELINE
+  HYBRID
+}
+
+model User {
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  email          String   @unique
+  hashedPassword String?
+  name           String?
+  role           String   @default("USER")
+  plan           String   @default("FREE")
+  @@map("users")
+}
+
+model Post {
+  id              String     @id @default(cuid())
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  title           String
+  slug            String     @unique
+  excerpt         String
+  content         String     @db.Text
+  category        String
+  tags            String[]   @default([])
+  seoTitle        String?
+  seoDescription  String?
+  primaryKeyword  String?
+  heroImageUrl    String?
+  imageAlt        String?
+  readTimeMinutes Int        @default(5)
+  viewCount       Int        @default(0)
+  likeCount       Int        @default(0)
+  status          PostStatus @default(DRAFT)
+  publishedAt     DateTime?
+  source          PostSource @default(MANUAL)
+  authorName      String?
+  frameworkName   String?
+  wordCount       Int?
+  qualityScore    Int?
+  @@index([status, publishedAt(sort: Desc)])
+  @@map("posts")
+}

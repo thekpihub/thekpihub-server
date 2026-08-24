@@ -1,0 +1,30 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json", ".firebaserc", ".babelrc",
+      ".git/**", ".github/**",
+      "*.php", "*.py", "*.sql", "*.zip",
+      "node_modules/**", "docs/**", "landing/*.jsx",
+      "pages/**", "wp-plugin/**",
+      "requirements.txt", "package.json", "package-lock.json",
+      ".env*", ".gitignore", ".nojekyll", "CNAME",
+      "*.md", "*.txt", "*.example.*"
+    ],
+    "trailingSlash": false,
+    "rewrites": [{ "source": "**", "destination": "/404.html" }],
+    "headers": [
+      {
+        "source": "**/*.html",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=3600, stale-while-revalidate=86400" },
+          { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        ]
+      },
+      { "source": "config.js", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+      { "source": "sitemap.xml", "headers": [{ "key": "Content-Type", "value": "application/xml; charset=utf-8" }] }
+    ]
+  }
+}

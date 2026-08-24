@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode */
+    --background: 0 0% 100%;
+    --foreground: 240 70% 6%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 70% 6%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 70% 6%;
+    --primary: 38 82% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 38 20% 94%;
+    --secondary-foreground: 240 70% 6%;
+    --muted: 38 20% 94%;
+    --muted-foreground: 240 20% 50%;
+    --accent: 170 60% 90%;
+    --accent-foreground: 240 70% 6%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 38 20% 88%;
+    --input: 38 20% 88%;
+    --ring: 38 82% 45%;
+    --radius: 0.625rem;
+  }
+
+  .dark {
+    /* KPI Hub navy dark theme */
+    --background: 240 70% 6%;
+    --foreground: 38 30% 90%;
+    --card: 240 60% 8%;
+    --card-foreground: 38 30% 90%;
+    --popover: 240 60% 8%;
+    --popover-foreground: 38 30% 90%;
+    --primary: 38 82% 53%;
+    --primary-foreground: 240 70% 6%;
+    --secondary: 240 50% 12%;
+    --secondary-foreground: 38 30% 90%;
+    --muted: 240 50% 12%;
+    --muted-foreground: 240 20% 55%;
+    --accent: 240 45% 14%;
+    --accent-foreground: 38 30% 90%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 45% 12%;
+    --input: 240 45% 12%;
+    --ring: 38 82% 53%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/20 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/40;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-primary/30 text-foreground;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply backdrop-blur-xl bg-background/60 border border-border/50;
+  }
+
+  .glass-dark {
+    @apply backdrop-blur-xl bg-black/40 border border-white/10;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-wing-400 to-wing-600 bg-clip-text text-transparent;
+  }
+
+  .shimmer-bg {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  .noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+}
+
+/* Monaco Editor overrides */
+.monaco-editor {
+  border-radius: 0.5rem;
+}
+.monaco-editor .margin {
+  background: transparent !important;
+}
+
+/* Prose styles for markdown rendering */
+.prose-wing {
+  @apply prose prose-sm max-w-none;
+  @apply dark:prose-invert;
+}
+.prose-wing pre {
+  @apply bg-secondary rounded-lg border border-border;
+}
+.prose-wing code {
+  @apply font-mono text-sm;
+}

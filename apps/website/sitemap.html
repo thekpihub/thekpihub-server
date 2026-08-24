@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Site Map — Every Page on The KPI Hub</title>
+    <link rel="canonical" href="https://thekpihub.com/sitemap.html">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thekpihub.com/sitemap.html">
+    <meta property="og:title" content="Site Map — Every Page on The KPI Hub">
+    <meta property="og:description" content="Every page on The KPI Hub: what each one does, who can access it, and how it connects to the rest of the platform.">
+    <meta property="og:image" content="https://thekpihub.com/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Site Map — Every Page on The KPI Hub">
+    <meta name="twitter:description" content="Every page on The KPI Hub: what each one does, who can access it, and how it connects to the rest of the platform.">
+    <meta name="twitter:image" content="https://thekpihub.com/og-image.png">
+    <meta name="description" content="Every page on The KPI Hub: what each one does, who can access it, and how it connects to the rest of the platform.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d1117;
+      --surface:   #161b22;
+      --surface-2: #21262d;
+      --border:    #30363d;
+      --text:      #e6edf3;
+      --muted:     #8b949e;
+      --accent:    #0ea5e9;
+      --success:   #3fb950;
+      --warning:   #d29922;
+      --danger:    #f85149;
+      --purple:    #8b5cf6;
+      --radius:    10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header .logo { font-size: 1.1rem; font-weight: 700; color: var(--accent); text-decoration: none; }
+    header nav a {
+      color: var(--muted); text-decoration: none;
+      font-size: 0.875rem; margin-left: 24px; transition: color .2s;
+    }
+    header nav a:hover { color: var(--text); }
+    header nav a.active { color: var(--accent); }
+
+    .hero {
+      max-width: 960px;
+      margin: 56px auto 0;
+      padding: 0 24px;
+    }
+    .hero h1 { font-size: 2rem; font-weight: 700; }
+    .hero p  { margin-top: 10px; color: var(--muted); font-size: 0.95rem; line-height: 1.6; }
+
+    /* Zone legend */
+    .legend {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin: 32px auto 0;
+      max-width: 960px;
+      padding: 0 24px;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.8rem; color: var(--muted);
+    }
+    .legend-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+
+    /* Sitemap grid */
+    .map {
+      max-width: 960px;
+      margin: 40px auto 0;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    .zone-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .zone-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .page-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .page-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color .2s, transform .15s;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .page-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .page-card.public  { border-left: 3px solid var(--success); }
+    .page-card.private { border-left: 3px solid var(--accent); }
+    .page-card.backend { border-left: 3px solid var(--warning); }
+    .page-card.new     { border-left: 3px solid var(--purple); }
+
+    .page-icon { font-size: 1.5rem; }
+
+    .page-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .page-url {
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-family: monospace;
+    }
+
+    .page-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .page-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .tag {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 20px;
+      background: var(--surface-2);
+      color: var(--muted);
+    }
+    .tag.auth    { background: #1c2d3a; color: var(--accent); }
+    .tag.lock    { background: #1c2233; color: #818cf8; }
+    .tag.new     { background: #2d1f3f; color: #a78bfa; }
+    .tag.api     { background: #2d2a14; color: var(--warning); }
+
+    /* Sub-pages (dashboard tabs) */
+    .sub-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .sub-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+    }
+
+    .flow-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-top: 8px;
+    }
+    .flow-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .flow-steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      row-gap: 8px;
+    }
+    .flow-step {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+    .flow-step a {
+      color: var(--text);
+      text-decoration: none;
+    }
+    .flow-step a:hover { color: var(--accent); }
+    .flow-arrow {
+      color: var(--muted);
+      padding: 0 8px;
+      font-size: 0.85rem;
+    }
+  </style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-DZPCCPEP1J");
+  </script>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">The KPI Hub</a>
+  <nav>
+    <a href="login.html">Sign In</a>
+    <a href="register.html">Register</a>
+    <a href="updates.html">Updates</a>
+    <a href="sitemap.html" class="active">Sitemap</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>Site Map</h1>
+  <p>Every page on The KPI Hub — what it does, who can access it, and how it connects to the rest of the product.</p>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--success)"></div> Public — no login needed</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> Private — requires login</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--warning)"></div> Backend — API / server handler</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> New — recently added</div>
+</div>
+
+<div class="map">
+
+  <!-- ── PUBLIC ZONE ────────────────────────────── -->
+  <div>
+    <div class="zone-title" style="color:var(--success)">Public Pages — Accessible without login</div>
+    <div class="page-grid">
+
+      <a class="page-card public" href="login.html">
+        <div class="page-icon">🔑</div>
+        <div class="page-name">Sign In</div>
+        <div class="page-url">/login.html</div>
+        <div class="page-desc">Email + password login with "Remember me" and password reset. Redirects to Dashboard on success.</div>
+        <div class="page-tags">
+          <span class="tag auth">Auth gateway</span>
+        </div>
+      </a>
+
+      <a class="page-card public" href="register.html">
+        <div class="page-icon">📝</div>
+        <div class="page-name">Create Account</div>
+        <div class="page-url">/register.html</div>
+        <div class="page-desc">3-step registration: personal info → role selection → password. Free Starter plan by default.</div>
+        <div class="page-tags">
+          <span class="tag auth">Auth gateway</span>
+        </div>
+      </a>
+
+      <a class="page-card new" href="updates.html">
+        <div class="page-icon">📡</div>
+        <div class="page-name">Platform Updates</div>
+        <div class="page-url">/updates.html</div>
+        <div class="page-desc">Full changelog of every infrastructure and product change — date, reason, benefit, and repeat count.</div>
+        <div class="page-tags">
+          <span class="tag new">New</span>
+        </div>
+      </a>
+
+      <a class="page-card new" href="sitemap.html">
+        <div class="page-icon">🗺️</div>
+        <div class="page-name">Site Map</div>
+        <div class="page-url">/sitemap.html</div>
+        <div class="page-desc">This page. Full visual overview of every page, access zone, tab, and user flow.</div>
+        <div class="page-tags">
+          <span class="tag new">New</span>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- ── PRIVATE ZONE ───────────────────────────── -->
+  <div>
+    <div class="zone-title" style="color:var(--accent)">Private Pages — Login required</div>
+    <div class="page-grid">
+
+      <a class="page-card private" href="dashboard.html">
+        <div class="page-icon">📊</div>
+        <div class="page-name">Dashboard</div>
+        <div class="page-url">/dashboard.html</div>
+        <div class="page-desc">Main app hub. Role-aware tabs for Overview, KPIs, Reports, Team, and Settings. Shows plan-gated features.</div>
+        <div class="page-tags">
+          <span class="tag lock">Auth required</span>
+        </div>
+      </a>
+
+      <a class="page-card private" href="upgrade.html">
+        <div class="page-icon">💳</div>
+        <div class="page-name">Choose Plan</div>
+        <div class="page-url">/upgrade.html</div>
+        <div class="page-desc">Starter / Growth / Enterprise plan cards. Stripe embedded checkout. Shows current plan and upgrade CTAs.</div>
+        <div class="page-tags">
+          <span class="tag lock">Auth required</span>
+        </div>
+      </a>
+
+      <a class="page-card private" href="upgrade-success.html">
+        <div class="page-icon">✅</div>
+        <div class="page-name">Payment Confirmed</div>
+        <div class="page-url">/upgrade-success.html</div>
+        <div class="page-desc">Post-payment landing page. Verifies Stripe session, shows plan details, links back to Dashboard.</div>
+        <div class="page-tags">
+          <span class="tag lock">Auth required</span>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- Dashboard tabs sub-map -->
+    <div class="flow-box" style="margin-top:16px;">
+      <div class="flow-title">Dashboard Internal Tabs</div>
+      <div class="sub-grid">
+        <div class="sub-card"><span>📊</span> Overview</div>
+        <div class="sub-card"><span>📈</span> KPIs</div>
+        <div class="sub-card"><span>📋</span> Reports</div>
+        <div class="sub-card"><span>👥</span> Team</div>
+        <div class="sub-card"><span>⚙️</span> Settings</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BACKEND ZONE ───────────────────────────── -->
+  <div>
+    <div class="zone-title" style="color:var(--warning)">Backend Handlers — Server-side, not user-facing</div>
+    <div class="page-grid">
+
+      <div class="page-card backend">
+        <div class="page-icon">⚡</div>
+        <div class="page-name">Stripe Session</div>
+        <div class="page-url">/stripe-session.php</div>
+        <div class="page-desc">Creates a Stripe Checkout session server-side. Called by upgrade.html on plan selection. Returns clientSecret.</div>
+        <div class="page-tags">
+          <span class="tag api">POST API</span>
+        </div>
+      </div>
+
+      <div class="page-card backend">
+        <div class="page-icon">🔍</div>
+        <div class="page-name">Stripe Verify</div>
+        <div class="page-url">/stripe-verify.php</div>
+        <div class="page-desc">Verifies a Stripe session after payment. Updates user plan in DB. Called by upgrade-success.html on load.</div>
+        <div class="page-tags">
+          <span class="tag api">GET API</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── USER FLOWS ────────────────────────────── -->
+  <div>
+    <div class="zone-title" style="color:var(--purple)">User Flows</div>
+
+    <div style="display:flex; flex-direction:column; gap:12px;">
+
+      <div class="flow-box">
+        <div class="flow-title">New User Signup</div>
+        <div class="flow-steps">
+          <div class="flow-step"><a href="register.html">Register</a></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">Email Confirm</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><a href="dashboard.html">Dashboard</a></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><a href="upgrade.html">Choose Plan</a></div>
+        </div>
+      </div>
+
+      <div class="flow-box">
+        <div class="flow-title">Returning User Login</div>
+        <div class="flow-steps">
+          <div class="flow-step"><a href="login.html">Sign In</a></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><a href="dashboard.html">Dashboard</a></div>
+        </div>
+      </div>
+
+      <div class="flow-box">
+        <div class="flow-title">Google OAuth Login</div>
+        <div class="flow-steps">
+          <div class="flow-step"><a href="login.html">Sign In</a></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">Google Consent</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">/api/auth/google/callback</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><a href="dashboard.html">Dashboard + JWT</a></div>
+        </div>
+      </div>
+
+      <div class="flow-box">
+        <div class="flow-title">Plan Upgrade</div>
+        <div class="flow-steps">
+          <div class="flow-step"><a href="dashboard.html">Dashboard</a></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><a href="upgrade.html">Choose Plan</a></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step">Stripe Checkout</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><a href="upgrade-success.html">Payment Confirmed</a></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><a href="dashboard.html">Dashboard</a></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

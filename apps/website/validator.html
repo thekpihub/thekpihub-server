@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="yRGmgTNjIHFmLom_ZrczRQpmaJkf2SpAZWR75g3g71k">
+
+  <!-- ====== KPI Hub Analytics: GA4 ====== -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-DZPCCPEP1J', {
+      page_title: document.title,
+      page_location: window.location.href,
+      send_page_view: true
+    });
+
+    // ── Custom KPI Hub Event Tracking ──
+    document.addEventListener('DOMContentLoaded', function () {
+
+      // Track Early Access / Waitlist CTA clicks
+      document.querySelectorAll('a[href="#waitlist"], .waitlist-btn, [data-cta="waitlist"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          gtag('event', 'waitlist_click', {
+            event_category: 'CTA',
+            event_label: 'Waitlist Button',
+            value: 1
+          });
+        });
+      });
+
+      // Track pricing page visits
+      document.querySelectorAll('a[href*="pricing"]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          gtag('event', 'pricing_interest', {
+            event_category: 'Navigation',
+            event_label: 'Pricing Click'
+          });
+        });
+      });
+
+      // Track outbound links
+      document.querySelectorAll('a[href^="http"]').forEach(function(el) {
+        if (!el.href.includes('thekpihub.com')) {
+          el.addEventListener('click', function() {
+            gtag('event', 'outbound_click', {
+              event_category: 'Outbound',
+              event_label: el.href
+            });
+          });
+        }
+      });
+
+      // Track scroll depth (25%, 50%, 75%, 100%)
+      var scrollDepths = [25, 50, 75, 100];
+      var fired = {};
+      window.addEventListener('scroll', function() {
+        var scrollPct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+        scrollDepths.forEach(function(depth) {
+          if (scrollPct >= depth && !fired[depth]) {
+            fired[depth] = true;
+            gtag('event', 'scroll_depth', {
+              event_category: 'Engagement',
+              event_label: depth + '%',
+              value: depth
+            });
+          }
+        });
+      });
+    });
+  </script>
+  <!-- ====== End Analytics ====== -->
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SaaS Idea Validator — Projected KPIs and Viability Score</title>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thekpihub.com/validator.html">
+    <meta property="og:title" content="SaaS Idea Validator — Projected KPIs and Viability Score">
+    <meta property="og:description" content="Test a SaaS idea before you build it. Get projected KPIs, market size, competitive risk and a viability score.">
+    <meta property="og:image" content="https://thekpihub.com/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SaaS Idea Validator — Projected KPIs and Viability Score">
+    <meta name="twitter:description" content="Test a SaaS idea before you build it. Get projected KPIs, market size, competitive risk and a viability score.">
+    <meta name="twitter:image" content="https://thekpihub.com/og-image.png">
+    <meta name="description" content="Test a SaaS idea before you build it. Get projected KPIs, market size, competitive risk and a viability score.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080d1a;--s1:#0d1428;--s2:#111c35;--amber:#f59e0b;--amber2:#fbbf24;--teal:#14b8a6;--red:#ef4444;--green:#22c55e;--purple:#a855f7;--txt:#e2e8f0;--txd:#94a3b8;--txm:#475569;--bdr:#1e2d4a;--bdr2:#243350}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+nav{background:rgba(8,13,26,.95);border-bottom:1px solid var(--bdr);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+.nav-brand{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;color:var(--txt);text-decoration:none}.nav-brand span{color:var(--amber)}
+.nav-cta{background:var(--amber);color:#000;padding:7px 18px;border-radius:6px;font-size:.8rem;font-weight:700;text-decoration:none;font-family:'Syne',sans-serif}
+.nav-links{display:flex;gap:24px;list-style:none}
+.nav-links a{color:var(--txd);text-decoration:none;font-size:.82rem;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--amber)}
+.hero{padding:52px 24px 32px;text-align:center;max-width:640px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:20px;padding:4px 14px;font-size:.73rem;color:var(--purple);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:18px}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(1.7rem,4vw,2.6rem);font-weight:800;line-height:1.15;margin-bottom:10px}
+.hero h1 em{color:var(--amber);font-style:normal}
+.hero p{color:var(--txd);font-size:.88rem}
+.container{max-width:900px;margin:0 auto;padding:0 24px 80px}
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;padding:24px;margin-bottom:16px}
+.section-title{font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:.72rem;color:var(--txd);margin-bottom:4px;font-weight:500}
+.field input,.field select,.field textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bdr2);border-radius:7px;padding:10px 12px;color:var(--txt);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;transition:all .25s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--amber)}
+.field select option{background:#111c35}
+.field textarea{resize:vertical;min-height:80px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.validate-btn{width:100%;padding:13px;background:linear-gradient(135deg,#6d28d9,var(--purple));color:#fff;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-size:.86rem;font-weight:700;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px}
+.validate-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(168,85,247,.28)}
+.validate-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+/* RESULTS */
+.result-card{background:var(--s1);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;margin-bottom:14px;display:none}
+.result-card.visible{display:block;animation:fadeIn .4s ease}
+.result-header{padding:22px 24px;background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(245,158,11,.04))}
+.viability-row{display:flex;align-items:center;gap:20px;margin-bottom:14px;flex-wrap:wrap}
+.viability-score{font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;line-height:1}
+.viability-label{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:4px}
+.viability-sub{font-size:.8rem;color:var(--txd);line-height:1.6;max-width:480px}
+/* KPI PROJECTIONS */
+.kpi-proj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:18px 24px;border-bottom:1px solid var(--bdr)}
+.kpi-proj{text-align:center;padding:12px;background:var(--s2);border:1px solid var(--bdr2);border-radius:9px}
+.kp-val{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;line-height:1.1;margin-bottom:3px}
+.kp-label{font-size:.62rem;color:var(--txm);text-transform:uppercase;letter-spacing:.5px}
+.kp-note{font-size:.65rem;color:var(--txd);margin-top:2px}
+/* ANALYSIS LIST */
+.analysis-list{padding:18px 24px}
+.analysis-item{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--bdr)}
+.analysis-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.ai-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:5px}
+.ai-label.green{background:rgba(34,197,94,.1);color:var(--green)}
+.ai-label.amber{background:rgba(245,158,11,.1);color:var(--amber)}
+.ai-label.red{background:rgba(239,68,68,.1);color:var(--red)}
+.ai-label.purple{background:rgba(168,85,247,.1);color:var(--purple)}
+.ai-title{font-family:'Syne',sans-serif;font-size:.84rem;font-weight:700;margin-bottom:4px}
+.ai-text{font-size:.78rem;color:var(--txd);line-height:1.65}
+/* LOADER */
+.loader-state{text-align:center;padding:40px}
+.spinning{width:34px;height:34px;border:3px solid var(--bdr2);border-top-color:var(--purple);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:600px){.two-col{grid-template-columns:1fr}.kpi-proj-grid{grid-template-columns:1fr 1fr}}
+</style>
+<link rel="canonical" href="https://thekpihub.com/validator.html">
+    <meta name="robots" content="index, follow">
+        <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wdshn14xgf");
+    </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+</head>
+<body>
+
+<nav>
+  <a href="https://thekpihub.com" class="nav-brand">The <span>KPI</span> Hub</a>
+  <ul class="nav-links">
+    <li><a href="narrative.html">Narrative</a></li>
+    <li><a href="freedom.html">Freedom</a></li>
+    <li><a href="validator.html" class="active">Idea Validator</a></li>
+  </ul>
+  <a href="get-audit.html" class="nav-cta">Get My KPI Audit →</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">🎯 SaaS Idea Validator · P3 Weapon</div>
+  <h1>Will your SaaS idea <em>actually work?</em></h1>
+  <p>Enter your idea. Get projected KPIs, market size, competitive risk, and a viability verdict — before you write a single line of code.</p>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <div class="section-title">🎯 Validate My SaaS Idea</div>
+    <div class="field"><label>SaaS Idea (describe in 2-3 sentences)</label><textarea id="v-idea" placeholder="e.g. A Slack bot that automatically tracks action items from meetings and sends daily digest emails to team members. No setup required — just invite the bot and it starts working."></textarea></div>
+    <div class="two-col">
+      <div class="field"><label>Target Customer</label>
+        <select id="v-customer">
+          <option value="solo-founders">Solo Founders / Solopreneurs</option>
+          <option value="smb">SMB Teams (10–100 people)</option>
+          <option value="mid-market">Mid-Market (100–1000 people)</option>
+          <option value="enterprise">Enterprise (1000+ people)</option>
+          <option value="consumers">B2C Consumers</option>
+          <option value="india-smb">India SMB (₹1–50Cr revenue)</option>
+        </select>
+      </div>
+      <div class="field"><label>Pricing Model</label>
+        <select id="v-pricing">
+          <option value="freemium">Freemium (free + paid)</option>
+          <option value="flat">Flat Monthly Fee</option>
+          <option value="usage">Usage-Based</option>
+          <option value="per-seat">Per Seat / Per User</option>
+          <option value="annual">Annual Contract Only</option>
+        </select>
+      </div>
+      <div class="field"><label>Expected Monthly Price (₹ or $)</label><input type="number" id="v-price" placeholder="49"></div>
+      <div class="field"><label>Your Building Approach</label>
+        <select id="v-approach">
+          <option value="no-code">No-Code (Bubble, Webflow)</option>
+          <option value="ai-powered">AI-Powered (Claude/GPT API)</option>
+          <option value="fullstack">Fullstack Dev</option>
+          <option value="template">Template / Open Source Base</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Who is your main competitor? (optional)</label><input type="text" id="v-competitor" placeholder="e.g. Otter.ai, Fireflies, none yet"></div>
+    <div class="field" style="margin: 1.5rem 0 1.2rem 0; text-align: left;">
+      <label style="color:var(--purple);margin-bottom:8px;display:block;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Select AI Intelligence Engine</label>
+      <select id="ai-model-selector" style="width:100%;box-sizing:border-box;background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--txw);font-size:.86rem;outline:none;font-family:'DM Sans',sans-serif;cursor:pointer;">
+        <option value="google/gemini-2.0-flash-lite:free">Gemini 2.0 Flash Lite (Free Tier)</option>
+        <option value="google/gemini-flash-1.5">Gemini 1.5 Flash (Free Tier)</option>
+        <option value="claude-direct">Claude 3.5 Sonnet (Direct - Premium)</option>
+        <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (OpenRouter - Premium)</option>
+        <option value="openai/gpt-4o">GPT-4o (OpenRouter - Premium)</option>
+        <option value="deepseek/deepseek-chat">DeepSeek V3 (OpenRouter - Premium)</option>
+        <option value="deepseek/deepseek-reasoner">DeepSeek R1 (OpenRouter - Premium)</option>
+      </select>
+    </div>
+    <button class="validate-btn" id="val-btn" onclick="validateIdea()">🎯 Validate & Project KPIs</button>
+  </div>
+
+  <!-- LOADER -->
+  <div id="val-loader" style="display:none" class="card">
+    <div class="loader-state"><div class="spinning"></div><div style="font-size:.8rem;color:var(--txm)">Running AI validation and projecting KPIs...</div></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="result-card" id="val-results">
+    <div class="result-header">
+      <div class="viability-row">
+        <div class="viability-score" id="v-score">—</div>
+        <div>
+          <div class="viability-label" id="v-verdict">—</div>
+          <div class="viability-sub" id="v-summary">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-proj-grid" id="kpi-proj"></div>
+    <div class="analysis-list" id="analysis-list"></div>
+
+    <!-- HIGH-TICKET UPSELL -->
+    <div class="cfo-upsell-box" id="cfo-upsell" style="display:none;margin-top:24px;background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(13,20,40,.95));border:2px solid var(--amber);border-radius:12px;padding:24px;text-align:center;box-shadow:0 8px 32px rgba(245,158,11,.1);">
+      <h4 style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--amber);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">🧠 VC-Grade Idea & Market Entry Workshop</h4>
+      <p style="font-size:.88rem;color:var(--txd);line-height:1.6;margin-bottom:18px;max-width:580px;margin-left:auto;margin-right:auto;">
+        Launching a SaaS requires bulletproof validation before coding. Lock in a dedicated 1-on-1 Market Entry and Validation workshop with our founding team (India's Top 300 Builders). We will audit your competitive moat, design your primary PMF KPIs, and compile your first Series-A financial model.
+      </p>
+      <div style="font-size:1.6rem;font-weight:800;color:var(--amber);margin-bottom:18px;font-family:'Syne',sans-serif;">$2,500 <span style="font-size:.8rem;color:var(--txd);font-weight:400;">/ full validation engagement</span></div>
+      <a href="https://calendly.com/thekpihub/remediation" target="_blank" class="cfo-btn" style="display:inline-block;padding:12px 28px;background:var(--amber);color:#000;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.5px;text-decoration:none;transition:all .3s;box-shadow:0 4px 14px rgba(245,158,11,.4);cursor:pointer;">
+        📅 Secure Validation Workshop
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const { createClient } = supabase;
+const sb = createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+async function validateIdea() {
+  const idea = document.getElementById('v-idea').value.trim();
+  if (!idea) { alert('Describe your SaaS idea first'); return; }
+  const customer = document.getElementById('v-customer').value;
+  const pricing = document.getElementById('v-pricing').value;
+  const price = parseFloat(document.getElementById('v-price').value) || 49;
+  const approach = document.getElementById('v-approach').value;
+  const competitor = document.getElementById('v-competitor').value;
+  const advantage = document.getElementById('v-advantage').value;
+
+  document.getElementById('val-btn').disabled = true;
+  document.getElementById('val-loader').style.display = 'block';
+  document.getElementById('val-results').classList.remove('visible');
+
+  const prompt = `You are a top SaaS VC partner and growth advisor. Validate this SaaS idea with brutal honesty and return KPI projections.
+
+Idea: "${idea}"
+Target customer: ${customer}
+Pricing model: ${pricing} at $${price}/mo
+Build approach: ${approach}
+Main competitor: ${competitor || 'None identified'}
+Unfair advantage: ${advantage || 'Not specified'}
+
+Return ONLY valid JSON with this structure:
+{
+  "viability_score": <0-100 integer>,
+  "verdict": "<emoji + 3-4 word verdict>",
+  "summary": "<2-3 sentences of honest overall assessment>",
+  "kpi_projections": {
+    "est_cac": "<e.g. $80-120>",
+    "est_ltv": "<e.g. $800-1200>",
+    "est_churn": "<e.g. 4-7%/month>",
+    "time_to_pmf": "<e.g. 6-12 months>",
+    "year1_arr_potential": "<e.g. $50K-200K>",
+    "market_size": "<e.g. $2.4B TAM, $120M SAM>"
+  },
+  "analysis": [
+    {"type": "strength|risk|opportunity|warning", "title": "<title>", "detail": "<2-3 sentences>"},
+    {"type": "strength|risk|opportunity|warning", "title": "<title>", "detail": "<2-3 sentences>"},
+    {"type": "strength|risk|opportunity|warning", "title": "<title>", "detail": "<2-3 sentences>"},
+    {"type": "strength|risk|opportunity|warning", "title": "<title>", "detail": "<2-3 sentences>"},
+    {"type": "strength|risk|opportunity|warning", "title": "<title>", "detail": "<2-3 sentences>"}
+  ]
+}
+
+Be specific and data-driven. If the idea is weak, say so clearly. Return valid JSON only.`;
+
+  // Guard: must be logged in
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    window.location.href = 'login.html';
+    return;
+  }
+  const token = session.access_token;
+  const model = document.getElementById('ai-model-selector')?.value || 'google/gemini-2.0-flash-lite:free';
+
+  try {
+    const response = await fetch('/pages/api/ai-gateway.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        system: 'You are an elite SaaS VC advisor. Return only valid JSON, no markdown.',
+        model: model
+      })
+    });
+
+    if (!response.ok) {
+      if (response.status === 402) {
+        window.location.href = 'upgrade.html?reason=premium_only';
+        throw new Error('Upgrade required');
+      }
+      throw new Error('Gateway API error');
+    }
+
+    const data = await response.json();
+    const raw = data.text.replace(/```json|```/g,'').trim();
+    renderValidation(JSON.parse(raw), price);
+  } catch(err) {
+    if (err.message.includes('Upgrade required')) return;
+    renderValidation(buildFallback(idea, customer, price), price);
+  }
+
+  document.getElementById('val-loader').style.display = 'none';
+  document.getElementById('val-btn').disabled = false;
+}
+
+function buildFallback(idea, customer, price) {
+  return {
+    viability_score: 68,
+    verdict: '⚡ Viable with Caveats',
+    summary: 'Your idea addresses a real problem but faces meaningful competition. The key to success will be finding a defensible niche and keeping initial CAC below $150.',
+    kpi_projections: {
+      est_cac: `$${price*2}-${price*4}`,
+      est_ltv: `$${price*12}-${price*24}`,
+      est_churn: '4-8%/month',
+      time_to_pmf: '8-14 months',
+      year1_arr_potential: '$20K-100K',
+      market_size: '$1-5B TAM'
+    },
+    analysis: [
+      {type:'strength', title:'Clear problem statement', detail:'Your idea addresses a specific workflow pain. The more specific the problem, the easier it is to find and convert customers.'},
+      {type:'risk', title:'Competition exists', detail:'This space likely has established players. Your unfair advantage must be crystal clear in the first 5 seconds of a landing page.'},
+      {type:'opportunity', title:'India market is underserved', detail:'If targeting India-first, you have pricing advantage and cultural context that global tools lack.'},
+      {type:'warning', title:'Validate before building', detail:'Talk to 20 potential customers before writing code. Ask if they have the problem, not if they like your solution.'},
+      {type:'opportunity', title:'AI can reduce build time 10x', detail:'Using Claude or GPT API lets you build in weeks what would have taken months. Consider this as a core part of your stack.'},
+    ]
+  };
+}
+
+function renderValidation(d, price) {
+  const score = d.viability_score;
+  const scoreColor = score>=75?'var(--green)':score>=55?'var(--amber)':'var(--red)';
+  document.getElementById('v-score').textContent = score + '/100';
+  document.getElementById('v-score').style.color = scoreColor;
+  document.getElementById('v-verdict').textContent = d.verdict;
+  document.getElementById('v-verdict').style.color = scoreColor;
+  document.getElementById('v-summary').textContent = d.summary;
+
+  const kpi = d.kpi_projections || {};
+  document.getElementById('kpi-proj').innerHTML = Object.entries({
+    'Est. CAC': kpi.est_cac,
+    'Est. LTV': kpi.est_ltv,
+    'Monthly Churn': kpi.est_churn,
+    'Time to PMF': kpi.time_to_pmf,
+    'Year 1 ARR': kpi.year1_arr_potential,
+    'Market Size': kpi.market_size,
+  }).map(([label, val]) => `
+    <div class="kpi-proj">
+      <div class="kp-val" style="color:var(--amber)">${val||'—'}</div>
+      <div class="kp-label">${label}</div>
+    </div>`).join('');
+
+  const typeMap = {strength:{label:'✅ Strength',cls:'green'}, risk:{label:'🚨 Risk',cls:'red'}, opportunity:{label:'💡 Opportunity',cls:'purple'}, warning:{label:'⚠️ Warning',cls:'amber'}};
+  document.getElementById('analysis-list').innerHTML = (d.analysis||[]).map(a => {
+    const t = typeMap[a.type] || typeMap.warning;
+    return `<div class="analysis-item">
+      <div class="ai-label ${t.cls}">${t.label}</div>
+      <div class="ai-title">${a.title}</div>
+      <div class="ai-text">${a.detail}</div>
+    </div>`;
+  }).join('');
+
+  const upsell = document.getElementById('cfo-upsell');
+  if (upsell) {
+    if (score < 80) {
+      upsell.style.display = 'block';
+    } else {
+      upsell.style.display = 'none';
+    }
+  }
+
+  document.getElementById('val-results').classList.add('visible');
+  document.getElementById('val-results').scrollIntoView({behavior:'smooth'});
+}
+</script>
+<script src="/gk-shortcut.js?v=a3bb6e13"></script>
+</body>
+</html>

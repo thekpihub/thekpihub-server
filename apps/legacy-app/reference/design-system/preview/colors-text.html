@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body{margin:0;padding:20px 24px;background:var(--bg);color:var(--text);width:700px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;}
+  .row{display:flex;align-items:center;gap:16px;padding:10px 14px;border:1px solid var(--border);border-radius:8px;}
+  .sample{flex:1;font-family:var(--font-body);font-size:15px;}
+  .tag{font-family:var(--font-mono);font-size:11px;color:var(--text-3);min-width:140px;text-align:right;}
+  .sw{width:36px;height:36px;border-radius:6px;border:1px solid var(--border);flex-shrink:0;}
+</style></head><body>
+  <div class="row"><div class="sw" style="background:#EAEDF5"></div><div class="sample" style="color:#EAEDF5">Primary text — headings, key body copy</div><div class="tag">#EAEDF5 · fg1</div></div>
+  <div class="row"><div class="sw" style="background:rgba(234,237,245,0.62)"></div><div class="sample" style="color:rgba(234,237,245,0.62)">Secondary — supporting paragraph copy</div><div class="tag">62% · fg2</div></div>
+  <div class="row"><div class="sw" style="background:rgba(234,237,245,0.32)"></div><div class="sample" style="color:rgba(234,237,245,0.32)">Tertiary — meta, captions, scroll hints</div><div class="tag">32% · fg3</div></div>
+  <div class="row"><div class="sw" style="background:rgba(234,237,245,0.12)"></div><div class="sample" style="color:rgba(234,237,245,0.12)">Disabled — inactive states</div><div class="tag">12% · fg4</div></div>
+</body></html>

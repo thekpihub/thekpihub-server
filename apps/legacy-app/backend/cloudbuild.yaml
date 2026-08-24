@@ -1,0 +1,41 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    id: build
+    args:
+      - build
+      - '-t'
+      - 'asia-south1-docker.pkg.dev/$PROJECT_ID/kpihub/kpihub-backend:$COMMIT_SHA'
+      - '-t'
+      - 'asia-south1-docker.pkg.dev/$PROJECT_ID/kpihub/kpihub-backend:latest'
+      - '-f'
+      - 'backend/Dockerfile'
+      - 'backend'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: push
+    args:
+      - push
+      - '--all-tags'
+      - 'asia-south1-docker.pkg.dev/$PROJECT_ID/kpihub/kpihub-backend'
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: deploy
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - kpihub-backend
+      - '--image=asia-south1-docker.pkg.dev/$PROJECT_ID/kpihub/kpihub-backend:$COMMIT_SHA'
+      - '--region=asia-south1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--port=4000'
+      - '--memory=512Mi'
+      - '--cpu=1'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+images:
+  - 'asia-south1-docker.pkg.dev/$PROJECT_ID/kpihub/kpihub-backend:$COMMIT_SHA'
+  - 'asia-south1-docker.pkg.dev/$PROJECT_ID/kpihub/kpihub-backend:latest'

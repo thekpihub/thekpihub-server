@@ -1,0 +1,16 @@
+# Railway config for the thekpihub-app backend (Express API).
+#
+# This Dockerfile builds with backend/ as its context (it COPYs backend's
+# package.json + source), so in the Railway service set:
+#   Settings > Root Directory = backend
+# Railway then reads this file and backend/Dockerfile.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10

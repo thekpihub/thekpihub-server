@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Choose Your Plan · The KPI Hub</title>
+    <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="assets/favicon-new.svg?v=d6470a38" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d1117;
+      --surface:   #161b22;
+      --border:    #30363d;
+      --text:      #e6edf3;
+      --muted:     #8b949e;
+      --accent:    #0ea5e9;
+      --success:   #3fb950;
+      --radius:    10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .logo-mark {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; color: #fff;
+    }
+    .logo-text { font-size: 14px; font-weight: 700; }
+
+    h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+    .subtitle { font-size: 16px; color: var(--muted); }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+    }
+
+    .plan {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      transition: transform .2s, border-color .2s;
+      position: relative;
+    }
+    .plan:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+    }
+    .plan.featured {
+      border: 2px solid var(--accent);
+      transform: scale(1.02);
+    }
+
+    .badge {
+      position: absolute;
+      top: -12px; right: 20px;
+      background: var(--accent);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .plan-name { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .plan-price {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .price-amount { font-size: 42px; font-weight: 700; }
+    .price-currency { font-size: 20px; }
+    .price-period { font-size: 14px; color: var(--muted); }
+
+    .plan-desc {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.6;
+      min-height: 36px;
+    }
+
+    .features {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex: 1;
+    }
+
+    .feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+    }
+    .feature-icon { flex-shrink: 0; }
+    .feature.disabled {
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: var(--radius);
+      border: none;
+      font-family: inherit;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #38bdf8; }
+    .btn-secondary {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-secondary:hover { background: var(--border); }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+
+    .upgrade-note {
+      background: rgba(14,165,233,.1);
+      border: 1px solid rgba(14,165,233,.3);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 32px;
+      font-size: 13px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+      border-radius: 50%; animation: spin .7s linear infinite;
+      vertical-align: middle; margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 24px; }
+      .container { grid-template-columns: 1fr; }
+      .plan.featured { transform: scale(1); }
+    }
+  </style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-DZPCCPEP1J");
+  </script>
+</head>
+<body>
+
+<nav style="background:#161b22; border-bottom:1px solid #30363d; padding:14px 28px; display:flex; align-items:center; justify-content:space-between;">
+  <a href="/" style="font-size:1rem; font-weight:700; color:#0ea5e9; text-decoration:none;">The KPI Hub</a>
+  <div style="display:flex; gap:20px; align-items:center;">
+    <a href="dashboard.html" style="font-size:0.85rem; color:#8b949e; text-decoration:none;">← Dashboard</a>
+    <a href="updates.html"   style="font-size:0.85rem; color:#8b949e; text-decoration:none;">Updates</a>
+    <a href="sitemap.html"   style="font-size:0.85rem; color:#8b949e; text-decoration:none;">Sitemap</a>
+  </div>
+</nav>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-mark">K</div>
+    <div class="logo-text">The KPI Hub</div>
+  </div>
+  <h1>Choose your plan</h1>
+  <p class="subtitle">All plans include free setup, 24/7 support, and a 14-day free trial.</p>
+</div>
+
+<div id="upgradeNote"></div>
+
+<div class="container">
+  <!-- Starter -->
+  <div class="plan" id="plan-starter">
+    <div class="plan-name">Starter</div>
+    <div class="plan-price">
+      <span class="price-currency">$</span><span class="price-amount">29</span><span class="price-period">/mo</span>
+    </div>
+    <p class="plan-desc">Perfect for tracking essential KPIs and getting started with data-driven insights.</p>
+    <div class="features">
+      <div class="feature"><span class="feature-icon">✓</span> Up to 5 KPIs</div>
+      <div class="feature"><span class="feature-icon">✓</span> Manual data entry</div>
+      <div class="feature"><span class="feature-icon">✓</span> Basic dashboards</div>
+      <div class="feature"><span class="feature-icon">✓</span> Email support</div>
+      <div class="feature disabled"><span class="feature-icon">✗</span> Anomaly detection</div>
+      <div class="feature disabled"><span class="feature-icon">✗</span> Automation workflows</div>
+    </div>
+    <button class="btn btn-secondary" id="btn-starter" onclick="selectPlan('starter')">Current Plan</button>
+  </div>
+
+  <!-- Growth -->
+  <div class="plan featured" id="plan-growth">
+    <div class="badge">Recommended</div>
+    <div class="plan-name">Growth</div>
+    <div class="plan-price">
+      <span class="price-currency">$</span><span class="price-amount">99</span><span class="price-period">/mo</span>
+    </div>
+    <p class="plan-desc">Advanced analytics with automatic anomaly detection and root-cause analysis for teams.</p>
+    <div class="features">
+      <div class="feature"><span class="feature-icon">✓</span> Up to 50 KPIs</div>
+      <div class="feature"><span class="feature-icon">✓</span> API integrations</div>
+      <div class="feature"><span class="feature-icon">✓</span> Advanced dashboards</div>
+      <div class="feature"><span class="feature-icon">✓</span> Anomaly Root-Cause Engine™</div>
+      <div class="feature"><span class="feature-icon">✓</span> Team collaboration</div>
+      <div class="feature disabled"><span class="feature-icon">✗</span> Automation workflows</div>
+    </div>
+    <button class="btn btn-primary" id="btn-growth" onclick="selectPlan('growth')">Upgrade to Growth</button>
+  </div>
+
+  <!-- Enterprise -->
+  <div class="plan" id="plan-enterprise">
+    <div class="plan-name">Enterprise</div>
+    <div class="plan-price">
+      <span class="price-currency">$</span><span class="price-amount">499</span><span class="price-period">/mo</span>
+    </div>
+    <p class="plan-desc">Full-stack operational intelligence with unlimited KPIs, automations, and white-label support.</p>
+    <div class="features">
+      <div class="feature"><span class="feature-icon">✓</span> Unlimited KPIs</div>
+      <div class="feature"><span class="feature-icon">✓</span> Anomaly Root-Cause Engine™</div>
+      <div class="feature"><span class="feature-icon">✓</span> Automation Workflow Builder™</div>
+      <div class="feature"><span class="feature-icon">✓</span> Full API access</div>
+      <div class="feature"><span class="feature-icon">✓</span> White-label branding</div>
+      <div class="feature"><span class="feature-icon">✓</span> Priority 24/7 support</div>
+    </div>
+    <button class="btn btn-primary" id="btn-enterprise" onclick="selectPlan('enterprise')">Upgrade to Enterprise</button>
+  </div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+  const { createClient } = supabase;
+  const sb = createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+  const stripe = Stripe(CONFIG.stripe.publishableKey);
+
+  let currentUser = null;
+  let profile = null;
+
+  const $ = id => document.getElementById(id);
+
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = CONFIG.app.loginUrl; return; }
+
+    currentUser = session.user;
+    const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    profile = data;
+
+    renderUI();
+  }
+
+  function renderUI() {
+    // Show upgrade note for current plan
+    const notes = {
+      starter: 'You\'re on the Starter plan. Your KPIs are tracking — but when something breaks, you\'re the last to know why. Growth unlocks the Anomaly Root-Cause Engine™ — every drop traced to its cause, every fix suggested before the damage compounds.',
+      growth: 'You\'re on the Growth plan. Ready for full automation? Enterprise\'s Automation Workflow Builder™ turns every KPI threshold into automatic action.',
+      enterprise: 'You\'re already on the Enterprise plan. You have access to all features.'
+    };
+
+    const note = $('upgradeNote');
+    note.innerHTML = `<strong>Current:</strong> ${profile.plan.charAt(0).toUpperCase() + profile.plan.slice(1)} Plan — ${notes[profile.plan]}`;
+
+    // Update button states
+    const planButtons = {
+      starter: ['btn-starter', 'btn-growth', 'btn-enterprise'],
+      growth: ['btn-growth', 'btn-starter', 'btn-enterprise'],
+      enterprise: ['btn-enterprise', 'btn-growth', 'btn-starter']
+    };
+
+    const [current, ...others] = planButtons[profile.plan];
+    $(current).textContent = 'Current Plan';
+    $(current).disabled = true;
+
+    others.forEach(btn => {
+      const plan = btn.split('-')[1];
+      if (plan !== profile.plan) {
+        $(btn).className = 'btn btn-primary';
+        $(btn).textContent = 'Upgrade to ' + plan.charAt(0).toUpperCase() + plan.slice(1);
+      }
+    });
+  }
+
+  async function selectPlan(plan) {
+    if (plan === profile.plan) return;
+
+    const priceId = CONFIG.stripe.prices[plan];
+    if (!priceId) { alert('Invalid plan selection.'); return; }
+
+    const btn = $('btn-' + plan);
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Preparing checkout…';
+
+    try {
+      const response = await fetch('https://kpihub-backend-821108037779.asia-south1.run.app/stripe-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          price_id: priceId,
+          user_id: currentUser.id,
+          email: profile.email,
+          plan: plan
+        })
+      });
+
+      const data = await response.json();
+      if (!data.clientSecret) { alert('Failed to create checkout session.'); btn.disabled = false; btn.textContent = 'Upgrade'; return; }
+
+      // Mount embedded checkout
+      showEmbeddedCheckout(data.clientSecret);
+    } catch (err) {
+      alert('Error: ' + err.message);
+      btn.disabled = false;
+      btn.innerHTML = 'Upgrade to ' + plan.charAt(0).toUpperCase() + plan.slice(1);
+    }
+  }
+
+  function showEmbeddedCheckout(clientSecret) {
+    // Create a modal for the embedded checkout
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:999; display:flex; align-items:center; justify-content:center; padding:20px;';
+    modal.innerHTML = `
+      <div style="background:var(--surface); border-radius:16px; width:100%; max-width:600px; padding:0; position:relative;">
+        <button onclick="this.closest('div').remove(); location.reload();" style="position:absolute; top:16px; right:16px; background:none; border:none; color:var(--text); font-size:20px; cursor:pointer;">×</button>
+        <div id="embedded-checkout" style="padding:32px;"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Mount the embedded checkout
+    stripe.initEmbeddedCheckout({ clientSecret }).then((checkout) => {
+      checkout.mount('#embedded-checkout');
+    });
+  }
+
+  init();
+</script>
+<script src="/gk-shortcut.js?v=a3bb6e13"></script>
+</body>
+</html>

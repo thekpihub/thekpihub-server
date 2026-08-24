@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-site-verification" content="yRGmgTNjIHFmLom_ZrczRQpmaJkf2SpAZWR75g3g71k">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Privacy Policy — The KPI Hub. How we collect, use, and protect your personal data.">
+    <title>Privacy Policy — The KPI Hub</title>
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thekpihub.com/privacy.html">
+    <meta property="og:title" content="Privacy Policy — The KPI Hub">
+    <meta property="og:description" content="Privacy Policy — The KPI Hub. How we collect, use, and protect your personal data.">
+    <meta property="og:image" content="https://thekpihub.com/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Privacy Policy — The KPI Hub">
+    <meta name="twitter:description" content="Privacy Policy — The KPI Hub. How we collect, use, and protect your personal data.">
+    <meta name="twitter:image" content="https://thekpihub.com/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+
+    <style>
+        /* =============================================
+           VARIABLES
+        ============================================= */
+        :root {
+            --bg:        #06071A;
+            --bg2:       #0C0E28;
+            --card:      rgba(255,255,255,0.04);
+            --gold:      #E9A123;
+            --gold-glow: rgba(233,161,35,0.18);
+            --gold-rim:  rgba(233,161,35,0.28);
+            --teal:      #00C9A7;
+            --teal-glow: rgba(0,201,167,0.12);
+            --red:       #FF6B6B;
+            --text:      #EAEDF5;
+            --text2:     rgba(234,237,245,0.62);
+            --text3:     rgba(234,237,245,0.32);
+            --border:    rgba(255,255,255,0.08);
+            --r:         12px;
+            --max:       1180px;
+            --display:   'Cormorant Garamond', serif;
+            --head:      'Syne', sans-serif;
+            --body:      'DM Sans', sans-serif;
+        }
+
+        /* =============================================
+           RESET
+        ============================================= */
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior:smooth; font-size:16px; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--body);
+            font-weight: 400;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        a { color: var(--gold); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--text); }
+        img { max-width:100%; display:block; }
+        button { cursor:pointer; }
+
+        ::-webkit-scrollbar { width:5px; }
+        ::-webkit-scrollbar-track { background:var(--bg); }
+        ::-webkit-scrollbar-thumb { background:var(--gold); border-radius:3px; }
+
+        /* =============================================
+           NAV
+        ============================================= */
+        nav {
+            position: fixed; top:0; left:0; right:0; z-index:100;
+            padding: 18px 48px;
+            display: flex; align-items:center; justify-content:space-between;
+            background: rgba(6,7,26,0.88);
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--border);
+        }
+        .logo {
+            font-family: var(--head);
+            font-size: 1.25rem; font-weight:800;
+            letter-spacing:-0.02em;
+            display:flex; align-items:center; gap:9px;
+            color: var(--text);
+        }
+        .logo-accent { color:var(--gold); }
+        .logo-dot {
+            width:8px; height:8px; border-radius:50%;
+            background:var(--gold);
+            animation: blink 2s ease infinite;
+        }
+        .nav-links {
+            display:flex; gap:36px; list-style:none;
+        }
+        .nav-links a {
+            font-family:var(--head); font-size:0.78rem; font-weight:600;
+            letter-spacing:0.07em; text-transform:uppercase;
+            color:var(--text2); transition:color 0.2s;
+        }
+        .nav-links a:hover { color:var(--text); }
+        .nav-btn {
+            font-family:var(--head); font-size:0.78rem; font-weight:700;
+            letter-spacing:0.06em; text-transform:uppercase;
+            padding:10px 26px; background:var(--gold); color:var(--bg);
+            border-radius:6px; border:none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .nav-btn:hover {
+            transform:translateY(-1px);
+            box-shadow: 0 8px 30px rgba(233,161,35,0.4);
+        }
+
+        /* =============================================
+           HERO
+        ============================================= */
+        .page-hero {
+            padding: 140px 48px 80px;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+        .page-hero::before {
+            content:'';
+            position:absolute; inset:0;
+            background-image:
+                linear-gradient(rgba(233,161,35,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(233,161,35,0.04) 1px, transparent 1px);
+            background-size:64px 64px;
+        }
+        .page-hero::after {
+            content:'';
+            position:absolute; top:-200px; left:50%; transform:translateX(-50%);
+            width:700px; height:500px;
+            background: radial-gradient(ellipse, rgba(233,161,35,0.1) 0%, transparent 65%);
+            pointer-events:none;
+        }
+        .hero-inner { position:relative; z-index:2; max-width:720px; margin:0 auto; }
+        .hero-label {
+            display:inline-flex; align-items:center; gap:8px;
+            font-family: var(--head); font-size:0.7rem; font-weight:700;
+            letter-spacing:0.12em; text-transform:uppercase; color:var(--gold);
+            background: var(--gold-glow); border:1px solid var(--gold-rim);
+            padding:6px 18px; border-radius:100px; margin-bottom:28px;
+        }
+        .hero-label-dot { width:5px; height:5px; border-radius:50%; background:var(--teal); animation:blink 1.5s ease infinite; }
+        .page-title {
+            font-family: var(--display);
+            font-size: clamp(2.8rem, 6vw, 4.8rem);
+            font-weight:700; line-height:1.1; letter-spacing:-0.02em;
+            margin-bottom:20px;
+        }
+        .page-title em { font-style:italic; color:var(--gold); }
+        .page-sub {
+            font-size:1rem; color:var(--text2); line-height:1.75;
+            max-width:540px; margin:0 auto 24px;
+        }
+        .meta-row {
+            display:flex; align-items:center; justify-content:center; gap:24px; flex-wrap:wrap;
+            font-family:var(--head); font-size:0.72rem; font-weight:600;
+            letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);
+        }
+        .meta-row span { display:flex; align-items:center; gap:6px; }
+        .meta-dot { width:4px; height:4px; border-radius:50%; background:var(--text3); }
+
+        /* =============================================
+           CONTENT LAYOUT
+        ============================================= */
+        .content-wrap {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 72px 48px 100px;
+        }
+
+        /* TOC */
+        .toc-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 32px 36px;
+            margin-bottom: 56px;
+        }
+        .toc-card h2 {
+            font-family: var(--head); font-size:0.72rem; font-weight:700;
+            letter-spacing:0.12em; text-transform:uppercase; color:var(--gold);
+            margin-bottom:18px;
+        }
+        .toc-list { list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:6px 24px; }
+        .toc-list li a {
+            font-family:var(--head); font-size:0.8rem; font-weight:500;
+            color:var(--text2); display:flex; align-items:center; gap:8px;
+            padding:4px 0; transition:color 0.2s;
+        }
+        .toc-list li a:hover { color:var(--gold); }
+        .toc-num { color:var(--gold); font-weight:700; min-width:22px; }
+
+        /* Sections */
+        .policy-section {
+            margin-bottom: 64px;
+            scroll-margin-top: 100px;
+        }
+        .section-header {
+            display:flex; align-items:flex-start; gap:16px;
+            margin-bottom:24px;
+        }
+        .section-num {
+            font-family: var(--head); font-size:0.7rem; font-weight:800;
+            letter-spacing:0.1em; text-transform:uppercase;
+            color:var(--gold); background:var(--gold-glow);
+            border:1px solid var(--gold-rim); border-radius:6px;
+            padding:5px 10px; white-space:nowrap; margin-top:4px;
+        }
+        .section-title {
+            font-family: var(--head); font-size:1.4rem; font-weight:700;
+            letter-spacing:-0.01em; color:var(--text);
+        }
+        .policy-section p {
+            color:var(--text2); font-size:0.95rem; margin-bottom:14px;
+        }
+        .policy-section p:last-child { margin-bottom:0; }
+        .policy-section h4 {
+            font-family:var(--head); font-size:0.88rem; font-weight:700;
+            color:var(--text); margin:24px 0 10px; letter-spacing:0.01em;
+        }
+        .policy-section ul, .policy-section ol {
+            padding-left:0; list-style:none; margin-bottom:14px;
+        }
+        .policy-section ul li, .policy-section ol li {
+            position:relative; padding-left:20px; color:var(--text2);
+            font-size:0.95rem; margin-bottom:8px;
+        }
+        .policy-section ul li::before {
+            content:'—'; position:absolute; left:0; color:var(--gold);
+            font-size:0.8rem; top:1px;
+        }
+        .policy-section ol { counter-reset:item; }
+        .policy-section ol li { counter-increment:item; }
+        .policy-section ol li::before {
+            content:counter(item)'.'; position:absolute; left:0; color:var(--gold);
+            font-size:0.85rem; font-weight:700; font-family:var(--head);
+        }
+
+        /* Highlight box */
+        .highlight-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--gold);
+            border-radius: var(--r);
+            padding:20px 24px; margin:20px 0;
+        }
+        .highlight-box p { margin:0; font-size:0.9rem; color:var(--text2); }
+        .highlight-box strong { color:var(--gold); }
+
+        .teal-box {
+            background: var(--teal-glow);
+            border: 1px solid rgba(0,201,167,0.2);
+            border-left: 3px solid var(--teal);
+            border-radius: var(--r);
+            padding:20px 24px; margin:20px 0;
+        }
+        .teal-box p { margin:0; font-size:0.9rem; color:var(--text2); }
+        .teal-box strong { color:var(--teal); }
+
+        .red-box {
+            background: rgba(255,107,107,0.06);
+            border: 1px solid rgba(255,107,107,0.18);
+            border-left: 3px solid var(--red);
+            border-radius: var(--r);
+            padding:20px 24px; margin:20px 0;
+        }
+        .red-box p { margin:0; font-size:0.9rem; color:var(--text2); }
+        .red-box strong { color:var(--red); }
+
+        /* Table */
+        .table-wrap { overflow-x:auto; margin:20px 0; }
+        table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+        th {
+            font-family:var(--head); font-size:0.68rem; font-weight:700;
+            letter-spacing:0.1em; text-transform:uppercase; color:var(--gold);
+            padding:12px 16px; background:rgba(233,161,35,0.06);
+            border-bottom:1px solid var(--border); text-align:left;
+        }
+        td {
+            padding:12px 16px; color:var(--text2);
+            border-bottom:1px solid var(--border); vertical-align:top;
+        }
+        tr:last-child td { border-bottom:none; }
+        tr:hover td { background:rgba(255,255,255,0.02); }
+
+        /* Rights grid */
+        .rights-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:20px 0; }
+        .right-card {
+            background:var(--card); border:1px solid var(--border);
+            border-radius:var(--r); padding:20px;
+        }
+        .right-card h5 {
+            font-family:var(--head); font-size:0.8rem; font-weight:700;
+            color:var(--text); margin-bottom:8px;
+        }
+        .right-card p { font-size:0.85rem; color:var(--text2); margin:0; }
+        .right-card .rc-label {
+            font-family:var(--head); font-size:0.62rem; font-weight:700;
+            letter-spacing:0.1em; text-transform:uppercase;
+            color:var(--gold); margin-bottom:10px; display:block;
+        }
+
+        /* Divider */
+        .section-divider {
+            width:100%; height:1px;
+            background:var(--border); margin:64px 0;
+        }
+
+        /* =============================================
+           FOOTER
+        ============================================= */
+        footer {
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            padding: 64px 0 32px;
+        }
+        .wrap { max-width:var(--max); margin:0 auto; padding:0 48px; }
+        .foot-top {
+            display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:48px;
+            margin-bottom:48px;
+        }
+        .foot-brand .logo { font-family:var(--head); font-size:1.15rem; font-weight:800; letter-spacing:-0.02em; display:flex; align-items:center; gap:9px; color:var(--text); margin-bottom:14px; }
+        .foot-tag { font-size:0.88rem; color:var(--text3); line-height:1.6; }
+        .foot-group h4 {
+            font-family:var(--head); font-size:0.68rem; font-weight:700;
+            letter-spacing:0.12em; text-transform:uppercase; color:var(--text3);
+            margin-bottom:18px;
+        }
+        .foot-group ul { list-style:none; }
+        .foot-group ul li { margin-bottom:10px; }
+        .foot-group ul li a {
+            font-size:0.88rem; color:var(--text2); transition:color 0.2s;
+        }
+        .foot-group ul li a:hover { color:var(--gold); }
+        .foot-bottom {
+            display:flex; align-items:center; justify-content:space-between;
+            padding-top:32px; border-top:1px solid var(--border);
+        }
+        .foot-copy, .foot-made { font-size:0.82rem; color:var(--text3); }
+        .foot-copy a { color:var(--text2); }
+        .foot-copy a:hover { color:var(--gold); }
+
+        /* =============================================
+           ANIMATIONS
+        ============================================= */
+        @keyframes blink {
+            0%,100%{opacity:1;} 50%{opacity:0.3;}
+        }
+        @keyframes fadeUp {
+            from{opacity:0;transform:translateY(24px);}
+            to{opacity:1;transform:translateY(0);}
+        }
+
+        /* =============================================
+           RESPONSIVE
+        ============================================= */
+        @media(max-width:768px) {
+            nav { padding:16px 24px; }
+            .nav-links { display:none; }
+            .page-hero { padding:120px 24px 60px; }
+            .content-wrap { padding:48px 24px 80px; }
+            .toc-list { grid-template-columns:1fr; }
+            .rights-grid { grid-template-columns:1fr; }
+            .wrap { padding:0 24px; }
+            .foot-top { grid-template-columns:1fr 1fr; gap:32px; }
+            .foot-bottom { flex-direction:column; gap:8px; text-align:center; }
+        }
+    </style>
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DZPCCPEP1J"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-DZPCCPEP1J');
+    </script>
+
+<link rel="canonical" href="https://thekpihub.com/privacy.html">
+    <meta name="robots" content="index, follow">
+        <!-- Microsoft Clarity -->
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wdshn14xgf");
+    </script>
+</head>
+<body>
+
+    <!-- NAV -->
+    <nav>
+        <div class="logo">
+            <div class="logo-dot"></div>
+            The <span class="logo-accent">KPI</span> Hub
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="intelligence.html">Intelligence</a></li>
+            <li><a href="directory.html">Directory</a></li>
+            <li><a href="about.html">About</a></li>
+        </ul>
+        <a href="get-audit.html"><button class="nav-btn">Get My KPI Audit →</button></a>
+    </nav>
+
+    <!-- HERO -->
+    <section class="page-hero">
+        <div class="hero-inner">
+            <div class="hero-label">
+                <span class="hero-label-dot"></span>
+                Legal &amp; Compliance
+            </div>
+            <h1 class="page-title">Privacy <em>Policy</em></h1>
+            <p class="page-sub">How The KPI Hub collects, uses, and protects your personal information — in plain language, with full legal compliance.</p>
+            <div class="meta-row">
+                <span>Version 1.0</span>
+                <span class="meta-dot"></span>
+                <span>Effective: April 3, 2026</span>
+                <span class="meta-dot"></span>
+                <span>GDPR · CCPA · India DPDP Act 2023</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTENT -->
+    <main class="content-wrap">
+
+        <!-- TABLE OF CONTENTS -->
+        <div class="toc-card">
+            <h2>Table of Contents</h2>
+            <ol class="toc-list">
+                <li><a href="#s1"><span class="toc-num">01</span> Who We Are &amp; Data Controller</a></li>
+                <li><a href="#s2"><span class="toc-num">02</span> Data We Collect</a></li>
+                <li><a href="#s3"><span class="toc-num">03</span> Why We Collect It (Legal Bases)</a></li>
+                <li><a href="#s4"><span class="toc-num">04</span> Chatbot &amp; AI Disclosure</a></li>
+                <li><a href="#s5"><span class="toc-num">05</span> Cookies &amp; Tracking</a></li>
+                <li><a href="#s6"><span class="toc-num">06</span> Data Retention</a></li>
+                <li><a href="#s7"><span class="toc-num">07</span> Third-Party Processors</a></li>
+                <li><a href="#s8"><span class="toc-num">08</span> International Transfers</a></li>
+                <li><a href="#s9"><span class="toc-num">09</span> Your Rights — GDPR</a></li>
+                <li><a href="#s10"><span class="toc-num">10</span> Your Rights — CCPA</a></li>
+                <li><a href="#s11"><span class="toc-num">11</span> Your Rights — India DPDP</a></li>
+                <li><a href="#s12"><span class="toc-num">12</span> Do Not Sell My Information</a></li>
+                <li><a href="#s13"><span class="toc-num">13</span> Marketing Communications</a></li>
+                <li><a href="#s14"><span class="toc-num">14</span> Children's Privacy</a></li>
+                <li><a href="#s15"><span class="toc-num">15</span> Security</a></li>
+                <li><a href="#s16"><span class="toc-num">16</span> Policy Updates</a></li>
+                <li><a href="#s17"><span class="toc-num">17</span> Contact &amp; Grievance Officer</a></li>
+                <li><a href="#s18"><span class="toc-num">18</span> Version History</a></li>
+            </ol>
+        </div>
+
+        <div class="highlight-box">
+            <p><strong>Plain-language summary:</strong> We collect your email, name, usage behaviour, and chatbot conversations to run our platform. We do not sell your data. You can request deletion, correction, or export at any time. This policy is governed by Indian law and also complies with GDPR (EU) and CCPA (California).</p>
+        </div>
+
+        <!-- S1 -->
+        <section class="policy-section" id="s1">
+            <div class="section-header">
+                <span class="section-num">01</span>
+                <h2 class="section-title">Who We Are &amp; Data Controller</h2>
+            </div>
+            <p>The KPI Hub ("we", "us", "our") is an intelligence platform providing AI-synthesised SaaS insights, benchmarks, and directory services to professionals. The KPI Hub is operated from Delhi, India.</p>
+            <p>For the purposes of applicable data protection law, The KPI Hub is the <strong>data controller</strong> and/or <strong>data fiduciary</strong> of personal data processed through the website <a href="https://thekpihub.com">thekpihub.com</a> and its associated services.</p>
+            <div class="highlight-box">
+                <p><strong>Data Controller / Data Fiduciary:</strong> The KPI Hub, Delhi, India<br>
+                <strong>Contact:</strong> <a href="mailto:info@thekpihub.com">info@thekpihub.com</a></p>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S2 -->
+        <section class="policy-section" id="s2">
+            <div class="section-header">
+                <span class="section-num">02</span>
+                <h2 class="section-title">Data We Collect</h2>
+            </div>
+            <p>We collect personal data in the following categories:</p>
+
+            <h4>2.1 Data You Provide Directly</h4>
+            <ul>
+                <li><strong>Identity data:</strong> first name, last name, professional role, company name</li>
+                <li><strong>Contact data:</strong> email address</li>
+                <li><strong>Account credentials:</strong> password (stored as a bcrypt hash; never in plaintext)</li>
+                <li><strong>Communication data:</strong> messages you send us via contact forms or email</li>
+                <li><strong>Waitlist data:</strong> email address and any optional fields submitted via our early-access form</li>
+            </ul>
+
+            <h4>2.2 Data We Collect Automatically</h4>
+            <ul>
+                <li><strong>Usage data:</strong> pages visited, features accessed, click patterns, session duration, feature flags triggered</li>
+                <li><strong>Device &amp; technical data:</strong> IP address, browser type and version, operating system, screen resolution, time zone</li>
+                <li><strong>Referring URL:</strong> the page or source from which you arrived at thekpihub.com</li>
+                <li><strong>Log data:</strong> server access logs including timestamps, HTTP status codes, and request paths</li>
+            </ul>
+
+            <h4>2.3 Chatbot / AI Conversation Data</h4>
+            <ul>
+                <li><strong>Conversation logs:</strong> all text you enter into our AI-powered chatbot or intelligence assistant, including queries, follow-up messages, and session context</li>
+                <li><strong>Session metadata:</strong> timestamps, session identifiers, and outcome signals (thumbs-up/down ratings)</li>
+            </ul>
+
+            <h4>2.4 Cookie &amp; Tracker Data</h4>
+            <p>We use cookies and similar technologies. See Section 5 and our full <a href="cookies.html">Cookie Policy</a> for details.</p>
+
+            <h4>2.5 Data We Do Not Collect</h4>
+            <ul>
+                <li>Payment card numbers or banking details (we use third-party payment processors)</li>
+                <li>Government-issued identification numbers (Aadhaar, PAN, Social Security, passport) unless you voluntarily provide them</li>
+                <li>Sensitive personal data such as racial or ethnic origin, health data, or biometric identifiers</li>
+            </ul>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S3 -->
+        <section class="policy-section" id="s3">
+            <div class="section-header">
+                <span class="section-num">03</span>
+                <h2 class="section-title">Why We Collect It — Legal Bases</h2>
+            </div>
+            <p>We process your personal data only where we have a valid legal basis. The table below maps each processing activity to its purpose and legal basis:</p>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Processing Activity</th>
+                            <th>Purpose</th>
+                            <th>Legal Basis (GDPR)</th>
+                            <th>DPDP Basis</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Account creation &amp; login</td>
+                            <td>Deliver platform services</td>
+                            <td>Contract performance (Art. 6(1)(b))</td>
+                            <td>Consent / Legitimate use</td>
+                        </tr>
+                        <tr>
+                            <td>Waitlist registration</td>
+                            <td>Notify you of access</td>
+                            <td>Contract (pre-contractual steps)</td>
+                            <td>Consent</td>
+                        </tr>
+                        <tr>
+                            <td>Platform analytics</td>
+                            <td>Improve product features</td>
+                            <td>Legitimate interests (Art. 6(1)(f))</td>
+                            <td>Legitimate use</td>
+                        </tr>
+                        <tr>
+                            <td>Security &amp; fraud prevention</td>
+                            <td>Protect platform integrity</td>
+                            <td>Legitimate interests (Art. 6(1)(f))</td>
+                            <td>Legitimate use</td>
+                        </tr>
+                        <tr>
+                            <td>Marketing emails &amp; newsletters</td>
+                            <td>Inform you of updates</td>
+                            <td>Consent (Art. 6(1)(a))</td>
+                            <td>Consent</td>
+                        </tr>
+                        <tr>
+                            <td>Chatbot conversations</td>
+                            <td>Deliver AI responses; improve models</td>
+                            <td>Contract + Legitimate interests</td>
+                            <td>Consent / Legitimate use</td>
+                        </tr>
+                        <tr>
+                            <td>Legal compliance</td>
+                            <td>Comply with applicable law</td>
+                            <td>Legal obligation (Art. 6(1)(c))</td>
+                            <td>Legal obligation</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4>Legitimate Interests Assessment</h4>
+            <p>Where we rely on legitimate interests, we have assessed that our interests (platform security, product improvement) are not overridden by your fundamental rights. You may object to legitimate-interest processing at any time (see Section 9).</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S4 -->
+        <section class="policy-section" id="s4">
+            <div class="section-header">
+                <span class="section-num">04</span>
+                <h2 class="section-title">Chatbot &amp; AI Disclosure</h2>
+            </div>
+            <div class="teal-box">
+                <p><strong>AI-Powered Feature Notice:</strong> Our intelligence assistant and chatbot features are powered by third-party AI systems (including large language models). Conversations you have with these features are processed by AI, not exclusively by a human.</p>
+            </div>
+            <p>Specifically:</p>
+            <ul>
+                <li>Text you enter into the chatbot is transmitted to our AI inference provider(s) for processing and response generation.</li>
+                <li>Conversation logs may be retained for up to 12 months for quality assurance, safety monitoring, and model fine-tuning, unless you request earlier deletion.</li>
+                <li>Our AI features are designed for professional informational purposes only. Do not enter sensitive personal data, confidential business secrets, or financial credentials into the chatbot.</li>
+                <li>AI responses may contain errors or inaccuracies. We do not guarantee the accuracy of AI-generated content.</li>
+                <li>Conversations are not used to build individual user profiles for advertising.</li>
+            </ul>
+            <p>For a list of third-party AI providers, see Section 7.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S5 -->
+        <section class="policy-section" id="s5">
+            <div class="section-header">
+                <span class="section-num">05</span>
+                <h2 class="section-title">Cookies &amp; Tracking Technologies</h2>
+            </div>
+            <p>We use cookies, local storage, and similar technologies to operate our platform, understand usage patterns, and deliver personalised experiences. Categories include:</p>
+            <ul>
+                <li><strong>Strictly Necessary:</strong> Essential for the platform to function (session management, security tokens). Cannot be disabled.</li>
+                <li><strong>Functional / Preference:</strong> Remember your settings and preferences.</li>
+                <li><strong>Analytics / Performance:</strong> Understand how users interact with our platform (e.g., Google Analytics).</li>
+                <li><strong>Marketing / Targeting:</strong> Used to deliver relevant content and measure campaign effectiveness.</li>
+            </ul>
+            <p>For a full list of cookies, duration, providers, and opt-out instructions, see our <a href="cookies.html">Cookie Policy</a>.</p>
+            <p>You may withdraw consent for non-essential cookies at any time by clicking "Cookie Settings" in the footer or clearing your browser cookies.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S6 -->
+        <section class="policy-section" id="s6">
+            <div class="section-header">
+                <span class="section-num">06</span>
+                <h2 class="section-title">Data Retention</h2>
+            </div>
+            <p>We retain your personal data only for as long as necessary for the purposes described in this policy, or as required by law.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data Category</th>
+                            <th>Retention Period</th>
+                            <th>Basis</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Account &amp; profile data</td>
+                            <td>Duration of account + 2 years post-closure</td>
+                            <td>Contract; legal obligation</td>
+                        </tr>
+                        <tr>
+                            <td>Waitlist registrations</td>
+                            <td>Until launch or 2 years, whichever is earlier</td>
+                            <td>Consent</td>
+                        </tr>
+                        <tr>
+                            <td>Usage &amp; analytics data</td>
+                            <td>26 months (Google Analytics default)</td>
+                            <td>Legitimate interests</td>
+                        </tr>
+                        <tr>
+                            <td>Chatbot conversation logs</td>
+                            <td>12 months from session date</td>
+                            <td>Contract; legitimate interests</td>
+                        </tr>
+                        <tr>
+                            <td>Marketing consent records</td>
+                            <td>5 years from consent or withdrawal</td>
+                            <td>Legal obligation</td>
+                        </tr>
+                        <tr>
+                            <td>Server access logs</td>
+                            <td>90 days</td>
+                            <td>Legitimate interests (security)</td>
+                        </tr>
+                        <tr>
+                            <td>Support communications</td>
+                            <td>3 years from closure of ticket</td>
+                            <td>Legitimate interests; legal obligation</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>After the applicable retention period, data is securely deleted or anonymised.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S7 -->
+        <section class="policy-section" id="s7">
+            <div class="section-header">
+                <span class="section-num">07</span>
+                <h2 class="section-title">Third-Party Processors</h2>
+            </div>
+            <p>We engage third-party service providers (data processors) who act on our instructions. All processors are bound by data processing agreements ensuring equivalent data protection standards.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Processor</th>
+                            <th>Service Category</th>
+                            <th>Data Transferred</th>
+                            <th>Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Google Analytics</td>
+                            <td>Web analytics</td>
+                            <td>Usage, device, IP (anonymised)</td>
+                            <td>USA</td>
+                        </tr>
+                        <tr>
+                            <td>Email service provider (e.g., Mailchimp / Brevo)</td>
+                            <td>Transactional &amp; marketing email</td>
+                            <td>Name, email address</td>
+                            <td>USA / EU</td>
+                        </tr>
+                        <tr>
+                            <td>AI inference provider (e.g., OpenAI / Anthropic)</td>
+                            <td>AI / LLM chatbot processing</td>
+                            <td>Chatbot conversation text</td>
+                            <td>USA</td>
+                        </tr>
+                        <tr>
+                            <td>Cloud hosting provider (e.g., AWS / GCP / Vercel)</td>
+                            <td>Infrastructure &amp; hosting</td>
+                            <td>All platform data</td>
+                            <td>USA / India</td>
+                        </tr>
+                        <tr>
+                            <td>Payment processor (future)</td>
+                            <td>Subscription billing</td>
+                            <td>Billing name, email; no card data</td>
+                            <td>TBD</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>We do not sell, trade, or rent personal data to third parties for their own marketing purposes.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S8 -->
+        <section class="policy-section" id="s8">
+            <div class="section-header">
+                <span class="section-num">08</span>
+                <h2 class="section-title">International Data Transfers</h2>
+            </div>
+            <p>The KPI Hub is based in India. Some of our service providers are located in the United States and the European Union. When we transfer personal data outside India (or outside the EEA for EU data subjects), we implement appropriate safeguards:</p>
+            <ul>
+                <li><strong>EU/EEA to India transfers:</strong> We rely on Standard Contractual Clauses (SCCs) as approved by the European Commission (Commission Decision 2021/914) or other lawful transfer mechanisms.</li>
+                <li><strong>India to USA transfers:</strong> We rely on contractual protections and, where applicable, the adequacy framework under the India DPDP Act 2023 as it evolves.</li>
+                <li><strong>Adequacy decisions:</strong> Where the European Commission has issued an adequacy decision for a recipient country, we may rely on that decision.</li>
+            </ul>
+            <div class="highlight-box">
+                <p><strong>EU Residents:</strong> You may request a copy of the Standard Contractual Clauses governing your data transfers by contacting us at <a href="mailto:info@thekpihub.com">info@thekpihub.com</a>.</p>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S9 -->
+        <section class="policy-section" id="s9">
+            <div class="section-header">
+                <span class="section-num">09</span>
+                <h2 class="section-title">Your Rights — GDPR (EU / EEA Residents)</h2>
+            </div>
+            <p>If you are located in the European Union or EEA, you have the following rights under the General Data Protection Regulation (GDPR):</p>
+            <div class="rights-grid">
+                <div class="right-card">
+                    <span class="rc-label">Art. 15</span>
+                    <h5>Right of Access</h5>
+                    <p>Obtain a copy of your personal data and information about how it is processed.</p>
+                </div>
+                <div class="right-card">
+                    <span class="rc-label">Art. 16</span>
+                    <h5>Right to Rectification</h5>
+                    <p>Correct inaccurate or incomplete personal data held about you.</p>
+                </div>
+                <div class="right-card">
+                    <span class="rc-label">Art. 17</span>
+                    <h5>Right to Erasure ("Right to be Forgotten")</h5>
+                    <p>Request deletion of your personal data where there is no compelling reason for continued processing.</p>
+                </div>
+                <div class="right-card">
+                    <span class="rc-label">Art. 18</span>
+                    <h5>Right to Restriction</h5>
+                    <p>Restrict processing of your data in certain circumstances.</p>
+                </div>
+                <div class="right-card">
+                    <span class="rc-label">Art. 20</span>
+                    <h5>Right to Portability</h5>
+                    <p>Receive your data in a structured, machine-readable format and transfer it to another controller.</p>
+                </div>
+                <div class="right-card">
+                    <span class="rc-label">Art. 21</span>
+                    <h5>Right to Object</h5>
+                    <p>Object to processing based on legitimate interests or direct marketing at any time.</p>
+                </div>
+                <div class="right-card">
+                    <span class="rc-label">Art. 22</span>
+                    <h5>Automated Decision-Making</h5>
+                    <p>Not be subject to solely automated decisions with significant effects without human review.</p>
+                </div>
+                <div class="right-card">
+                    <span class="rc-label">Art. 7(3)</span>
+                    <h5>Withdraw Consent</h5>
+                    <p>Withdraw any previously given consent at any time without affecting lawfulness of prior processing.</p>
+                </div>
+            </div>
+            <p>To exercise any GDPR right, contact us at <a href="mailto:info@thekpihub.com">info@thekpihub.com</a>. We will respond within <strong>30 calendar days</strong> (extendable by a further 60 days for complex requests). You also have the right to lodge a complaint with your local supervisory authority.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S10 -->
+        <section class="policy-section" id="s10">
+            <div class="section-header">
+                <span class="section-num">10</span>
+                <h2 class="section-title">Your Rights — CCPA (California Residents)</h2>
+            </div>
+            <p>If you are a California resident, the California Consumer Privacy Act (CCPA) as amended by the CPRA grants you the following rights:</p>
+            <ul>
+                <li><strong>Right to Know:</strong> Request disclosure of personal information collected, used, disclosed, and sold about you in the past 12 months.</li>
+                <li><strong>Right to Delete:</strong> Request deletion of personal information we have collected from you, subject to certain exceptions.</li>
+                <li><strong>Right to Correct:</strong> Request correction of inaccurate personal information.</li>
+                <li><strong>Right to Opt-Out of Sale or Sharing:</strong> We do not sell or share your personal information for cross-context behavioural advertising. See Section 12.</li>
+                <li><strong>Right to Limit Use of Sensitive Personal Information:</strong> We do not collect sensitive personal information beyond what is necessary for service delivery.</li>
+                <li><strong>Right to Non-Discrimination:</strong> We will not discriminate against you for exercising any of your CCPA rights. You will receive the same quality of service regardless.</li>
+            </ul>
+            <p>To submit a CCPA request, email <a href="mailto:info@thekpihub.com">info@thekpihub.com</a> with the subject line "CCPA Request". We will respond within <strong>45 calendar days</strong> (extendable by a further 45 days where reasonably necessary with notice).</p>
+            <div class="highlight-box">
+                <p><strong>Authorised Agent:</strong> You may designate an authorised agent to make a CCPA request on your behalf. We may require verification of the agent's authority and your identity before processing such requests.</p>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S11 -->
+        <section class="policy-section" id="s11">
+            <div class="section-header">
+                <span class="section-num">11</span>
+                <h2 class="section-title">Your Rights — India DPDP Act 2023</h2>
+            </div>
+            <p>Under the Digital Personal Data Protection Act, 2023 (India), you ("Data Principal") have the following rights against The KPI Hub as the Data Fiduciary:</p>
+            <ul>
+                <li><strong>Right to Access Information:</strong> Obtain a summary of personal data processed and activities undertaken with it.</li>
+                <li><strong>Right to Correction and Erasure:</strong> Correct inaccurate or outdated data, and seek erasure where the purpose of processing is no longer served or consent is withdrawn.</li>
+                <li><strong>Right to Grievance Redressal:</strong> Have your complaints addressed by our Grievance Officer within a reasonable timeframe.</li>
+                <li><strong>Right to Nominate:</strong> Nominate any individual who shall, in the event of your death or incapacity, exercise your rights under this Act.</li>
+            </ul>
+            <p>To exercise DPDP rights, contact our Grievance Officer (see Section 17). We will acknowledge within <strong>48 hours</strong> and resolve within <strong>30 days</strong> of receipt.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S12 -->
+        <section class="policy-section" id="s12">
+            <div class="section-header">
+                <span class="section-num">12</span>
+                <h2 class="section-title">Do Not Sell or Share My Personal Information</h2>
+            </div>
+            <div class="teal-box">
+                <p><strong>The KPI Hub does not sell, rent, or share your personal information</strong> with third parties for their own independent commercial use, cross-context behavioural advertising, or financial consideration.</p>
+            </div>
+            <p>We share data only with:</p>
+            <ul>
+                <li>Service providers acting as data processors under our instructions (see Section 7)</li>
+                <li>Law enforcement or government authorities where required by applicable law</li>
+                <li>Successor entities in connection with a merger, acquisition, or asset sale, subject to notice to you</li>
+            </ul>
+            <p>If you wish to opt out of any data sharing that falls within the CCPA's definition of "sale" or "sharing" (including for cross-context behavioural advertising), you may do so by emailing <a href="mailto:info@thekpihub.com">info@thekpihub.com</a> with the subject line "Do Not Sell or Share My Data".</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S13 -->
+        <section class="policy-section" id="s13">
+            <div class="section-header">
+                <span class="section-num">13</span>
+                <h2 class="section-title">Marketing Communications</h2>
+            </div>
+            <p>We send marketing emails and product updates only with your <strong>separate, explicit consent</strong>. By joining our waitlist or creating an account, you do not automatically consent to marketing communications. A separate opt-in is required.</p>
+            <h4>Opting Out</h4>
+            <ul>
+                <li>Click the "Unsubscribe" link in any marketing email we send you.</li>
+                <li>Email us at <a href="mailto:support@thekpihub.com">support@thekpihub.com</a> with the subject line "Unsubscribe".</li>
+                <li>Manage your communication preferences in your account settings (when available).</li>
+            </ul>
+            <p>Transactional emails (e.g., account confirmation, password reset, important service notices) are not marketing emails and cannot be opted out of while you have an active account.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S14 -->
+        <section class="policy-section" id="s14">
+            <div class="section-header">
+                <span class="section-num">14</span>
+                <h2 class="section-title">Children's Privacy</h2>
+            </div>
+            <div class="red-box">
+                <p><strong>The KPI Hub is not intended for persons under the age of 18.</strong> We do not knowingly collect personal data from minors. If you are under 18, please do not use our platform or submit any personal data.</p>
+            </div>
+            <p>If we become aware that we have inadvertently collected personal data from a person under 18, we will take steps to delete that data as promptly as possible. If you believe we have collected data from a minor, please contact us at <a href="mailto:info@thekpihub.com">info@thekpihub.com</a>.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S15 -->
+        <section class="policy-section" id="s15">
+            <div class="section-header">
+                <span class="section-num">15</span>
+                <h2 class="section-title">Security</h2>
+            </div>
+            <p>We implement appropriate technical and organisational measures to protect your personal data against unauthorised access, disclosure, alteration, and destruction. These include:</p>
+            <ul>
+                <li>Encryption of data in transit using TLS 1.2 or higher</li>
+                <li>Encryption of data at rest</li>
+                <li>Bcrypt hashing of passwords</li>
+                <li>Access controls and role-based permissions for staff</li>
+                <li>Regular security assessments and vulnerability testing</li>
+                <li>Incident response procedures, including breach notification to relevant authorities within the timeframe required by applicable law</li>
+            </ul>
+            <p>No method of electronic transmission or storage is 100% secure. If you suspect unauthorised access to your account, contact us immediately at <a href="mailto:support@thekpihub.com">support@thekpihub.com</a>.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S16 -->
+        <section class="policy-section" id="s16">
+            <div class="section-header">
+                <span class="section-num">16</span>
+                <h2 class="section-title">Policy Updates</h2>
+            </div>
+            <p>We may update this Privacy Policy from time to time. Material changes will be notified to you by:</p>
+            <ul>
+                <li>Email notification sent to your registered email address at least 30 days before the change takes effect</li>
+                <li>A prominent notice on our website</li>
+            </ul>
+            <p>Your continued use of the platform after the effective date of an updated policy constitutes acceptance of the revised terms. If you do not agree with the changes, you should stop using the platform and request deletion of your account.</p>
+            <p>The "Last Updated" date at the top of this policy indicates when it was last revised.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S17 -->
+        <section class="policy-section" id="s17">
+            <div class="section-header">
+                <span class="section-num">17</span>
+                <h2 class="section-title">Contact &amp; Grievance Officer</h2>
+            </div>
+            <p>For any questions, concerns, or requests related to this Privacy Policy or your personal data, please contact:</p>
+            <div class="highlight-box">
+                <p>
+                    <strong>Grievance Officer (India DPDP Act / IT Rules 2021)</strong><br>
+                    The KPI Hub<br>
+                    Delhi, India<br>
+                    Email: <a href="mailto:info@thekpihub.com">info@thekpihub.com</a>
+                </p>
+            </div>
+            <p>For general support queries:</p>
+            <div class="teal-box">
+                <p>
+                    <strong>Support Team</strong><br>
+                    Email: <a href="mailto:support@thekpihub.com">support@thekpihub.com</a>
+                </p>
+            </div>
+            <p>We aim to acknowledge all data requests within <strong>48 hours</strong> and resolve them within <strong>30 calendar days</strong>. If you are not satisfied with our response, you have the right to escalate to the relevant supervisory authority in your jurisdiction.</p>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <!-- S18 -->
+        <section class="policy-section" id="s18">
+            <div class="section-header">
+                <span class="section-num">18</span>
+                <h2 class="section-title">Version History</h2>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Version</th>
+                            <th>Date</th>
+                            <th>Summary of Changes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>v1.0</td>
+                            <td>April 3, 2026</td>
+                            <td>Initial publication. Covers GDPR, CCPA, and India DPDP Act 2023.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="wrap">
+            <div class="foot-top">
+                <div class="foot-brand">
+                    <div class="logo"><div class="logo-dot"></div>The <span class="logo-accent">KPI</span> Hub</div>
+                    <p class="foot-tag">Decision-Grade Intelligence for the modern SaaS professional.</p>
+                </div>
+                <div class="foot-group"><h4>Platform</h4><ul>
+                    <li><a href="intelligence.html">Intelligence Feed</a></li>
+                    <li><a href="directory.html">SaaS Discovery</a></li>
+                    <li><a href="benchmarks.html">Benchmarks</a></li>
+                </ul></div>
+                <div class="foot-group"><h4>Company</h4><ul>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul></div>
+                <div class="foot-group"><h4>Legal</h4><ul>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                    <li><a href="cookies.html">Cookie Policy</a></li>
+                </ul></div>
+            </div>
+            <div class="foot-bottom">
+                <p class="foot-copy">© 2026 <a href="index.html">The KPI Hub</a>. All rights reserved.</p>
+                <p class="foot-made">Made with ☕ in Delhi, India</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

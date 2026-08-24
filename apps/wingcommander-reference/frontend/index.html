@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <!-- Prevent theme flash -->
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("wingcommander-theme");
+          if (!theme) {
+            var isLoggedIn = Object.keys(localStorage).some(function (k) {
+              return k.startsWith("sb-") && k.endsWith("-auth-token");
+            });
+            theme = isLoggedIn ? "dark" : "system";
+          }
+          if (
+            theme === "light" ||
+            (theme === "system" && window.matchMedia("(prefers-color-scheme: light)").matches)
+          ) {
+            document.documentElement.classList.remove("dark");
+            document.documentElement.classList.add("light");
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Primary Meta Tags -->
+    <title>WingCommander — thekpihub.com</title>
+    <meta name="title" content="WingCommander by The KPI Hub — Premium AI Agent Platform" />
+    <meta
+      name="description"
+      content="WingCommander is the premium AI intelligence layer built into The KPI Hub. Chat, code, RAG, image generation, and autonomous agents — for paid subscribers."
+    />
+    <meta
+      name="keywords"
+      content="AI agent, KPI hub, WingCommander, autonomous agents, code generation, RAG, image generation, LLM, Claude"
+    />
+    <meta name="author" content="The KPI Hub" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="WingCommander — Premium AI by The KPI Hub" />
+    <meta
+      property="og:description"
+      content="WingCommander is the premium AI intelligence layer built into The KPI Hub — for paid subscribers worldwide."
+    />
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+    <!-- Fonts: KPI Hub brand -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

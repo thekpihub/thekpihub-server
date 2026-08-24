@@ -1,0 +1,64 @@
+/* ============================================================
+   TheKPIHub — Design Tokens (Colors & Typography)
+   Single source of truth for all CSS custom properties.
+   ============================================================ */
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Beiruti:wght@200..900&family=Manrope:wght@200..800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ---------- Backgrounds ---------- */
+  --bg:    #06071A;
+  --bg-2:  #0C0E28;
+  --bg-3:  #111637;
+
+  /* ---------- Gold (primary accent) ---------- */
+  --gold:      #E9A123;
+  --gold-glow: rgba(233, 161, 35, 0.18);
+  --gold-rim:  rgba(233, 161, 35, 0.28);
+  --gold-soft: rgba(233, 161, 35, 0.06);
+
+  /* ---------- Teal (secondary accent) ---------- */
+  --teal:      #00C9A7;
+  --teal-glow: rgba(0, 201, 167, 0.18);
+  --teal-rim:  rgba(0, 201, 167, 0.28);
+
+  /* ---------- Semantic ---------- */
+  --red:  #FF6B6B;
+  --up:   #00C9A7;
+  --down: #FF6B6B;
+
+  /* ---------- Text ---------- */
+  --text:   #EAEDF5;
+  --text-2: rgba(234, 237, 245, 0.62);
+  --text-3: rgba(234, 237, 245, 0.32);
+
+  /* ---------- Borders & surfaces ---------- */
+  --border: rgba(234, 237, 245, 0.10);
+  --card:   #0C0E28;
+
+  /* ---------- Typography ---------- */
+  --font-display: 'Source Serif 4', Georgia, serif;
+  --font-head:    Beiruti, 'Trebuchet MS', sans-serif;
+  --font-body:    Manrope, 'Segoe UI', sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Mono', 'Consolas', monospace;
+
+  /* Display type tokens */
+  --t-display-size:   clamp(3.4rem, 7vw, 6.4rem);
+  --t-display-weight: 800;
+  --t-display-lh:     1.05;
+  --t-display-ls:     -0.03em;
+
+  /* ---------- Layout ---------- */
+  --max-w: 1200px;
+  --nav-h: 72px;
+
+  /* ---------- Border radius ---------- */
+  --r-sm:   6px;
+  --r-md:   10px;
+  --r-lg:   14px;
+  --r-pill: 100px;
+
+  /* ---------- Animation ---------- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
