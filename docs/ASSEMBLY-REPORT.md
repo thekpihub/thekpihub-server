@@ -23,7 +23,7 @@ The assembled repository keeps one physical copy of each selected component. Bac
 
 ## Validation Status
 
-Validation results are recorded in `docs/VALIDATION.md`.
+Validation results are recorded in `docs/VALIDATION.md`; all local source validation commands now pass.
 
 ## Security Status
 

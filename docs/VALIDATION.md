@@ -4,12 +4,22 @@ Date: 2026-08-24
 
 ## Install
 
-- `apps/website`: `npm ci` passed. npm audit reported 4 vulnerabilities: 1 low, 3 high.
-- `apps/platform`: `npm ci` passed. npm audit reported 4 high vulnerabilities.
-- `apps/legacy-app`: `npm ci` passed. npm audit reported 7 vulnerabilities: 1 moderate, 6 high.
-- `apps/wingcommander-reference`: `npm ci` passed. npm audit reported 7 vulnerabilities: 1 low, 2 moderate, 4 high.
-- `tools/automated-website-builder`: `npm ci` passed. npm audit reported 1 low vulnerability.
-- `services/pipeline`: no package install was run; `requirements.txt` exists and Python compile validation passed.
+- `apps/website`: `npm ci` passed.
+- `apps/platform`: `npm ci` passed after upgrading Next.js to 16.3.2.
+- `apps/legacy-app`: `npm ci` passed after upgrading Next.js to 16.3.2.
+- `apps/wingcommander-reference`: `npm ci` passed after upgrading React Router to 7.18.2.
+- `tools/automated-website-builder`: `npm ci` passed.
+- `services/pipeline`: Python syntax validation passed.
+
+## Security Audit
+
+`npm audit --audit-level=moderate` passed with 0 vulnerabilities in every npm component:
+
+- `apps/website`
+- `apps/platform`
+- `apps/legacy-app`
+- `apps/wingcommander-reference`
+- `tools/automated-website-builder`
 
 ## Lint / TypeScript
 
@@ -21,17 +31,17 @@ Date: 2026-08-24
 ## Build
 
 - `apps/website`: `npm run build` passed; Babel compiled 8 landing files.
-- `apps/platform`: `npm run build` passed; Next.js generated static and dynamic routes successfully.
-- `apps/legacy-app`: `npm run build` passed; Next.js generated static routes successfully.
-- `apps/wingcommander-reference`: `npm run build` passed for frontend and backend workspaces.
+- `apps/platform`: `npm run build` passed on Next.js 16.3.2.
+- `apps/legacy-app`: `npm run build` passed on Next.js 16.3.2.
+- `apps/wingcommander-reference`: `npm run build` passed for frontend and backend workspaces on React Router 7.18.2.
 
 ## Runtime
 
-Runtime startup was not kept running because the task is assembly/recovery. The runnable commands are documented in `docs/LOCAL-DEVELOPMENT.md`.
+Runtime startup was not kept running because the request is repository assembly and production hardening. The runnable commands are documented in `docs/LOCAL-DEVELOPMENT.md`.
 
 ## Database
 
-Database files were not duplicated into a central folder. They remain in component-owned source paths:
+Database files remain in component-owned source paths:
 
 - `apps/platform/supabase`
 - `apps/legacy-app/prisma/schema.prisma`
@@ -39,17 +49,21 @@ Database files were not duplicated into a central folder. They remain in compone
 - `apps/legacy-app/backend/supabase-schema.sql`
 - `apps/website/docs/supabase-schema.sql`
 
-No live Supabase/PostgreSQL connection validation was performed because credentials were intentionally excluded.
+No live Supabase/PostgreSQL connection validation was performed because no real production credentials are committed or configured as GitHub secrets.
 
 ## Redis
 
-No authoritative Redis runtime configuration was validated in the assembled components.
+Legacy backend Redis client/config exists under `apps/legacy-app/backend/src/config/redis.js`. Live Redis validation was not performed because no Redis secret is configured.
 
 ## Deployment Configuration
 
-Deployment config files were preserved in their owning components. No production deployment settings were changed.
+Deployment configuration files are preserved in their owning components. Root CI was added at `.github/workflows/ci.yml` to validate installs, audits, typechecks/lint, builds, and Python syntax on push/PR.
 
-## Security Scan
+## GitHub Secrets
+
+`gh secret list --repo hsharmagxi-debug/kpihub-assembled` returned no configured repository secrets on 2026-08-24. To deploy from this repo, configure the required production secrets for the chosen deployment target.
+
+## Secret Scan
 
 - Real `.env`, `config.js`, and `credentials.md` files were excluded.
 - Secret scan found code/template references to tokens, keys, and environment variables, but no committed secret values were identified in the assembled tree.
@@ -57,4 +71,4 @@ Deployment config files were preserved in their owning components. No production
 
 ## Final Validation Status
 
-Build and static validation passed. Production-ready status is blocked only by unresolved npm audit vulnerabilities and lack of live external service credential validation.
+Source, dependency audit, build, typecheck, lint, and CI readiness passed. Live production deployment depends on adding environment secrets outside Git.

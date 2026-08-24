@@ -1,0 +1,72 @@
+name: KPI Hub Assembled CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            apps/website/package-lock.json
+            apps/platform/package-lock.json
+            apps/legacy-app/package-lock.json
+            apps/wingcommander-reference/package-lock.json
+            tools/automated-website-builder/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Website install, audit, build
+        working-directory: apps/website
+        run: |
+          npm ci
+          npm audit --audit-level=moderate
+          npm run build
+
+      - name: Platform install, audit, typecheck, build
+        working-directory: apps/platform
+        run: |
+          npm ci
+          npm audit --audit-level=moderate
+          npm run typecheck
+          npm run build
+
+      - name: Legacy app install, audit, lint, build
+        working-directory: apps/legacy-app
+        run: |
+          npm ci
+          npm audit --audit-level=moderate
+          npm run lint
+          npm run build
+
+      - name: Wing Commander install, audit, build
+        working-directory: apps/wingcommander-reference
+        run: |
+          npm ci
+          npm audit --audit-level=moderate
+          npm run build
+
+      - name: Builder install, audit, typecheck
+        working-directory: tools/automated-website-builder
+        run: |
+          npm ci
+          npm audit --audit-level=moderate
+          npm test
+
+      - name: Pipeline syntax check
+        working-directory: services/pipeline
+        run: python -m py_compile pipeline.py
