@@ -49,6 +49,59 @@ rely on the Sprint 3/4 results below for those.
 
 ---
 
+## UI — What Is Already Built
+
+The platform UI was assembled from the original `thekpihub/thekpihub-platform` source repo. It is **not a skeleton** — it is a complete working app shell. All UI code lives in `apps/platform/src/`.
+
+### Design System (`globals.css`)
+- **Theme**: Dark navy (`--bg: #06071a`), glassmorphism panels, dual radial gradient background (teal top-right, gold top-left)
+- **Accents**: Gold `#e9a123`, Teal `#16c7b7`, Muted `#a6b0cf`
+- **Font**: Inter (system-ui fallback)
+- **No component library** — pure CSS + inline styles. No shadcn, no Tailwind, no Chakra.
+- **Layout classes**: `.shell` (1120px max), `.panel` (glassmorphism card), `.dashboard-shell` (280px sidebar + content grid), `.stats-grid`, `.two-column-grid`, `.three-column-grid`
+
+### Pages Built
+
+| Route | Component | Status | Notes |
+|---|---|---|---|
+| `/` | `app/page.tsx` | ✅ Functional | Marketing shell — Sign in / Create account / Open dashboard CTAs |
+| `/login` | `app/login/page.tsx` + `LoginForm.tsx` | ✅ Functional (needs anon key) | Email/password with Supabase auth, redirects to `/dashboard` or `?next=` param |
+| `/register` | `app/register/page.tsx` + `RegisterForm.tsx` | ✅ Functional (needs anon key) | Full registration with name, org, role fields |
+| `/reset-password` | `app/reset-password/page.tsx` + `ResetPasswordForm.tsx` | ✅ Functional (needs anon key) | Supabase magic-link reset |
+| `/dashboard` | `app/dashboard/page.tsx` | ✅ Functional (needs anon key) | Profile stats: email, plan, org; migration status list |
+| `/dashboard/intelligence-hub` | `app/dashboard/intelligence-hub/page.tsx` | ✅ UI complete, data from API | Executive brief, strategic heatmap with 4-metric bars, decision feed, action queue, 3-column signal grid |
+| `/dashboard/recommendation-engine` | `app/dashboard/recommendation-engine/page.tsx` | ✅ UI complete, data from API | 7-tab category filter, ranked cards with impact/effort/confidence/priority bars + accuracy tracker |
+
+### Components
+
+| Component | Path | Purpose |
+|---|---|---|
+| `AuthShell` | `components/auth/AuthShell.tsx` | Centered card wrapper for all auth pages |
+| `LoginForm` | `components/auth/LoginForm.tsx` | Client-side Supabase `signInWithPassword` |
+| `RegisterForm` | `components/auth/RegisterForm.tsx` | Supabase `signUp` + profile upsert |
+| `ResetPasswordForm` | `components/auth/ResetPasswordForm.tsx` | Supabase `resetPasswordForEmail` |
+| `DecisionCard` | `components/dashboard/DecisionCard.tsx` | Decision feed + action queue card |
+| `Sidebar` | `components/dashboard/Sidebar.tsx` | 3-item nav: Overview / Intelligence Hub / Recommendation Engine |
+
+### Intelligence Library (`src/lib/intelligence/`)
+
+| File | Purpose |
+|---|---|
+| `types.ts` | TypeScript types: `ModuleSignal`, `IntelligenceHubSnapshot`, `HeatmapRow`, `DecisionEntry`, `ActionQueueItem` |
+| `hub.ts` | Builds the intelligence snapshot (signal generation, heatmap, brief, decision feed) |
+| `scoring.ts` | `rankSignalsBySeverity()` — sorts signals by severity enum |
+| `recommendations.ts` | Recommendation item generation with accuracy metadata |
+
+### What the UI Is Missing / Not Yet Built
+- No upgrade/billing UI (checkout flow triggers via `/api/billing/checkout` but there's no pricing page or upgrade modal)
+- No sign-out button anywhere in the dashboard
+- No error boundary pages
+- No mobile responsive layout (sidebar collapses poorly on small screens)
+- No loading skeletons (just text "Loading...")
+- Intelligence Hub and Recommendation Engine data is **mock/generated** in the API routes — not yet reading from real Supabase tables
+
+---
+
 ## Completed Work (Chronological)
 
 ### Phase A — Inventory & Verification
