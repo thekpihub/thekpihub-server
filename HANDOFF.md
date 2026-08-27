@@ -34,6 +34,31 @@ rely on the Sprint 3/4 results below for those.
 
 ---
 
+## Session Update — 2026-08-27 (Supabase/Vercel auth configuration)
+
+- Confirmed the canonical Supabase project URL is
+  `https://eeuwkislidznpgdbvvbo.supabase.co`.
+- Validated a browser-safe `sb_publishable_...` key against that project's
+  Auth settings endpoint (HTTP 200). The key value is stored only in Vercel
+  and is not recorded in Git.
+- Confirmed the target Vercel project is `platform`
+  (`prj_BiGJMYSHuiVQk4rkEpuUVHl1gd8J`) under
+  `hsharmagxi-debugs-projects`.
+- Verified `NEXT_PUBLIC_SUPABASE_URL` and
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY` are configured for Production, Preview,
+  and Development. The compatibility variable name holds the current
+  publishable-key format.
+- Forced a production rebuild after the environment update. Deployment
+  `dpl_44BBtccqBq7u5mDkpKSqSpyazRZ3` reached READY and was aliased to
+  `https://platform-two-zeta-31.vercel.app`.
+- Post-deploy verification: `/login`, `/register`, `/api/health`, and
+  `/api/health/ready` returned HTTP 200; auth forms rendered without a
+  missing-configuration message; readiness returned `true`; no runtime
+  errors were reported in the verification window.
+- No application code was changed.
+
+---
+
 ## Current Project Status
 
 | Dimension | Status |
@@ -41,10 +66,10 @@ rely on the Sprint 3/4 results below for those.
 | Source build | ✅ PASS — typecheck, build, pipeline compile all clean |
 | Local runtime | ✅ PASS — Next.js dev server starts, /, /login, /register return 200 |
 | Vercel project linked | ✅ DONE — project `platform` under `hsharmagxi-debugs-projects` |
-| Vercel env vars (partial) | ⚠️ PARTIAL — 2 of 8 needed vars added; 6 still required |
+| Vercel env vars (partial) | ⚠️ AUTH COMPLETE — Supabase public URL/key configured; billing variables still required |
 | First Vercel deployment | ✅ LIVE — `https://platform-two-zeta-31.vercel.app` |
 | Stripe products | ❌ NOT YET — products and price IDs not created in Stripe dashboard |
-| Auth working | ❌ BLOCKED — needs `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
+| Auth working | ✅ CONFIGURED — Supabase key validated; login/register forms verified in production |
 | Billing working | ❌ BLOCKED — needs Stripe secret key + price IDs |
 
 ---
@@ -191,11 +216,11 @@ The platform UI was assembled from the original `thekpihub/thekpihub-platform` s
 |---|---|---|
 | `NEXT_PUBLIC_APP_URL` | `https://thekpihub-platform.vercel.app` (prod/preview) / `http://localhost:3000` (dev) | All |
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://eeuwkislidznpgdbvvbo.supabase.co` | All |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser-safe Supabase publishable key (value intentionally omitted) | All |
 
 ### Vercel — Still Required ⚠️
 | Variable | Provider | Requirement | Notes |
 |---|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase dashboard → Project `eeuwkislidznpgdbvvbo` → Settings → API → anon/public key | STARTUP_REQUIRED | JWT starting `eyJhbG...`. Without it, auth routes crash at render. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Same dashboard → service_role key | FEATURE_REQUIRED | Webhook route only. Production env only. |
 | `STRIPE_SECRET_KEY` | Stripe dashboard → Developers → API Keys | FEATURE_REQUIRED | Use `sk_test_...` for staging |
 | `STRIPE_WEBHOOK_SECRET` | Stripe dashboard → Webhooks → signing secret | FEATURE_REQUIRED | Create endpoint first (URL below) |
@@ -233,8 +258,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://eeuwkislidznpgdbvvbo.supabase.co
 
 | # | Blocker | Impact | Resolution |
 |---|---|---|---|
-| 1 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` missing from Vercel | Auth routes crash; no login/register | Add from Supabase dashboard |
-| 2 | Stripe products not created | Billing/checkout non-functional | Create products in Stripe dashboard, add price IDs |
+| 1 | Stripe products not created | Billing/checkout non-functional | Create products in Stripe dashboard, add price IDs |
+| 2 | Supabase service-role key not configured | Billing webhook cannot perform privileged updates | Add a backend-only Supabase secret key after restoring project access |
 | 3 | Public alias differs from the originally documented URL | Bookmarks/docs using `thekpihub-platform.vercel.app` will not resolve to this project | Use `platform-two-zeta-31.vercel.app` or add the intended custom domain |
 | 4 | No real linter configured | Code quality drift possible | Add ESLint or Biome to platform (`npm install -D eslint`) |
 | 5 | No tests | Regressions undetected | Add Vitest or Jest |
@@ -244,10 +269,9 @@ NEXT_PUBLIC_SUPABASE_URL=https://eeuwkislidznpgdbvvbo.supabase.co
 ## What Remains to Build / Test / Deploy
 
 ### Immediate (Codex can do from GitHub)
-1. **Add missing Vercel env vars** — operator must add `NEXT_PUBLIC_SUPABASE_ANON_KEY` and Stripe vars via Vercel dashboard
-2. **Redeploy after adding the key** — `git push origin main` or Vercel dashboard deploy button
-3. **Verify deployment** — `curl -I https://platform-two-zeta-31.vercel.app`
-4. **Create Stripe products** — two products (Growth, Enterprise) with recurring monthly prices
+1. **Run an operator-approved end-to-end auth test** — register/login with a designated test account and verify the dashboard session
+2. **Restore Supabase project access** — required before migrations, security-advisor review, or backend secret-key setup
+3. **Create Stripe products** — two products (Growth, Enterprise) with recurring monthly prices
 
 ### Near-Term
 5. **Set up Stripe webhook** — create endpoint in Stripe dashboard pointing to `/api/billing/webhook`
@@ -310,9 +334,9 @@ curl https://thekpihub-platform.vercel.app/api/health/ready
 
 ## Exact Next Action for Codex
 
-> **Add `NEXT_PUBLIC_SUPABASE_ANON_KEY` to Vercel, then redeploy the live platform.**
+> **Run an operator-approved end-to-end registration/login test against the live platform.**
 >
-> 1. Go to https://vercel.com/hsharmagxi-debugs-projects/platform/settings/environment-variables
-> 2. Add `NEXT_PUBLIC_SUPABASE_ANON_KEY` for all environments (value: anon/public key from Supabase project `eeuwkislidznpgdbvvbo`)
-> 3. Push any commit or click "Redeploy" in Vercel dashboard
-> 4. Verify at https://platform-two-zeta-31.vercel.app
+> 1. Use a designated disposable test email at https://platform-two-zeta-31.vercel.app/register
+> 2. Complete any email-confirmation step required by Supabase Auth
+> 3. Sign in at `/login` and verify the authenticated `/dashboard` session
+> 4. Remove the disposable account after verification if it is no longer needed
