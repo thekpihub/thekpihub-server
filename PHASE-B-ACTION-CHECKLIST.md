@@ -120,7 +120,7 @@ vercel link
 **Access**: https://dashboard.stripe.com/webhooks
 
 **Create Endpoint**:
-- URL: `https://thekpihub-platform.vercel.app/api/webhooks/stripe`
+- URL: `https://thekpihub-platform.vercel.app/api/billing/webhook`
 - Events to listen:
   - `checkout.session.completed`
   - `invoice.payment_succeeded`

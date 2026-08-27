@@ -181,7 +181,7 @@ git push origin main
 
 1. Go to https://dashboard.stripe.com/webhooks
 2. Create endpoint:
-   - URL: `https://thekpihub-platform.vercel.app/api/webhooks/stripe`
+   - URL: `https://thekpihub-platform.vercel.app/api/billing/webhook`
    - Events: Select these events:
      - `checkout.session.completed`
      - `invoice.payment_succeeded`

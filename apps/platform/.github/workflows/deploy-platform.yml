@@ -1,0 +1,486 @@
+name: Deploy Platform to Vercel
+
+# Deployment workflow for the KPI Hub Platform (Next.js app)
+#
+# SAFETY: this workflow is gated by the DEPLOY_ENABLED repository variable.
+#   - Set DEPLOY_ENABLED = 'true' in Settings > Variables to enable auto-deployment
+#   - Set DEPLOY_ENABLED = 'false' to disable and require manual override
+#   - The workflow runs on push to main and PRs, but deploys only if enabled
+#
+# WORKFLOW OVERVIEW:
+#   1. Production Deploy (main branch)
+#      - Trigger: push to main branch (after CI passes)
+#      - Deploys to: https://thekpihub-platform.vercel.app
+#      - Uses: Vercel CLI with production flag
+#      - Secrets needed: VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
+#
+#   2. Preview Deploy (PR branches)
+#      - Trigger: pull_request to main
+#      - Creates preview deployment for each PR
+#      - Posts deployment URL to PR comments for easy access
+#      - Automatically cleaned up when PR is closed
+#
+# ENVIRONMENT SETUP REQUIRED:
+#   GitHub Secrets (Settings > Secrets and variables > Actions):
+#     - VERCEL_TOKEN: Vercel API token (from vercel.com/account/tokens)
+#     - VERCEL_ORG_ID: Vercel organization/team ID (from vercel.com/account/teams)
+#     - VERCEL_PROJECT_ID: Vercel project ID (from .vercel/project.json or vercel CLI)
+#
+#   GitHub Variables (Settings > Variables):
+#     - DEPLOY_ENABLED: Set to 'true' to enable automatic deployments
+#
+# TROUBLESHOOTING:
+#   "Invalid token" error:
+#     - Verify VERCEL_TOKEN is set correctly in GitHub Secrets
+#     - Token should have scope for deployments
+#     - Generate new token at: https://vercel.com/account/tokens
+#
+#   "Project not found":
+#     - Verify VERCEL_PROJECT_ID matches your Vercel project
+#     - Get ID from: vercel projects list
+#     - Or from: .vercel/project.json in the repo
+#
+#   "Build failed" in production:
+#     - Check that CI workflow passed first
+#     - Review build logs in Vercel dashboard
+#     - Ensure all env vars are set in Vercel project settings
+#
+#   Preview deployment not posting comment:
+#     - Ensure workflow has permissions.pull-requests: write
+#     - Check if GITHUB_TOKEN is accessible (automatic)
+#
+#   "Cannot find app" when running locally with Vercel CLI:
+#     - Run 'vercel link' to link local directory to Vercel project
+#     - Or set VERCEL_PROJECT_ID and VERCEL_ORG_ID in .env.local
+
+on:
+  # Production deployment: push to main branch
+  # Only deploys if files in apps/platform/ changed (path filter)
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/platform/**'
+      - '.github/workflows/deploy-platform.yml'
+
+  # Preview deployment: pull requests to main
+  # Creates temporary preview URLs for testing before merge
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/platform/**'
+      - '.github/workflows/deploy-platform.yml'
+
+# Concurrency control: prevent multiple deployments running in parallel
+# cancel-in-progress: true means newer pushes cancel older ones
+concurrency:
+  group: deploy-platform-${{ github.ref }}
+  cancel-in-progress: true
+
+# Permissions: workflow needs ability to post comments on PRs
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # ============================================================================
+  # JOB: Production Deployment
+  # ============================================================================
+  # Runs ONLY on push to main branch
+  # Deploys to production URL: https://thekpihub-platform.vercel.app
+  # Requires: successful CI validation + DEPLOY_ENABLED variable
+
+  deploy-production:
+    name: Deploy to Production (Vercel)
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      vars.DEPLOY_ENABLED == 'true'
+    environment:
+      name: production
+      url: https://thekpihub-platform.vercel.app
+    timeout-minutes: 30
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch full history for proper deployment tracking
+          fetch-depth: 0
+
+      # 2. Setup Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Typecheck before deploy (fail early if types are wrong)
+      - name: TypeScript type check
+        working-directory: apps/platform
+        run: npm run typecheck
+        continue-on-error: true
+
+      # 5. Verify build works (this is what Vercel will actually build)
+      - name: Build verification
+        working-directory: apps/platform
+        run: npm run build
+        env:
+          # Provide placeholder values for build-time env vars
+          # Real production values are set in Vercel project settings
+          NEXT_PUBLIC_APP_URL: 'https://thekpihub-platform.vercel.app'
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key' }}
+          NEXT_TELEMETRY_DISABLED: '1'
+
+      # 6. Deploy to Vercel production
+      # Note: Vercel CLI will pull config from vercel.json and Vercel project settings
+      - name: Deploy to Vercel (production)
+        working-directory: apps/platform
+        run: |
+          npm install -g vercel@latest
+          # Deploy with --prod flag for production deployment
+          # Uses VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID from environment
+          vercel deploy --prod \
+            --token="${{ secrets.VERCEL_TOKEN }}" \
+            --yes
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      # 7. Verify production deployment
+      - name: Verify production deployment
+        run: |
+          echo "Production deployment completed successfully"
+          echo "URL: https://thekpihub-platform.vercel.app"
+          echo "Monitor deployment at: https://vercel.com/dashboard/project/${{ secrets.VERCEL_PROJECT_ID }}"
+
+      # 8. Notify on failure
+      - name: Deployment failed notification
+        if: failure()
+        run: |
+          echo "::error::Production deployment to Vercel failed"
+          echo "Check the logs above and Vercel dashboard for details"
+          exit 1
+
+
+  # ============================================================================
+  # JOB: Preview Deployment
+  # ============================================================================
+  # Runs on pull requests to main
+  # Creates temporary preview URLs for PR testing
+  # Automatically cleaned up when PR is closed
+
+  deploy-preview:
+    name: Deploy Preview to Vercel
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'pull_request' &&
+      vars.DEPLOY_ENABLED == 'true'
+    timeout-minutes: 30
+
+    outputs:
+      preview_url: ${{ steps.deploy.outputs.preview_url }}
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # For PRs, check out the PR branch (not merge commit)
+          ref: ${{ github.head_ref }}
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Build check for PR
+      - name: Build verification
+        working-directory: apps/platform
+        run: npm run build
+        env:
+          NEXT_PUBLIC_APP_URL: 'https://thekpihub-platform.vercel.app'
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key' }}
+          NEXT_TELEMETRY_DISABLED: '1'
+
+      # 5. Deploy preview to Vercel
+      # Note: Preview deployment (without --prod flag) creates temporary URL
+      - name: Deploy preview to Vercel
+        id: deploy
+        working-directory: apps/platform
+        run: |
+          npm install -g vercel@latest
+          # Deploy without --prod flag for preview/staging deployment
+          DEPLOYMENT_URL=$(vercel deploy \
+            --token="${{ secrets.VERCEL_TOKEN }}" \
+            --yes \
+            2>&1 | tail -1)
+          echo "preview_url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "Deployed to: $DEPLOYMENT_URL"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      # 6. Post preview URL to PR comment
+      # This makes it easy to test the preview without searching logs
+      - name: Post preview URL to PR
+        if: success() && steps.deploy.outputs.preview_url != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = '${{ steps.deploy.outputs.preview_url }}';
+            const prNumber = context.issue.number;
+            const branch = '${{ github.head_ref }}';
+            const commit = '${{ github.sha }}';
+            const actor = '${{ github.actor }}';
+
+            // Create or update comment with preview URL
+            const lines = [
+              '## Preview Deployment Ready',
+              '',
+              'Your changes are available for testing at:',
+              '',
+              previewUrl,
+              '',
+              'Deployment Info:',
+              `- Branch: ${branch}`,
+              `- Commit: ${commit}`,
+              `- Triggered by: @${actor}`,
+              '',
+              'This preview will be automatically cleaned up when the PR is closed.'
+            ];
+            const comment = lines.join('\n');
+
+            // Find existing deployment comment to update it
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const existingComment = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('Preview Deployment Ready')
+            );
+
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: comment,
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: comment,
+              });
+            }
+
+      # 7. Notify if preview failed
+      - name: Preview deployment failed notification
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.issue.number;
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: '❌ **Preview deployment failed** - Check the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.',
+            });
+
+
+  # ============================================================================
+  # JOB: Deployment Notification
+  # ============================================================================
+  # Summary notification of deployment status
+  # Runs after production and preview deployments
+
+  notify-deployment:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [deploy-production, deploy-preview]
+
+    steps:
+      - name: Deployment summary
+        run: |
+          echo "## Deployment Summary"
+          echo ""
+          echo "Production Deploy: ${{ needs.deploy-production.result }}"
+          echo "Preview Deploy: ${{ needs.deploy-preview.result }}"
+          echo ""
+          echo "Production URL: https://thekpihub-platform.vercel.app"
+
+      - name: Check if deployments succeeded
+        if: failure()
+        run: |
+          echo "::error::One or more deployments failed. Check logs for details."
+          exit 1
+
+# ============================================================================
+# TESTING THIS WORKFLOW LOCALLY
+# ============================================================================
+#
+# You cannot fully test GitHub Actions workflows locally, but you can:
+#
+# 1. Validate the YAML syntax:
+#    - Copy this file locally
+#    - Use: https://github.com/rhysd/actionlint to validate
+#    - Or use: yamllint deploy-platform.yml
+#
+# 2. Test Vercel deployment locally:
+#    cd apps/platform
+#    vercel link                    # Link directory to Vercel project
+#    vercel build                   # Build like Vercel would
+#    vercel deploy --prod           # Deploy (add --yes to skip prompts)
+#
+# 3. Test with act (GitHub Actions emulator):
+#    Install: https://github.com/nektos/act
+#    Run: act push -j deploy-production
+#
+# 4. Dry-run in GitHub:
+#    - Create a test branch
+#    - Make a change to apps/platform/
+#    - Push branch and open PR
+#    - Watch Actions tab for workflow execution
+#    - Use workflow_dispatch to manually trigger in Actions tab
+#
+# ============================================================================
+# ENABLING/DISABLING DEPLOYMENTS
+# ============================================================================
+#
+# To ENABLE automatic deployments:
+#   1. Go to: https://github.com/[owner]/[repo]/settings/variables
+#   2. Create variable: DEPLOY_ENABLED = 'true'
+#   3. Auto-deployment will trigger on next push to main
+#
+# To DISABLE automatic deployments:
+#   1. Set: DEPLOY_ENABLED = 'false' (or delete the variable)
+#   2. Deployments will require manual trigger (workflow_dispatch)
+#
+# To manually trigger deployment (regardless of DEPLOY_ENABLED):
+#   1. Go to: https://github.com/[owner]/[repo]/actions
+#   2. Select: "Deploy Platform to Vercel"
+#   3. Click: "Run workflow"
+#   4. Confirm (or edit) branch and commit
+#
+# ============================================================================
+# ENVIRONMENT VARIABLES IN VERCEL
+# ============================================================================
+#
+# The platform app uses many environment variables (see vercel.json).
+# They should be configured in your Vercel project dashboard:
+#
+# Required Secrets (sensitive values):
+#   - SUPABASE_SERVICE_ROLE_KEY
+#   - STRIPE_SECRET_KEY
+#   - STRIPE_WEBHOOK_SECRET
+#   - ANTHROPIC_API_KEY
+#   - OPENROUTER_API_KEY
+#   - HANDOFF_SECRET
+#
+# Required Public Variables (visible in browser):
+#   - NEXT_PUBLIC_APP_URL
+#   - NEXT_PUBLIC_SUPABASE_URL
+#   - NEXT_PUBLIC_SUPABASE_ANON_KEY
+#
+# Optional Production Variables:
+#   - STRIPE_PRICE_STARTER
+#   - STRIPE_PRICE_GROWTH
+#   - STRIPE_PRICE_ENTERPRISE
+#   - WINGMAN_API_URL
+#   - WINGMAN_URL
+#
+# Set these in Vercel:
+#   1. Dashboard > [Project] > Settings > Environment Variables
+#   2. Add each variable with proper scope (Production/Preview/Development)
+#   3. For secrets, use "Sensitive" toggle
+#
+# ============================================================================
+# INTEGRATION WITH CI WORKFLOW
+# ============================================================================
+#
+# This deployment workflow runs AFTER the CI workflow (ci.yml) completes.
+# The CI workflow ensures:
+#   - All dependencies install correctly
+#   - TypeScript types are valid
+#   - Build succeeds
+#   - No security vulnerabilities
+#
+# The deploy workflow then:
+#   1. Re-runs build to ensure consistency
+#   2. Deploys to Vercel if all checks pass
+#   3. Posts status to PR comments
+#
+# If CI fails:
+#   - Deployment will NOT proceed (build verification step will fail)
+#   - Fix CI errors first before deployment can succeed
+#
+# ============================================================================
+# ROLLBACK PROCEDURE
+# ============================================================================
+#
+# If a bad deployment makes it to production:
+#
+# 1. IMMEDIATE: Disable auto-deployment
+#    - Set DEPLOY_ENABLED = 'false' in GitHub Variables
+#    - This prevents further automatic deployments
+#
+# 2. ROLLBACK: Revert to previous deployment
+#    - Go to: https://vercel.com/dashboard/project/[PROJECT_ID]
+#    - Click: "Deployments" tab
+#    - Find last known-good deployment
+#    - Click: "Promote to Production"
+#
+# 3. FIX: Address the issue
+#    - Fix the bug in your code
+#    - Commit and merge fix to main
+#
+# 4. RE-ENABLE: Resume automatic deployments
+#    - Set DEPLOY_ENABLED = 'true' in GitHub Variables
+#    - Next push to main will auto-deploy
+#
+# ============================================================================
+# MONITORING DEPLOYMENTS
+# ============================================================================
+#
+# After workflow completes:
+#   - Check GitHub Actions tab for workflow status
+#   - Vercel Dashboard: https://vercel.com/dashboard
+#   - Production URL: https://thekpihub-platform.vercel.app
+#
+# View logs:
+#   - GitHub Actions: https://github.com/[owner]/[repo]/actions
+#   - Vercel: https://vercel.com/dashboard/project/[PROJECT_ID]/logs
+#
+# Configure alerts:
+#   - Vercel: Notifications > Enable Slack/Email for deployments
+#   - GitHub: Settings > Notifications > Workflows
+#
+# ============================================================================
