@@ -399,3 +399,68 @@ curl https://thekpihub-platform.vercel.app/api/health/ready
 - Accessible duplicate workflow `hsharmagxi-debug/thekpihub-platform` is disabled. The server’s historical remote still names `https://github.com/thekpihub/thekpihub-website.git`; owner access is still needed to prove its old webhook is disconnected.
 - Temporary backup/hardening workflows are disabled and retained as audit evidence. No files, repositories, DNS records, or Hostinger sites were deleted.
 - Credential reminder: rotate the exposed GitHub PAT, Hostinger password, deployment keys, and other long-lived tokens manually on 2026-08-28 as previously scheduled. Never paste credentials into chat.
+
+## Complete work log — 2026-08-27
+
+This is the chronological record of the work completed today. It is intentionally
+limited to evidence, commands/actions, identifiers, and outcomes; no secret values
+are recorded.
+
+1. Read `HANDOFF.md` and `KPIHUB_ASSEMBLED_AUDIT_LOG_2026-08-27.md` first, confirmed
+   the saved production state, branch, commit, routes, readiness, and known blockers.
+2. Confirmed the canonical GitHub repository and Vercel project, and recorded that
+   the assembled repository is a monorepo whose Hostinger deployment must be scoped
+   to `apps/website`.
+3. Recorded the owner-supplied Supabase publishable-key setup without copying the
+   key into source, logs, or documentation; Supabase project access remained an
+   owner-side limitation.
+4. Audited GitHub repositories, branches, workflows, hooks, deploy keys, and legacy
+   Hostinger references. Preserved all old repositories; identified the accessible
+   duplicate Hostinger workflow in `hsharmagxi-debug/thekpihub-platform`.
+5. Audited Hostinger hPanel and SSH evidence. Confirmed static/PHP hosting,
+   webroot `/home/u117990013/domains/thekpihub.com/public_html`, the old server
+   remote, branch, commit, and 49 dirty entries. No hPanel Create/Disconnect/Remove
+   action was used.
+6. Audited the live site for public exposure. Before hardening, repository docs,
+   source, package/config files, and directories were publicly readable; dotfiles
+   were already denied. DNS, HTTP redirects, SSL, and Hostinger headers were recorded.
+7. Repaired GitHub CLI with browser/device OAuth. The exposed classic PAT was never
+   tested or reused. The owner’s manual credential-rotation reminder remains open.
+8. Generated a dedicated temporary Hostinger SSH key. The old GitHub-stored Hostinger
+   key failed authentication; the owner added the new public key through Hostinger
+   SSH Access. The private key was stored only as a masked GitHub environment secret.
+9. Created the protected `hostinger-production` GitHub environment with masked
+   connection metadata, the deploy key, and known-host data; secret values were never
+   displayed.
+10. Disabled legacy workflow `306005775` in `hsharmagxi-debug/thekpihub-platform`
+    to prevent accidental old-repo deployments. The historical webhook owner for
+    `thekpihub/thekpihub-website` remains an explicit manual-review item.
+11. Added and ran a temporary backup workflow. Run `33103094801` succeeded and
+    retained the protected tarball, SHA-256, 641-entry manifest, Git state, 49-entry
+    dirty status, and pre-change `.htaccess` copy outside the webroot.
+12. Added the allow-listed Hostinger payload manifest and staging/test scripts.
+    The build, asset verification, rendered homepage check, staging policy, workflow
+    safety checks, and staged-payload secret scan all passed.
+13. Ran governed Hostinger dry-run `33103169805`. It completed successfully with
+    non-destructive rsync preview and unchanged server-only checksum safeguards.
+14. Applied the reviewed append-only source-denial fragment in hardening run
+    `33103331526`; no content was deleted. Temporary backup/hardening workflows were
+    disabled afterward but retained for auditability.
+15. Ran governed production overlay `33103604181` from `main`, publishing only the
+    reviewed `apps/website` payload without `--delete`. The monorepo root was never
+    published.
+16. Verified apex and `www` HTTP 200/HTTPS, static website pages HTTP 200, and source,
+    docs, metadata, and config probes HTTP 403. Verified that Hostinger API-style
+    routes remain 404 because those belong to the separate Vercel platform. Vercel
+    `/`, `/login`, `/register`, and `/api/health` are 200; `/api/health/ready` remains
+    503.
+17. Updated the migration audit and this handoff, then pushed documentation commit
+    `0c8d065` to `main`. No repositories, DNS records, Hostinger sites, or files were
+    deleted.
+
+### Current rollback anchor
+
+Disable the governed Hostinger workflow, restore the protected
+`public_html.tar.gz` into the Hostinger webroot using the retained manifest, restore
+`.htaccess.pre-source-deny`, verify the recorded checksums, and rerun the HTTP/SSL and
+exposure matrix. DNS rollback is not applicable because DNS was never changed.
