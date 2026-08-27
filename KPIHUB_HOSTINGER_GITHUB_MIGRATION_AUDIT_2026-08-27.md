@@ -127,12 +127,12 @@ DNS change is approved or planned.
 | GitHub CLI browser/device OAuth repair | Complete | Authenticated as `hsharmagxi-debug`; no PAT reused |
 | Exposed PAT rotation | Deferred | Owner scheduled manual rotation for 2026-08-28 |
 | Hostinger password rotation | Deferred | Plaintext credential was exposed in chat; never copied into repo/tool commands |
-| Protected Hostinger backup | Pending | Must record path and checksum below |
-| Scoped workflow implementation | In progress | Isolated branch `chore/hostinger-migration` |
-| New deploy-key installation | Pending | Generate a dedicated key after backup |
-| Dry run and deployment | Pending | Record GitHub run IDs |
-| Source exposure remediation | Pending | Apply tested no-secret Apache fragment after `.htaccess` backup |
-| Old deployment authority disabled | Pending | Only after replacement passes |
+| Protected Hostinger backup | Complete | `/home/u117990013/kpihub-migration-backups/2026-08-27-before-kpihub-assembled/public_html.tar.gz`; SHA-256 `184ecb5de1c4fcbd457f9bac9a45f3895e3b84e843bc2cc24cdb9a1b3a9550a3`; 641 manifest entries; 49 dirty Git entries preserved |
+| Scoped workflow implementation | Complete | Merged to `main` in governed deployment commits |
+| New deploy-key installation | Complete | Dedicated key authorized in Hostinger SSH access; masked in `hostinger-production` |
+| Dry run and deployment | Complete | Dry run `33103169805`; production overlay `33103604181`; both successful |
+| Source exposure remediation | Complete | Append-only `.htaccess` hardening run `33103331526`; rollback copy `.htaccess.pre-source-deny` retained in backup |
+| Old deployment authority disabled | Partial | `hsharmagxi-debug/thekpihub-platform` workflow `306005775` disabled; server Git remote still points to inaccessible legacy repository and requires owner-side webhook confirmation |
 
 ## Credential handling notes
 
@@ -156,3 +156,16 @@ Populate after execution with:
 - denied-source and preserved-runtime path results;
 - old workflow/webhook disabled evidence;
 - exact rollback commands and any remaining blockers.
+
+## Final execution evidence
+
+- Canonical repository: `https://github.com/hsharmagxi-debug/kpihub-assembled`
+- Production branch: `main`; deployed workflow head: `9f34a3094c37e55a0782e366030ad96cd9f098db`
+- Hostinger document root: `/home/u117990013/domains/thekpihub.com/public_html`
+- Hostinger remains authoritative for `thekpihub.com`; DNS and nameservers were not changed.
+- HTTPS apex and `www` return HTTP 200 with the existing valid certificate.
+- Static pages `/`, `/login.html`, `/register.html`, `/pricing.html`, `/auditor.html`, and `/benchmarks.html` return HTTP 200.
+- Source/config probes now return HTTP 403 for `README.md`, `CLAUDE.md`, `vercel.json`, `firebase.json`, `package.json`, `config.example.js`, `docs/`, `tools/`, `.github/`, `api/index.js`, `server.js`, `tailwind.config.js`, and `package-lock.json`.
+- Hostinger `/login`, `/register`, `/api/health`, and `/api/health/ready` remain HTTP 404 because this host is the static website; the platform health routes are served by the separate Vercel app.
+- Temporary backup and hardening workflows are disabled but retained for auditability. No files or repositories were deleted.
+- Remaining blocker: obtain owner access to `thekpihub/thekpihub-website` (or its Hostinger webhook owner) to prove the historical webhook is disconnected; the known accessible duplicate Hostinger workflow is disabled.

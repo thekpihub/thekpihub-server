@@ -385,3 +385,17 @@ curl https://thekpihub-platform.vercel.app/api/health/ready
 > 2. Complete any email-confirmation step required by Supabase Auth
 > 3. Sign in at `/login` and verify the authenticated `/dashboard` session
 > 4. Remove the disposable account after verification if it is no longer needed
+
+## Hostinger migration status — 2026-08-27
+
+- Canonical project root: `C:\Users\Admin\OneDrive\10-projects\11-The KPI Hub`.
+- Canonical GitHub repository: `https://github.com/hsharmagxi-debug/kpihub-assembled`, branch `main`.
+- Hostinger remains the hosting platform for `https://thekpihub.com`.
+- Governed deployment completed from the explicit `apps/website` allow-list; monorepo root was not published. GitHub run: `33103604181`.
+- Protected pre-change backup: `/home/u117990013/kpihub-migration-backups/2026-08-27-before-kpihub-assembled/public_html.tar.gz`, SHA-256 `184ecb5de1c4fcbd457f9bac9a45f3895e3b84e843bc2cc24cdb9a1b3a9550a3`.
+- Server-only `config.js`, WordPress/runtime paths, and `.htaccess` were preserved. Source-denial rules were applied append-only after backup; rollback copy is retained outside the webroot.
+- Verified live: apex and `www` HTTP 200/HTTPS; static homepage and website pages HTTP 200. Repository/config/docs probes return HTTP 403.
+- `/login`, `/register`, `/api/health`, and `/api/health/ready` are intentionally not Hostinger routes; those belong to the separate Vercel platform deployment.
+- Accessible duplicate workflow `hsharmagxi-debug/thekpihub-platform` is disabled. The server’s historical remote still names `https://github.com/thekpihub/thekpihub-website.git`; owner access is still needed to prove its old webhook is disconnected.
+- Temporary backup/hardening workflows are disabled and retained as audit evidence. No files, repositories, DNS records, or Hostinger sites were deleted.
+- Credential reminder: rotate the exposed GitHub PAT, Hostinger password, deployment keys, and other long-lived tokens manually on 2026-08-28 as previously scheduled. Never paste credentials into chat.
