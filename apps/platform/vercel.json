@@ -1,0 +1,74 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm ci",
+  "framework": "nextjs",
+  "env": [
+    {
+      "key": "NEXT_PUBLIC_APP_URL",
+      "description": "Public application URL",
+      "value": "https://thekpihub-platform.vercel.app"
+    },
+    {
+      "key": "NEXT_PUBLIC_SUPABASE_URL",
+      "description": "Supabase project URL",
+      "value": "https://eeuwkislidznpgdbvvbo.supabase.co"
+    },
+    {
+      "key": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "description": "Supabase anonymous key"
+    },
+    {
+      "key": "SUPABASE_SERVICE_ROLE_KEY",
+      "description": "Supabase service role key"
+    },
+    {
+      "key": "STRIPE_SECRET_KEY",
+      "description": "Stripe secret key"
+    },
+    {
+      "key": "STRIPE_WEBHOOK_SECRET",
+      "description": "Stripe webhook secret"
+    },
+    {
+      "key": "STRIPE_PRICE_STARTER",
+      "description": "Stripe Starter plan price ID"
+    },
+    {
+      "key": "STRIPE_PRICE_GROWTH",
+      "description": "Stripe Growth plan price ID"
+    },
+    {
+      "key": "STRIPE_PRICE_ENTERPRISE",
+      "description": "Stripe Enterprise plan price ID"
+    },
+    {
+      "key": "ANTHROPIC_API_KEY",
+      "description": "Anthropic API key"
+    },
+    {
+      "key": "OPENROUTER_API_KEY",
+      "description": "OpenRouter API key"
+    },
+    {
+      "key": "WINGMAN_API_URL",
+      "description": "Wingman agent API URL"
+    },
+    {
+      "key": "WINGMAN_URL",
+      "description": "Wingman UI URL"
+    },
+    {
+      "key": "HANDOFF_SECRET",
+      "description": "Handoff authentication secret"
+    }
+  ],
+  "ignore": [
+    ".git",
+    ".gitignore",
+    "node_modules",
+    "npm-debug.log",
+    "supabase",
+    "*.md"
+  ]
+}
