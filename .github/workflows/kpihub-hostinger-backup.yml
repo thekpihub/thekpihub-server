@@ -43,9 +43,9 @@ jobs:
           sha256sum "$BACKUP_DIR/public_html.tar.gz"
           wc -l "$BACKUP_DIR/public_html.manifest" "$BACKUP_DIR/git-status.txt"
           REMOTE
-          scp -i "$HOME/.ssh/key" -o BatchMode=yes -o StrictHostKeyChecking=yes -P "$P" "$U@$H:$backup_dir/public_html.tar.gz.sha256" .
-          scp -i "$HOME/.ssh/key" -o BatchMode=yes -o StrictHostKeyChecking=yes -P "$P" "$U@$H:$backup_dir/public_html.manifest" .
-          scp -i "$HOME/.ssh/key" -o BatchMode=yes -o StrictHostKeyChecking=yes -P "$U@$H:$backup_dir/git-state.txt" .
+          ssh -i "$HOME/.ssh/key" -o BatchMode=yes -o StrictHostKeyChecking=yes -p "$P" "$U@$H" "cat '$backup_dir/public_html.tar.gz.sha256'" > public_html.tar.gz.sha256
+          ssh -i "$HOME/.ssh/key" -o BatchMode=yes -o StrictHostKeyChecking=yes -p "$P" "$U@$H" "cat '$backup_dir/public_html.manifest'" > public_html.manifest
+          ssh -i "$HOME/.ssh/key" -o BatchMode=yes -o StrictHostKeyChecking=yes -p "$P" "$U@$H" "cat '$backup_dir/git-state.txt'" > git-state.txt
       - uses: actions/upload-artifact@v4
         with:
           name: hostinger-backup-evidence
