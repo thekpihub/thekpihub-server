@@ -76,11 +76,6 @@ jobs:
           bash scripts/test-hostinger-workflow.sh
           bash scripts/test-hostinger-source-deny.sh
 
-      - name: Scan source for committed secrets
-        run: |
-          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:latest \
-            detect --source=/repo --no-git --no-banner --redact
-
       - name: Create allow-listed payload
         run: |
           mkdir -p "$RUNNER_TEMP/website-payload"
@@ -88,6 +83,13 @@ jobs:
             apps/website "$RUNNER_TEMP/website-payload"
           find "$RUNNER_TEMP/website-payload" -type f -printf '%P\n' \
             | LC_ALL=C sort | tee "$RUNNER_TEMP/website-payload.txt"
+
+      - name: Scan deploy payload for secrets
+        run: |
+          docker run --rm \
+            -v "$RUNNER_TEMP/website-payload:/repo:ro" \
+            ghcr.io/gitleaks/gitleaks:latest \
+            detect --source=/repo --no-git --no-banner --redact
 
       - uses: actions/upload-artifact@v4
         with:
