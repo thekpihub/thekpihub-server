@@ -1,0 +1,45 @@
+name: KPI Hub Hostinger hardening (temporary)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: hostinger-production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply source denial fragment
+        shell: bash
+        env:
+          H: ${{ secrets.HOSTINGER_HOST }}
+          P: ${{ secrets.HOSTINGER_PORT }}
+          U: ${{ secrets.HOSTINGER_USERNAME }}
+          K: ${{ secrets.HOSTINGER_SSH_KEY }}
+          KH: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.ssh"
+          printf '%s\n' "$K" > "$HOME/.ssh/key"
+          printf '%s\n' "$KH" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/key" "$HOME/.ssh/known_hosts"
+          root="/home/$U/domains/thekpihub.com/public_html"
+          backup="/home/$U/kpihub-migration-backups/2026-08-27-before-kpihub-assembled"
+          ssh -i "$HOME/.ssh/key" -o BatchMode=yes -o StrictHostKeyChecking=yes -p "$P" "$U@$H" "ROOT=$(printf '%q' "$root") BACKUP=$(printf '%q' "$backup") bash -s" <<'REMOTE'
+          set -euo pipefail
+          test -d "$ROOT"
+          cp -p "$ROOT/.htaccess" "$BACKUP/.htaccess.pre-source-deny"
+          REMOTE
+          fragment_b64=$(base64 -w0 apps/website/hostinger-source-deny.conf)
+          ssh -i "$HOME/.ssh/key" -o BatchMode=yes -o StrictHostKeyChecking=yes -p "$P" "$U@$H" "ROOT=$(printf '%q' "$root") FRAGMENT_B64=$(printf '%q' "$fragment_b64") bash -s" <<'REMOTE'
+          set -euo pipefail
+          if ! grep -q 'KPI Hub public-source denial fragment' "$ROOT/.htaccess"; then
+            printf '%s' "$FRAGMENT_B64" | base64 -d | cat "$ROOT/.htaccess" - > "$ROOT/.htaccess.kpihub-combined.tmp"
+            mv "$ROOT/.htaccess.kpihub-combined.tmp" "$ROOT/.htaccess"
+          fi
+          sha256sum "$ROOT/.htaccess"
+          REMOTE
