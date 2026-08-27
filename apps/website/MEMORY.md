@@ -100,6 +100,18 @@ PAT, Hostinger password, and other long-lived tokens until 2026-08-28. This is s
 open. Never add credential values to this memory file, `HANDOFF.md`, source, or
 archive materials.
 
+**Local secret quarantine:** A follow-up inventory found five ignored local files:
+root `.env`, `apps/platform/.env.local`, `apps/platform/credentials.json`,
+`fake_cert.pem`, and `fake_private.key`. None were tracked or uploaded. They were
+moved, without deletion, to the designated security location
+`C:\Users\Admin\OneDrive\20-areas\22-security-and-access\KPI Hub\2026-08-27-secret-quarantine`
+as `root.env`, `platform.env.local`, `platform-credentials.json`, `fake_cert.pem`,
+and `fake_private.key`. The repository was re-scanned afterward and contains no
+actual `.env`, credential JSON, PEM, or private-key files. OneDrive/WSL mount mode
+reporting showed `777` despite the attempted `600` chmod; Windows/OneDrive ACLs
+should therefore be reviewed manually. Templates (`.env.example`) remain tracked
+because they contain no secret values.
+
 ### 2026-06-21 — Full CI/automation audit + RSS feed fix (PR #7, merged)
 
 **What:** Investigated every failing GitHub Actions check (not just the one visible in the

@@ -464,3 +464,83 @@ Disable the governed Hostinger workflow, restore the protected
 `public_html.tar.gz` into the Hostinger webroot using the retained manifest, restore
 `.htaccess.pre-source-deny`, verify the recorded checksums, and rerun the HTTP/SSL and
 exposure matrix. DNS rollback is not applicable because DNS was never changed.
+
+## Secret-file quarantine — 2026-08-27
+
+Five ignored local secret-like files were inventoried and moved without deletion to:
+
+`C:\Users\Admin\OneDrive\20-areas\22-security-and-access\KPI Hub\2026-08-27-secret-quarantine`
+
+| Original | Quarantine name | Status |
+|---|---|---|
+| `.env` | `root.env` | moved; not tracked |
+| `apps/platform/.env.local` | `platform.env.local` | moved; not tracked |
+| `apps/platform/credentials.json` | `platform-credentials.json` | moved; not tracked |
+| `fake_cert.pem` | `fake_cert.pem` | moved; not tracked |
+| `fake_private.key` | `fake_private.key` | moved; not tracked |
+
+The repository was rescanned after the move and no real `.env`, credentials JSON,
+PEM, or private-key files remain. `.env.example` templates remain because they do
+not contain secret values. The OneDrive/WSL mount reported mode `777` after an
+attempted `chmod 600`, so review the Windows/OneDrive ACLs manually and keep this
+folder out of all sync/public-share/deployment locations. These files must never be
+committed, uploaded, or included in a Hostinger/Vercel payload.
+
+---
+
+## Complete work log — second WSL2 machine, docs-only session (2026-08-27 → 2026-08-28)
+
+This is a different, separate session/machine from the "Complete work log — 2026-08-27"
+above — that one did the real Vercel/Hostinger production deployment. This session did
+**docs and git reconciliation only**: no application code, infrastructure, or credentials
+were touched.
+
+1. User asked this session to verify KPIHUB-Assembled work was pushed, then create/update
+   a repo-root `HANDOFF.md` and `KPIHUB_ASSEMBLED_AUDIT_LOG_2026-08-27.md` so Codex could
+   continue from GitHub without the chat.
+2. Repo review found a real conflict before making any change: this repo's actual stack
+   (Next.js + Supabase + Stripe) contradicts the user's global config description of KPI
+   Hub (pure HTML/CSS/JS, no frameworks); and this repo's own untracked, local-only
+   `AGENT-HANDOFF.md` (a parallel WSL2-sandbox-security-pilot investigation using this same
+   repo) carried explicit standing boundaries — "do not commit/push this handoff file,"
+   "do not invoke Codex," "do not start Phase 4" — that the new request directly conflicted
+   with. Stopped and asked the user rather than guessing.
+3. User confirmed: "This IS the real KPI Hub rebuild — proceed fully," explicitly
+   overriding the prior session's caution.
+4. Local branch had 1 unpushed commit (`WSL-PILOT-SMOKE-TEST.md` sandbox-hardening notes,
+   unrelated to the platform) while `origin/main` was 12 commits ahead. Fetched; confirmed
+   via `git merge-tree` that no real conflicts existed (only additions); merged (one
+   trivial `.gitignore` conflict, resolved by keeping both added lines).
+5. Found `origin/main` already had its own `HANDOFF.md` and this audit log from an earlier
+   "Sprint 4" session. Its audit log had a "Credential Files Checked" section listing exact
+   Windows file paths plus a per-file inventory of which live secrets each contains,
+   including a note that one file has an unrotated RSA private key + WordPress DB
+   credentials. No literal key values were present, but the file-path map itself was a
+   real exposure once pushed to a repo Codex reads directly.
+6. Flagged this to the user; user chose to redact and push. Replaced that section with a
+   generic rotation reminder (see "Credential Sourcing (Redacted)" in the audit log),
+   removed all `D:\` path references repo-wide (verified with grep), kept everything else.
+7. Practical obstacle: 3 `.env.example` files were presented by the local sandbox as
+   unhashable character-special device nodes (a known credential-substitution mechanism
+   from the separate WSL2-pilot investigation, re-encountered here), which made `git
+   merge`'s internal stash step fail outright. Fixed with `git update-index
+   --skip-worktree` on those 3 paths before merging — not a real content change.
+8. Committed the two legitimate pre-existing doc changes separately, then the merge, then
+   the redaction + doc updates, then pushed. A second wave of concurrent upstream commits
+   (a UI-inventory addition to this file) landed mid-task; required a second
+   fetch/merge/push cycle — also clean, no conflicts. Final commit that round: `aec5070`,
+   confirmed local `HEAD == origin/main`.
+9. Never staged or committed the decoy/fake credential files sitting in the working tree
+   (`credentials.json`, `id_rsa`, `service-account.json`, `fake_cert.pem`, stray dotfiles,
+   `sneaky_link_to_fake_cred`) — verified clean before and after every commit.
+10. Follow-up turn (2026-08-28): user asked for a git-status recheck, to avoid redoing
+    already-completed work, and to record every step here and in this session's Claude
+    Code memory. Found local `main` had already fast-forwarded to `4cf0547` — the other,
+    separate session's 14 additional real-deployment commits — with nothing to merge.
+    Found 21 unrelated modified `apps/website/*.html`/`tailwind.css` files (asset
+    cache-busting version-hash churn) sitting dirty in the working tree; not from this
+    session, flagged to the user, left untouched.
+
+**Why this matters for Codex:** if you see this repo's git history move between reads,
+that's expected — at least one other, separately-authenticated session pushes to `main`
+concurrently. `git fetch` before assuming any file here is current.
