@@ -171,20 +171,25 @@
 
 ---
 
-## Credential Files Checked (Not Committed)
+### Reconciliation — Second WSL2 Machine (2026-08-27)
+**Commit**: this commit (merge + docs)
 
-The following Windows files were read during this session to identify KPI Hub credentials. **No values were committed to git.** Files remain on the user's machine only.
+**What happened:**
+- A separate WSL2 machine had 1 unpushed commit continuing `WSL-PILOT-SMOKE-TEST.md` (sandbox-hardening notes, unrelated to platform work). Fetched and merged `origin/main`'s 12 commits (through the TypeScript-fix handoff above) into that machine's `main` — one trivial `.gitignore` conflict, resolved by keeping both added lines. No code conflicts.
+- Re-verified `apps/platform` typecheck and `services/pipeline` py_compile independently on this machine — both PASS.
+- Redacted the "Credential Files Checked" section below (see "Credential Sourcing (Redacted)") — it listed exact local Windows file paths and a per-file secret inventory, which is a credential-location map rather than project history and shouldn't be handed to an external agent through this repo.
 
-| File | What was found |
-|---|---|
-| `D:\ALL API KEY's\Keys - Stick Notes.txt` | Legacy backend Supabase project (`mnaarrtgcbzlsiptlfth`) — wrong project for platform; Razorpay live keys (website only); Anthropic key with escape artifacts; Redis/JWT/OAuth for legacy backend |
-| `D:\AI Projects\CREDENTIALS_FOUND_20260702.md` | Correct Supabase project confirmed (`eeuwkislidznpgdbvvbo`); clean Anthropic key; Hostinger SSH details; Razorpay/Twilio/SendGrid/GitHub token |
-| `D:\AI Projects\CREDENTIALS_SUMMARY_SECURE_20260702.md` | Formspree form IDs (xvzdbban, xnjoevjk, xgojpynr); GA4 ID (G-DZPCCPEP1J); same API keys as above |
-| `D:\AI Projects\FINAL_CREDENTIALS_SUMMARY_20260702.md` | Supabase anon key referenced but TRUNCATED (`eyJhbGc...`); full value in `kpihub-env-local.txt` (file not accessible from WSL) |
-| `D:\AI Projects\sync-credentials.ps1` | PowerShell credential sync script for legacy repos; single source of truth is `D:\AI Projects\credentials.md` |
-| `D:\AI Projects\credentials.md` | Master template — mostly empty; WordPress/SSH keys found in Part 3 (not platform-relevant) |
+**Why:** Two machines had diverged; needed a clean merge before adding anything further, and the credential-path inventory was flagged as a real exposure risk before pushing further.
 
-**Security note**: `credentials.md` contains an RSA private key and WordPress DB credentials in Part 3 "DISCOVERED credentials" section. These were seen but not used. Consider rotating them.
+---
+
+## Credential Sourcing (Redacted)
+
+An earlier session located the platform's required secrets (Supabase project `eeuwkislidznpgdbvvbo` keys, Razorpay, Hostinger SSH, etc.) in local files on the user's Windows machine and used them to populate Vercel env vars — no secret values were committed to git.
+
+**Redacted from this log on 2026-08-27**: the original version of this section listed exact local file paths and a per-file inventory of which credentials each one contains. That is a credential-location map, not project history, and this repo (private today) is read directly by Codex — so it's been removed here rather than carried forward. It is not needed to continue the work below.
+
+**Action item for the user, not Codex**: a local file (path known to the user, not repeated here) was noted as containing an **unrotated RSA private key and WordPress DB credentials** in plaintext. Rotate both and remove/secure that file independently of this handoff.
 
 ---
 
@@ -252,7 +257,7 @@ The following Windows files were read during this session to identify KPI Hub cr
 - [ ] Custom domain configuration (Vercel → add `platform.thekpihub.com` or similar)
 - [ ] Uptime monitoring setup (use `/api/health/ready` as the probe URL)
 - [ ] Error tracking (Sentry or Vercel Analytics)
-- [ ] Rotate any credentials from `D:\AI Projects\credentials.md` Part 3 that were not already rotated
+- [ ] Rotate the RSA private key and WordPress DB credentials noted above (user-side action, local file path intentionally not repeated in this repo)
 
 ---
 

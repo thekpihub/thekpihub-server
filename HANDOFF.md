@@ -9,6 +9,31 @@
 
 ---
 
+## Session Update — 2026-08-27 (second WSL2 machine, reconciliation)
+
+A second, independent WSL2 machine had 1 unpushed local commit (further
+`WSL-PILOT-SMOKE-TEST.md` notes from a separate sandbox-hardening exercise on
+that machine — unrelated to the platform work below) while `origin/main` had
+already moved ahead by 12 commits (Phases B fix / C / D / Sprint 3 / Sprint 4,
+all described below). The two histories were merged with no code conflicts
+(one trivial `.gitignore` conflict, resolved by keeping both added lines).
+
+**Redaction made this session**: the original "Credential Files Checked"
+section further down in `KPIHUB_ASSEMBLED_AUDIT_LOG_2026-08-27.md` listed
+exact local Windows file paths and a per-file inventory of which secrets each
+one contains. Since this repo is read directly by Codex, that credential-location
+map was replaced with a generic pointer (see that section) rather than carried
+forward — no functional information for continuing the work was lost, but if
+you need the original paths they are only in this session's local chat history,
+not in git.
+
+**Verified independently on this machine**: `apps/platform` typecheck (`tsc
+--noEmit`) PASS; `services/pipeline` `python -m py_compile pipeline.py` PASS.
+Full `npm install`/`build` across the other components was not re-run here —
+rely on the Sprint 3/4 results below for those.
+
+---
+
 ## Current Project Status
 
 | Dimension | Status |
@@ -190,7 +215,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://eeuwkislidznpgdbvvbo.supabase.co
 |---|---|
 | Repo | https://github.com/hsharmagxi-debug/kpihub-assembled |
 | Branch | `main` |
-| Remote | `git@github.com:hsharmagxi-debug/kpihub-assembled.git` |
+| Remote | `https://github.com/hsharmagxi-debug/kpihub-assembled.git` |
 | Local ahead | 0 (in sync after final push) |
 
 ---
@@ -199,7 +224,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://eeuwkislidznpgdbvvbo.supabase.co
 
 ```bash
 # 1. Clone and enter repo
-git clone git@github.com:hsharmagxi-debug/kpihub-assembled.git
+git clone https://github.com/hsharmagxi-debug/kpihub-assembled.git
 cd kpihub-assembled
 
 # 2. Install platform deps
