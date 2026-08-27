@@ -1,0 +1,235 @@
+name: Website - Hostinger governed deploy
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - apps/website/**
+      - scripts/stage-hostinger-site.sh
+      - scripts/test-stage-hostinger-site.sh
+      - scripts/test-hostinger-workflow.sh
+      - .github/workflows/deploy-website-hostinger.yml
+  push:
+    branches: [main]
+    paths:
+      - apps/website/**
+      - scripts/stage-hostinger-site.sh
+      - scripts/test-stage-hostinger-site.sh
+      - scripts/test-hostinger-workflow.sh
+      - .github/workflows/deploy-website-hostinger.yml
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Remote operation
+        required: true
+        default: dry-run
+        type: choice
+        options:
+          - dry-run
+          - deploy
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hostinger-website
+  cancel-in-progress: false
+
+env:
+  HOSTINGER_WEBROOT: /home/u117990013/domains/thekpihub.com/public_html
+
+jobs:
+  prepare:
+    name: Build and stage website payload
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/website/package-lock.json
+
+      - name: Install locked dependencies
+        working-directory: apps/website
+        run: npm ci
+
+      - name: Build static website
+        working-directory: apps/website
+        run: npm run build:site
+
+      - name: Verify asset fingerprints
+        working-directory: apps/website
+        run: npm run check:assets
+
+      - name: Verify rendered homepage
+        working-directory: apps/website
+        run: |
+          ! grep -q 'Loading The KPI Hub' index.html
+          grep -q '<h1' index.html
+          test "$(wc -c < index.html)" -ge 20000
+
+      - name: Verify staging policy tests
+        run: |
+          bash scripts/test-stage-hostinger-site.sh
+          bash scripts/test-hostinger-workflow.sh
+          bash scripts/test-hostinger-source-deny.sh
+
+      - name: Create allow-listed payload
+        run: |
+          mkdir -p "$RUNNER_TEMP/website-payload"
+          scripts/stage-hostinger-site.sh \
+            apps/website "$RUNNER_TEMP/website-payload"
+          find "$RUNNER_TEMP/website-payload" -type f -printf '%P\n' \
+            | LC_ALL=C sort | tee "$RUNNER_TEMP/website-payload.txt"
+
+      - name: Scan deploy payload for secrets
+        run: |
+          docker run --rm \
+            -v "$RUNNER_TEMP/website-payload:/repo:ro" \
+            ghcr.io/gitleaks/gitleaks:latest \
+            detect --source=/repo --no-git --no-banner --redact
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: website-payload-${{ github.sha }}
+          path: ${{ runner.temp }}/website-payload
+          if-no-files-found: error
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: website-payload-manifest-${{ github.sha }}
+          path: ${{ runner.temp }}/website-payload.txt
+          if-no-files-found: error
+          retention-days: 30
+
+  remote-plan:
+    name: Hostinger dry run
+    needs: prepare
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    env:
+      HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+      HOSTINGER_PORT: ${{ secrets.HOSTINGER_PORT }}
+      HOSTINGER_USERNAME: ${{ secrets.HOSTINGER_USERNAME }}
+      HOSTINGER_SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      HOSTINGER_SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: website-payload-${{ github.sha }}
+          path: website-payload
+
+      - name: Configure verified SSH
+        run: |
+          test -n "$HOSTINGER_HOST"
+          test -n "$HOSTINGER_PORT"
+          test -n "$HOSTINGER_USERNAME"
+          test -n "$HOSTINGER_SSH_KEY"
+          test -n "$HOSTINGER_SSH_KNOWN_HOSTS"
+          test "$HOSTINGER_WEBROOT" = \
+            "/home/$HOSTINGER_USERNAME/domains/thekpihub.com/public_html"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$HOSTINGER_SSH_KEY" > ~/.ssh/hostinger_deploy_key
+          printf '%s\n' "$HOSTINGER_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/hostinger_deploy_key
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Record server-only checksums
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            "cd '$HOSTINGER_WEBROOT' && sha256sum config.js .htaccess" \
+            | tee server-only-before.txt
+
+      - name: Preview non-destructive overlay
+        run: |
+          rsync -avzn --itemize-changes \
+            -e "ssh -i ~/.ssh/hostinger_deploy_key -p $HOSTINGER_PORT -o BatchMode=yes -o StrictHostKeyChecking=yes" \
+            website-payload/ \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST:$HOSTINGER_WEBROOT/" \
+            | tee rsync-dry-run.txt
+          ! grep -E 'deleting|config\.js|\.htaccess|wp-admin|wp-content|wp-includes|uploads|cgi-bin|\.well-known' \
+            rsync-dry-run.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hostinger-dry-run-${{ github.run_id }}
+          path: |
+            server-only-before.txt
+            rsync-dry-run.txt
+          if-no-files-found: error
+          retention-days: 30
+
+  deploy:
+    name: Approved Hostinger overlay
+    needs: [prepare, remote-plan]
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'deploy'
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    env:
+      HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+      HOSTINGER_PORT: ${{ secrets.HOSTINGER_PORT }}
+      HOSTINGER_USERNAME: ${{ secrets.HOSTINGER_USERNAME }}
+      HOSTINGER_SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      HOSTINGER_SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: website-payload-${{ github.sha }}
+          path: website-payload
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: hostinger-dry-run-${{ github.run_id }}
+          path: dry-run-evidence
+
+      - name: Configure verified SSH
+        run: |
+          test -n "$HOSTINGER_HOST"
+          test -n "$HOSTINGER_PORT"
+          test -n "$HOSTINGER_USERNAME"
+          test -n "$HOSTINGER_SSH_KEY"
+          test -n "$HOSTINGER_SSH_KNOWN_HOSTS"
+          test "$HOSTINGER_WEBROOT" = \
+            "/home/$HOSTINGER_USERNAME/domains/thekpihub.com/public_html"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$HOSTINGER_SSH_KEY" > ~/.ssh/hostinger_deploy_key
+          printf '%s\n' "$HOSTINGER_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/hostinger_deploy_key
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Overlay approved payload only
+        run: |
+          rsync -avz --itemize-changes \
+            -e "ssh -i ~/.ssh/hostinger_deploy_key -p $HOSTINGER_PORT -o BatchMode=yes -o StrictHostKeyChecking=yes" \
+            website-payload/ \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST:$HOSTINGER_WEBROOT/"
+
+      - name: Verify server-only files survived unchanged
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            "cd '$HOSTINGER_WEBROOT' && sha256sum config.js .htaccess" \
+            > server-only-after.txt
+          diff -u dry-run-evidence/server-only-before.txt server-only-after.txt
+
+  smoke:
+    name: Verify Hostinger production
+    needs: deploy
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'deploy'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify public pages
+        run: |
+          for path in / /pricing.html /auditor.html /benchmarks.html; do
+            curl --fail --silent --show-error --location \
+              "https://thekpihub.com${path}" -o /dev/null
+          done
