@@ -1,0 +1,23 @@
+KPI HUB CLEANUP DECISION TREE — 2026-08-27
+
+1. Does the item contain a secret, credential, token, recovery code, private
+   key, non-template .env file, or a screenshot that may expose one?
+   YES -> Security quarantine. Never normal archive. Record without values.
+
+2. Is it the clean hsharmagxi-debug/kpihub-assembled main checkout that powers
+   https://platform-two-zeta-31.vercel.app?
+   YES -> Canonical website-source. Never merge a dirty repo into it.
+
+3. Is it dirty, ambiguous, a backup, Git bundle, database export, historical
+   handoff, or an unclear package?
+   YES -> 08-manual-review-needed. Preserve intact.
+
+4. Is it a verified redundant clean copy?
+   YES -> Place sequentially in the matching numbered archive category.
+
+5. Before every move: count, collision-check, state risk and rollback.
+   After every move: recount destination and verify source path is absent.
+
+6. Never delete automatically. Deletion requires later human review.
+
+OPEN SECURITY BLOCKER: revoke the exposed classic GitHub PAT on 2026-08-28.

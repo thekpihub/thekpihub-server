@@ -7,6 +7,43 @@
 **Branch**: `main`  
 **Latest commit**: `see git log --oneline -1`
 
+## Canonical Storage and Cleanup — 2026-08-27
+
+- Canonical Windows root: `C:\Users\Admin\OneDrive\10-projects\11-The KPI Hub`
+- Canonical website source: `C:\Users\Admin\OneDrive\10-projects\11-The KPI Hub\website-source`
+- Archive root: `C:\Users\Admin\OneDrive\40-archive\44-redundant-copies-and-zips\The KPI Hub`
+- Security quarantine: `C:\Users\Admin\OneDrive\20-areas\22-security-and-access\The KPI Hub\2026-08-27-security-review`
+- GitHub: `https://github.com/hsharmagxi-debug/kpihub-assembled.git`
+- Branch: `main`
+- Canonical clone commit verified during cleanup: `ef15d0f`
+- Production: `https://platform-two-zeta-31.vercel.app`
+
+The canonical `website-source` is a fresh, clean clone with 493 tracked files
+and zero dirty entries. Older or dirty repositories were kept intact and moved
+only to manual review; none were merged, flattened, reset, or deleted.
+
+### Remaining blockers
+
+1. **Security reminder for 2026-08-28:** revoke the exposed GitHub personal
+   access token (classic). Its contaminated checkout is quarantined, but
+   quarantine does not revoke the credential.
+2. Review the legacy Hostinger website repository before deciding whether it
+   is still a separately active production surface.
+3. Review dirty repositories, backups, bundles, exports, and unclear folders
+   before any deletion. They must not be deleted merely because a clean
+   canonical clone now exists.
+4. Billing remains blocked on the Stripe configuration documented below.
+
+### Next steps for Codex
+
+1. Confirm the exposed GitHub PAT has been revoked; never print or commit it.
+2. Continue only from the canonical `website-source` repository.
+3. Review `docs/KPIHUB_ARCHIVE_INDEX_2026-08-27.md` before moving anything.
+4. Keep ambiguous repositories in manual review and perform content/hash
+   comparison before recommending deletion.
+5. Make documentation-only commits for cleanup records; do not change source
+   code as part of archive work.
+
 ---
 
 ## Session Update — 2026-08-27 (second WSL2 machine, reconciliation)
