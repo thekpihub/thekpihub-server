@@ -1,0 +1,56 @@
+name: KPI Hub Hostinger backup (temporary)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: hostinger-production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Backup Hostinger public_html
+        shell: bash
+        env:
+          H: ${{ secrets.HOSTINGER_HOST }}
+          P: ${{ secrets.HOSTINGER_PORT }}
+          U: ${{ secrets.HOSTINGER_USERNAME }}
+          K: ${{ secrets.HOSTINGER_SSH_KEY }}
+          KH: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.ssh"
+          printf '%s\n' "$K" > "$HOME/.ssh/key"
+          printf '%s\n' "$KH" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/key" "$HOME/.ssh/known_hosts"
+          backup_dir="/home/$U/kpihub-migration-backups/2026-08-27-before-kpihub-assembled"
+          ssh -i "$HOME/.ssh/key" -o BatchMode=yes -o StrictHostKeyChecking=yes -p "$P" "$U@$H" "BACKUP_DIR=$(printf '%q' "$backup_dir") bash -s" <<'REMOTE'
+          set -euo pipefail
+          root="/home/$USER/domains/thekpihub.com/public_html"
+          test -d "$root"
+          mkdir -p "$BACKUP_DIR"
+          chmod 700 "$BACKUP_DIR"
+          test -f "$BACKUP_DIR/public_html.tar.gz" || tar -C "$root" -czf "$BACKUP_DIR/public_html.tar.gz" .
+          sha256sum "$BACKUP_DIR/public_html.tar.gz" > "$BACKUP_DIR/public_html.tar.gz.sha256"
+          find "$root" -mindepth 1 -printf '%y %m %u %g %s %p\n' | sort > "$BACKUP_DIR/public_html.manifest"
+          git -C "$root" status --short > "$BACKUP_DIR/git-status.txt" || true
+          { git -C "$root" config --get remote.origin.url || true; git -C "$root" branch --show-current || true; git -C "$root" rev-parse HEAD || true; } | sed -E 's#https://[^/@]+:[^/@]+@#https://[redacted]@#' > "$BACKUP_DIR/git-state.txt"
+          printf 'BACKUP_DIR=%s\n' "$BACKUP_DIR"
+          sha256sum "$BACKUP_DIR/public_html.tar.gz"
+          wc -l "$BACKUP_DIR/public_html.manifest" "$BACKUP_DIR/git-status.txt"
+          REMOTE
+          scp -i "$HOME/.ssh/key" -o BatchMode=yes -o StrictHostKeyChecking=yes -P "$P" "$U@$H:$backup_dir/public_html.tar.gz.sha256" .
+          scp -i "$HOME/.ssh/key" -o BatchMode=yes -o StrictHostKeyChecking=yes -P "$P" "$U@$H:$backup_dir/public_html.manifest" .
+          scp -i "$HOME/.ssh/key" -o BatchMode=yes -o StrictHostKeyChecking=yes -P "$U@$H:$backup_dir/git-state.txt" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hostinger-backup-evidence
+          path: |
+            public_html.tar.gz.sha256
+            public_html.manifest
+            git-state.txt
+          retention-days: 90
