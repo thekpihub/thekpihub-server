@@ -19,6 +19,7 @@ credentials.md
 *.pfx
 
 .vercel/
+.worktrees/
 
 # Personal Claude Code permission overrides — never share/commit
 .claude/settings.local.json
