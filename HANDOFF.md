@@ -42,7 +42,7 @@ rely on the Sprint 3/4 results below for those.
 | Local runtime | ✅ PASS — Next.js dev server starts, /, /login, /register return 200 |
 | Vercel project linked | ✅ DONE — project `platform` under `hsharmagxi-debugs-projects` |
 | Vercel env vars (partial) | ⚠️ PARTIAL — 2 of 8 needed vars added; 6 still required |
-| First Vercel deployment | ❌ NOT YET — blocked on missing Supabase anon key |
+| First Vercel deployment | ✅ LIVE — `https://platform-two-zeta-31.vercel.app` |
 | Stripe products | ❌ NOT YET — products and price IDs not created in Stripe dashboard |
 | Auth working | ❌ BLOCKED — needs `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
 | Billing working | ❌ BLOCKED — needs Stripe secret key + price IDs |
@@ -235,7 +235,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://eeuwkislidznpgdbvvbo.supabase.co
 |---|---|---|---|
 | 1 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` missing from Vercel | Auth routes crash; no login/register | Add from Supabase dashboard |
 | 2 | Stripe products not created | Billing/checkout non-functional | Create products in Stripe dashboard, add price IDs |
-| 3 | First Vercel deployment not triggered | Platform not live | Push any commit or trigger from Vercel dashboard |
+| 3 | Public alias differs from the originally documented URL | Bookmarks/docs using `thekpihub-platform.vercel.app` will not resolve to this project | Use `platform-two-zeta-31.vercel.app` or add the intended custom domain |
 | 4 | No real linter configured | Code quality drift possible | Add ESLint or Biome to platform (`npm install -D eslint`) |
 | 5 | No tests | Regressions undetected | Add Vitest or Jest |
 
@@ -245,8 +245,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://eeuwkislidznpgdbvvbo.supabase.co
 
 ### Immediate (Codex can do from GitHub)
 1. **Add missing Vercel env vars** — operator must add `NEXT_PUBLIC_SUPABASE_ANON_KEY` and Stripe vars via Vercel dashboard
-2. **Trigger first deployment** — `git push origin main` or Vercel dashboard deploy button
-3. **Verify deployment** — `curl -I https://thekpihub-platform.vercel.app`
+2. **Redeploy after adding the key** — `git push origin main` or Vercel dashboard deploy button
+3. **Verify deployment** — `curl -I https://platform-two-zeta-31.vercel.app`
 4. **Create Stripe products** — two products (Growth, Enterprise) with recurring monthly prices
 
 ### Near-Term
@@ -310,9 +310,9 @@ curl https://thekpihub-platform.vercel.app/api/health/ready
 
 ## Exact Next Action for Codex
 
-> **Add `NEXT_PUBLIC_SUPABASE_ANON_KEY` to Vercel, then trigger the first deployment.**
+> **Add `NEXT_PUBLIC_SUPABASE_ANON_KEY` to Vercel, then redeploy the live platform.**
 >
 > 1. Go to https://vercel.com/hsharmagxi-debugs-projects/platform/settings/environment-variables
 > 2. Add `NEXT_PUBLIC_SUPABASE_ANON_KEY` for all environments (value: anon/public key from Supabase project `eeuwkislidznpgdbvvbo`)
 > 3. Push any commit or click "Redeploy" in Vercel dashboard
-> 4. Verify at https://thekpihub-platform.vercel.app
+> 4. Verify at https://platform-two-zeta-31.vercel.app
