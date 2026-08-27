@@ -1,8 +1,8 @@
-# KPIHUB-ASSEMBLED — HOME LAPTOP CONTINUATION HANDOFF
+# KPIHUB-ASSEMBLED — SPRINT 4 MULTI-AGENT HANDOFF
 
-**Created**: 2026-08-27  
-**Machine**: Home laptop (WSL2, Linux 6.6.87.2-microsoft-standard-WSL2)  
-**Sprint**: Sprint 3 — Home Development Environment Recovery
+**Created**: 2026-08-27
+**Machine**: Home laptop (WSL2, Linux 6.6.87.2-microsoft-standard-WSL2)
+**Sprint**: Sprint 4 — Multi-Agent Verification + Phase B Readiness
 
 ---
 
@@ -10,274 +10,347 @@
 
 | Field | Value |
 |---|---|
-| Path | `/home/nitr0/workspaces/kpihub-assembled` |
-| Remote | `git@github.com:hsharmagxi-debug/kpihub-assembled.git` |
-| Branch | `main` |
-| HEAD SHA | `4be0a6375fffef34e4382fbed65815174f4ce81c` |
-| Working tree | **CLEAN** |
+| Path | /home/nitr0/workspaces/kpihub-assembled |
+| Remote | origin (GitHub) |
+| Branch | main |
+| Local HEAD SHA | 62343ed4a123f1cc8e1a58915885ed500b52ea0a |
+| Working tree | CLEAN |
+| Remote status | 1 commit ahead of origin/main — NOT pushed |
+
+The local HEAD (62343ed) has not been pushed. `git push` is a manual step not yet performed.
 
 ---
 
-## 2. WSL / Home Machine Context
+## 2. Machine Context
 
-- **OS**: WSL2 — Linux 6.6.87.2-microsoft-standard-WSL2
-- **Shell**: bash
-- **Node.js**: v22.22.2
-- **npm**: 10.9.7
-- **Python**: 3.12.3
-- **Claude CLI**: v2.1.247 at `/home/nitr0/.local/bin/claude`
-- **Git user**: `hsharmagxi-debug`
-- This is a **different machine** from the office session. The office SHA `bbc34766d5d0be647f53f74a12eb9b1e1248ce18` is **not present** in the fetched refs of this repository — it was never pushed and is not recoverable here. `AGENT-HANDOFF.md` and `WSL-PILOT-SMOKE-TEST.md` from the office session were also not recovered; the office session's work exists only in that machine's local git state. This is not a blocker.
+| Field | Value |
+|---|---|
+| Machine type | Home laptop — WSL2 |
+| OS | Linux 6.6.87.2-microsoft-standard-WSL2 |
+| Node | v22.22.2 |
+| npm | 10.9.7 |
+| Python | 3.12.3 |
+| Claude path | /home/nitr0/.local/bin/claude |
+| Claude version | 2.1.247 (Claude Code) |
+
+Outbound HTTPS from WSL to external services (e.g., Supabase, Stripe) is reachable at the TCP level but connectivity probes returned HTTP 000 in WSL — this is a local WSL network constraint, not a problem with Supabase itself.
 
 ---
 
-## 3. Current Architecture
-
-### Component Classification
+## 3. Component Architecture
 
 | Component | Path | Classification | Notes |
 |---|---|---|---|
-| Platform | `apps/platform` | ACTIVE_DEVELOPMENT_COMPONENT | Next.js 16.3.2 + Supabase + Stripe + AI; target: Vercel |
-| Website | `apps/website` | ACTIVE_PRODUCTION_COMPONENT | Static/PHP; live at thekpihub.com on Hostinger |
-| Legacy App | `apps/legacy-app` | REFERENCE_ONLY | Next.js + Prisma archive; migration source only |
-| Wing Commander | `apps/wingcommander-reference` | REFERENCE_ONLY | Multi-deployment reference; not core production |
-| Pipeline | `services/pipeline` | SUPPORTING_SERVICE | Python KPI pipeline |
-| Builder | `tools/automated-website-builder` | BUILD_TOOLING | Autonomous website build tool |
-
-### Live Deployment Topology
-
-```
-thekpihub.com           → Hostinger (apps/website, static/PHP)
-                           Auth: Supabase eeuwkislidznpgdbvvbo
-                           Billing: Razorpay LIVE (₹2,999 audit)
-
-thekpihub-platform.vercel.app → Vercel (apps/platform, Next.js)
-                                  STAGING — not yet at prod URL
-                                  Requires: env vars configured in Vercel dashboard
-```
+| platform | apps/platform | ACTIVE_DEVELOPMENT | Next.js 16.3.2 + Supabase + Stripe + AI. Build: PASS (12 routes). Typecheck: PASS. Lint: MISCONFIGURED. Target: Vercel (thekpihub-platform.vercel.app). No .vercel/project.json present; project not linked yet. |
+| website | apps/website | ACTIVE_PRODUCTION | Static/PHP; live at thekpihub.com on Hostinger. Build: PASS (version-assets.mjs). Auth: Supabase project eeuwkislidznpgdbvvbo. Billing: Razorpay LIVE. Deployment workflow lives in separate private repo (thekpihub/thekpihub-website). |
+| legacy-app | apps/legacy-app | REFERENCE_ONLY | Next.js + Prisma archive. Migration source only. Not tested, not deployed. |
+| wingcommander-reference | apps/wingcommander-reference | REFERENCE_ONLY | Multi-deployment reference (Vercel/Railway/Cloudflare/Docker). Not core production. Env examples present but not provisioned. |
+| pipeline | services/pipeline | SUPPORTING_SERVICE | Python KPI pipeline. Compile check: PASS (python -m py_compile pipeline.py). Independent process — not imported by Next.js platform at any point. |
+| automated-website-builder | tools/automated-website-builder | BUILD_TOOLING | Autonomous website build tool. npm install: PASS. TypeScript typecheck (tsc --noEmit): PASS. |
 
 ---
 
-## 4. Environment Variable Inventory (NAMES ONLY — no secrets)
+## 4. Environment Variable Inventory (NAMES ONLY — no values)
 
-### `apps/platform` — 14 required variables (from `.env.example`)
+### STARTUP_REQUIRED — app crashes without these
 
-| Variable | Component | Required | Type | Provider | Status |
-|---|---|---|---|---|---|
-| `NEXT_PUBLIC_APP_URL` | platform | Yes | public | self | Provide `https://thekpihub-platform.vercel.app` for Vercel |
-| `NEXT_PUBLIC_SUPABASE_URL` | platform | Yes | public | Supabase | Project: `eeuwkislidznpgdbvvbo.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | platform | Yes | public | Supabase | From project API settings |
-| `SUPABASE_SERVICE_ROLE_KEY` | platform | Yes | **secret** | Supabase | From project API settings |
-| `STRIPE_SECRET_KEY` | platform | Yes | **secret** | Stripe | `sk_test_...` or `sk_live_...` |
-| `STRIPE_WEBHOOK_SECRET` | platform | Yes | **secret** | Stripe | `whsec_...` from webhook endpoint |
-| `STRIPE_PRICE_STARTER` | platform | Yes | config | Stripe | `price_...` from product catalog |
-| `STRIPE_PRICE_GROWTH` | platform | Yes | config | Stripe | `price_...` from product catalog |
-| `STRIPE_PRICE_ENTERPRISE` | platform | Yes | config | Stripe | `price_...` from product catalog |
-| `ANTHROPIC_API_KEY` | platform | Yes | **secret** | Anthropic | `sk-ant-...` |
-| `OPENROUTER_API_KEY` | platform | Yes | **secret** | OpenRouter | From openrouter.ai account |
-| `WINGMAN_API_URL` | platform | For AI features | config | self/Railway | Backend agent URL |
-| `WINGMAN_URL` | platform | For AI features | config | self/Vercel | Agent frontend URL |
-| `HANDOFF_SECRET` | platform | Yes | **secret** | self-generated | Random string; generate locally |
+| Variable | Provider | Target File |
+|---|---|---|
+| NEXT_PUBLIC_SUPABASE_URL | Supabase | apps/platform/.env.local |
+| NEXT_PUBLIC_SUPABASE_ANON_KEY | Supabase | apps/platform/.env.local |
 
-### `apps/website` — Hostinger-managed (not in this repo)
+### FEATURE_REQUIRED — app starts but specific routes return 500 without these
 
-Variables live in `/home/u117990013/public_html/config.js` and `.htaccess` on Hostinger only.  
-Not required for local development of the platform.
+| Variable | Provider | Target File | Impact if missing |
+|---|---|---|---|
+| NEXT_PUBLIC_APP_URL | self (deployment URL) | apps/platform/.env.local | /api/billing/checkout returns 500; non-billing pages unaffected |
+| SUPABASE_SERVICE_ROLE_KEY | Supabase | apps/platform/.env.local | /api/billing/webhook returns 500 |
+| STRIPE_SECRET_KEY | Stripe | apps/platform/.env.local | /api/billing/checkout returns 500 |
+| STRIPE_WEBHOOK_SECRET | Stripe | apps/platform/.env.local | /api/billing/webhook returns 500 |
+| STRIPE_PRICE_GROWTH | Stripe | apps/platform/.env.local | growth-plan checkout returns 500 |
+| STRIPE_PRICE_ENTERPRISE | Stripe | apps/platform/.env.local | enterprise-plan checkout returns 500 |
 
-### `apps/wingcommander-reference/frontend` — REFERENCE_ONLY
+### REFERENCE_ONLY — defined in .env.example but zero usages in apps/platform/src/
 
-`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_URL`
-
-### `apps/wingcommander-reference/backend` — REFERENCE_ONLY
-
-`ANTHROPIC_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `PORT`, `FRONTEND_URL`, `NODE_ENV`
+| Variable | Provider | Notes |
+|---|---|---|
+| STRIPE_PRICE_STARTER | Stripe | Not referenced in source; no runtime effect |
+| ANTHROPIC_API_KEY | Anthropic | Placeholder — not wired into Next.js platform |
+| OPENROUTER_API_KEY | OpenRouter | Placeholder — not wired into Next.js platform |
+| WINGMAN_API_URL | self (agent backend) | Placeholder — not wired into Next.js platform |
+| WINGMAN_URL | self (agent backend) | Placeholder — not wired into Next.js platform |
+| HANDOFF_SECRET | self | Placeholder — not wired into Next.js platform |
 
 ---
 
 ## 5. Environment Readiness
 
-### USER_SECRET_INPUT REQUIRED
+### What is present locally
 
-To run `apps/platform` locally or deploy to Vercel:
+The runtime agent created `apps/platform/.env.local` containing only the two known-public non-secret values:
 
-| Variable | Component | Provider | Target local file | Reason |
-|---|---|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | apps/platform | Supabase dashboard → Project Settings → API | `apps/platform/.env.local` | Auth requires real anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | apps/platform | Supabase dashboard → Project Settings → API | `apps/platform/.env.local` | Server-side auth |
-| `STRIPE_SECRET_KEY` | apps/platform | Stripe dashboard → Developers → API Keys | `apps/platform/.env.local` | Checkout sessions |
-| `STRIPE_WEBHOOK_SECRET` | apps/platform | Stripe dashboard → Webhooks | `apps/platform/.env.local` | Webhook verification |
-| `STRIPE_PRICE_STARTER` | apps/platform | Stripe dashboard → Products | `apps/platform/.env.local` | Subscription tiers |
-| `STRIPE_PRICE_GROWTH` | apps/platform | Stripe dashboard → Products | `apps/platform/.env.local` | Subscription tiers |
-| `STRIPE_PRICE_ENTERPRISE` | apps/platform | Stripe dashboard → Products | `apps/platform/.env.local` | Subscription tiers |
-| `ANTHROPIC_API_KEY` | apps/platform | console.anthropic.com | `apps/platform/.env.local` | AI features |
-| `OPENROUTER_API_KEY` | apps/platform | openrouter.ai account | `apps/platform/.env.local` | AI routing |
-| `HANDOFF_SECRET` | apps/platform | self (any random string) | `apps/platform/.env.local` | Internal handoff auth |
+- `NEXT_PUBLIC_APP_URL=http://localhost:3000`
+- `NEXT_PUBLIC_SUPABASE_URL=eeuwkislidznpgdbvvbo.supabase.co`
 
-**Provision workflow** (when ready):
+This file is gitignored. Confirmed: neither the repo root `.gitignore` (covers `.env`, `.env.*`) nor the platform-level `.gitignore` (covers `.env`, `.env*.local`) tracks this file. No env files appear in git history.
 
-```bash
-# 1. Target file is gitignored — verified safe
-# git check-ignore apps/platform/.env.local → confirmed ignored
+### USER_SECRET_INPUT_REQUIRED
 
-# 2. Copy template
-cp apps/platform/.env.example apps/platform/.env.local
+The following variables are absent and require manual provisioning before corresponding features work:
 
-# 3. Fill in real values (use your terminal/editor — not the Claude conversation)
-# Set: NEXT_PUBLIC_APP_URL=http://localhost:3000
-# Set: NEXT_PUBLIC_SUPABASE_URL=https://eeuwkislidznpgdbvvbo.supabase.co
-# Fill remaining secrets from dashboards
-
-# 4. Start dev server
-cd apps/platform && npm run dev
-```
+1. **NEXT_PUBLIC_SUPABASE_ANON_KEY** — Supabase dashboard → Project Settings → API → anon/public key. Safe to include in client-side code (RLS enforces access). Required for any authenticated page or API route.
+2. **SUPABASE_SERVICE_ROLE_KEY** — Supabase dashboard → Project Settings → API → service_role key. Server-only. Required for /api/billing/webhook.
+3. **STRIPE_SECRET_KEY** — Stripe dashboard → Developers → API keys. Use sk_test_… for dev. Required for /api/billing/checkout.
+4. **STRIPE_WEBHOOK_SECRET** — Stripe dashboard → Webhooks → signing secret (whsec_…). For local testing: `stripe listen --forward-to localhost:3000/api/billing/webhook`. Required for /api/billing/webhook.
+5. **STRIPE_PRICE_GROWTH** — Stripe dashboard → Products → price ID (price_…). Required after Stripe products are created.
+6. **STRIPE_PRICE_ENTERPRISE** — Same as above, enterprise tier price ID.
 
 ---
 
 ## 6. Validation Results
 
-### Install
+### SOURCE_BUILD_READINESS
 
-| Component | Result |
+| Check | Status |
 |---|---|
-| `apps/platform` npm install | PASS — 0 vulnerabilities |
-| `apps/website` npm install | PASS — 0 vulnerabilities |
-| `tools/automated-website-builder` npm install | PASS — 0 vulnerabilities |
+| platform npm deps installed | PASS |
+| platform TypeScript typecheck (tsc --noEmit) | PASS |
+| platform build (.next/BUILD_ID exists from prior build) | PASS (prior build clean) |
+| platform lint | MISCONFIGURED — lint script runs tsc --noEmit (identical to typecheck); no ESLint or Biome config present |
+| platform tests | NOT_AVAILABLE — no test runner configured |
+| pipeline Python compile (python -m py_compile) | PASS |
+| automated-website-builder typecheck | PASS |
 
-### Lint / Typecheck
+### LOCAL_RUNTIME_READINESS
 
-| Component | Command | Result |
+**Status: PASS (with credential caveats)**
+
+The Sprint 4 runtime agent started the Next.js 16.3.2 dev server (Turbopack) using only the two public env vars. Server started in 651ms. Smoke test results:
+
+| Route | HTTP Status |
+|---|---|
+| / (homepage) | 200 |
+| /login | 200 |
+| /register | 200 |
+
+Server produced zero errors or warnings. Process was killed cleanly; port 3000 is free.
+
+**Important caveat**: NEXT_PUBLIC_SUPABASE_ANON_KEY is absent from .env.local. The middleware at src/lib/supabase/middleware.ts gracefully returns NextResponse.next() when Supabase keys are missing, so static and non-Supabase routes render without crashing. Any route that calls `createSupabaseBrowserClient` or `createSupabaseServerClient` will throw at runtime — as expected and documented. The smoke-test routes (/, /login, /register) passed because they do not hit Supabase in their server-side rendering path without the key present, or because the middleware gracefully bypassed.
+
+### FEATURE_READINESS
+
+| Feature | Status | Blocker |
 |---|---|---|
-| `apps/platform` | `npm run typecheck` (tsc --noEmit) | **PASS** |
-| `apps/platform` | `npm run lint` (tsc --noEmit) | **PASS** |
-| `tools/automated-website-builder` | `npm test` (tsc --noEmit) | **PASS** |
-| `apps/legacy-app` | NOT RUN — REFERENCE_ONLY | NOT AVAILABLE |
-| `apps/wingcommander-reference` | NOT RUN — REFERENCE_ONLY | NOT AVAILABLE |
+| Homepage, marketing pages | WORKING | None |
+| Auth (login, register UI) | PARTIAL — UI renders | NEXT_PUBLIC_SUPABASE_ANON_KEY required for auth to function |
+| Authenticated dashboard pages | BLOCKED | NEXT_PUBLIC_SUPABASE_ANON_KEY + SUPABASE_SERVICE_ROLE_KEY |
+| Billing checkout (growth/enterprise) | BLOCKED | STRIPE_SECRET_KEY + STRIPE_PRICE_GROWTH/ENTERPRISE |
+| Billing webhook event processing | BLOCKED | STRIPE_WEBHOOK_SECRET + SUPABASE_SERVICE_ROLE_KEY |
+| KPI pipeline | DEFERRED — independent service | ANTHROPIC_API_KEY, SERPAPI_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID (pipeline only) |
 
-### Build
+### PRODUCTION_DEPLOYMENT_READINESS
 
-| Component | Command | Result |
-|---|---|---|
-| `apps/platform` | `npm run build` (Next.js) | **PASS** — 12 routes compiled |
-| `apps/website` | `npm run build:site` | **PASS** — version-assets ok |
-| `services/pipeline` | `python -m py_compile pipeline.py` | **PASS** |
+Status: NOT READY. Three genuine blockers exist before deployment gate (see Section 11).
 
-**Platform build output** (12 routes):
+---
+
+## 7. Quality Status
+
+| Metric | Status |
+|---|---|
+| TypeScript typecheck | PASS (tsc --noEmit, 0 errors) |
+| Build | PASS (prior build artifact clean) |
+| Lint | MISCONFIGURED_DUPLICATE_TYPECHECK — lint script is identical to typecheck; no real linter configured |
+| Tests | NOT_AVAILABLE — no test runner configured for platform |
+| Python pipeline compile | PASS |
+| automated-website-builder typecheck | PASS |
+
+Note: "LINT = PASS" from Sprint 3 was an overstatement. The lint script simply re-runs tsc --noEmit. No ESLint, Biome, or other linter is configured. This is a quality gap but not a deployment blocker.
+
+---
+
+## 8. Integration Status
+
+### Supabase — STARTUP_BLOCKING
+
+Implementation: client/server/middleware split under apps/platform/src/lib/supabase/ using @supabase/ssr. Server and middleware clients use the anon key. The billing webhook uses SUPABASE_SERVICE_ROLE_KEY only for privileged writes after Stripe signature verification — correct separation of privilege. Known project URL: eeuwkislidznpgdbvvbo.supabase.co.
+
+Missing env vars (NEXT_PUBLIC_SUPABASE_URL already present; NEXT_PUBLIC_SUPABASE_ANON_KEY absent) will throw at first authenticated request. Supabase is required before the platform serves any authenticated route.
+
+### Stripe — FEATURE_DEFERRED (not startup-blocking)
+
+Implementation: no stripe npm package. Billing uses raw fetch to https://api.stripe.com/v1/checkout/sessions with STRIPE_SECRET_KEY read inside the POST handler body (not at module import time). Webhook uses node:crypto for HMAC verification. All Stripe logic is deferred inside route handlers — app starts without Stripe credentials. Required env vars only needed when /api/billing routes are hit.
+
+CRITICAL: The correct webhook route is `/api/billing/webhook` (confirmed at apps/platform/src/app/api/billing/webhook/route.ts). See Section 11 for the documented blocker.
+
+### AI Providers (Anthropic, OpenRouter) — NOT_REQUIRED by platform
+
+Zero Anthropic or OpenRouter references in apps/platform/src/ or package.json. The intelligence-hub, recommendations, and decisions API routes are pure Supabase data aggregation. Anthropic SDK is used only in services/pipeline/pipeline.py — a fully independent Python process not invoked by Next.js.
+
+### Redis — NOT_REQUIRED
+
+No Redis, Upstash, ioredis, or @vercel/kv references anywhere in apps/platform/src/ or package.json.
+
+### Python Pipeline — INDEPENDENT (not a sync dependency)
+
+services/pipeline/pipeline.py reads ANTHROPIC_API_KEY, SERPAPI_KEY, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID at module import time (hard crash if missing). This affects only the pipeline process itself — not Next.js platform startup. The platform has zero references to the pipeline.
+
+---
+
+## 9. Security Status
+
+| Check | Status |
+|---|---|
+| Claude path | /home/nitr0/.local/bin/claude |
+| Claude version | 2.1.247 (Claude Code) |
+| Sandbox state | DEFAULT_UNSET (permissive) — neither failIfUnavailable nor allowUnsandboxedCommands is set |
+| Tracked env files in git | NONE |
+| Staged secrets | NONE |
+| Secret values in this handoff | NONE — all entries are variable names or placeholder descriptions only |
+| .gitignore coverage | OK — root and platform-level gitignore correctly excludes .env, .env.*.local |
+
+### Concerns for future sessions
+
+1. Sandbox state is DEFAULT_UNSET (permissive). Consider setting `failIfUnavailable: true` in ~/.claude/settings.json to enforce sandbox boundaries.
+2. ~/.claude/settings.local.json contains a large allow-list of credential-scanning grep patterns (sk_live_, pk_live_, eyJhb, rzp_, sk-ant-api) across /home/nitr0 — granted in prior sessions. Review and prune stale entries.
+3. Repo-level .claude/settings.local.json grants Read(//home/nitr0/.claude/**) — allows any Claude session in this project to read the global Claude config directory including settings and auth tokens. Scope should be tightened if not intentional.
+4. AGENT-HANDOFF.md contains grep-matched lines with secret pattern strings (sk_test_..., sk_live_..., whsec_...) as documentation placeholder examples in a credentials table — confirmed safe, not real values.
+
+---
+
+## 10. Historical Context
+
+| Sprint | Work |
+|---|---|
+| Sprint 1 | Initial codebase assembly from multiple source repos; established monorepo structure |
+| Sprint 2 | Phase A inventory — catalogued all components, established classification scheme |
+| Sprint 3 (home laptop) | Phase A automated verification — build, typecheck, lint, compile across all active components; declared complete. Identified lint misconfiguration (overstated as PASS; corrected in Sprint 4). |
+| Sprint 4 (home laptop) | Multi-agent verification pass: architecture, env, quality, runtime, services, security agents ran in parallel. Runtime startup verified with HTTP 200 smoke tests. Three genuine deployment blockers documented. Stale doc issues catalogued. |
+
+### Office SHA Status (bbc34766d5d0be647f53f74a12eb9b1e1248ce18)
+
+This SHA was referenced in older documentation as a prior office session commit. It is not present in the fetched refs and is not recoverable from the current pushed history. This is permanently resolved — it is not a blocker for any current work.
+
+### Stale Documentation (identified Sprint 4)
+
+| File | Issue |
+|---|---|
+| CURRENT-STATE.md | Phase A external verification items (Hostinger SSH, Supabase dashboard, Stripe dashboard, Razorpay link test, Vercel project link check) still marked ⏳; Latest Commits section shows 7003cc4 as most recent but HEAD is 62343ed |
+| OPERATIONAL-STATUS.md | Line 5 records HEAD as b3317a2 — this SHA has never matched any pushed commit and is stale |
+| PHASE-B-ACTION-CHECKLIST.md | Step 4 instructs configuring Stripe webhook endpoint as /api/webhooks/stripe — this route does not exist; the correct route is /api/billing/webhook |
+
+---
+
+## 11. Known Blockers
+
+| # | Blocker | Impact | Resolution |
+|---|---|---|---|
+| 1 | **Wrong Stripe webhook URL in PHASE-B-ACTION-CHECKLIST.md** | PHASE-B-ACTION-CHECKLIST.md Step 4 instructs pointing Stripe at /api/webhooks/stripe. This route does not exist. Configuring Stripe with this URL means no payment events are delivered and billing silently fails after deployment. | Configure Stripe webhook endpoint URL as `https://thekpihub-platform.vercel.app/api/billing/webhook` (the actual route at apps/platform/src/app/api/billing/webhook/route.ts). Update PHASE-B-ACTION-CHECKLIST.md Step 4 accordingly. |
+| 2 | **Vercel project not linked** | No .vercel/project.json exists in apps/platform. The platform cannot be deployed until `vercel link` is executed. | Run `vercel link` inside apps/platform/, authenticate to the Vercel account, select the existing project (thekpihub-platform) or create a new one. This generates .vercel/project.json (gitignored). |
+| 3 | **Stripe products not created in dashboard** | STRIPE_PRICE_GROWTH and STRIPE_PRICE_ENTERPRISE price IDs do not exist yet. Without them the checkout flow cannot construct valid sessions. | Log into Stripe dashboard → Products → create Growth and Enterprise products with their price tiers. Copy the resulting price_… IDs into Vercel environment variables. |
+
+---
+
+## 12. Remote Actions NOT Performed
+
+The following actions were intentionally not performed during Sprint 4:
+
+- `git push` — local HEAD (62343ed) has not been pushed to origin/main
+- Vercel deployment — `vercel deploy` not executed; Vercel project not linked
+- Vercel environment variable provisioning — no secrets were set in Vercel dashboard
+- Supabase database migrations — no schema changes applied
+- Stripe product/price creation — no Stripe dashboard operations performed
+- Stripe webhook registration — no webhook endpoint registered in Stripe dashboard
+- DNS changes — no domain configuration changes made
+- Hostinger or website deployment — website deployment workflow lives in thekpihub/thekpihub-website (separate private repo)
+
+---
+
+## 13. Phase B Deployment GO/NO-GO Package
+
+### Pre-condition checklist (must be complete before deploying)
+
+- [ ] Blocker 1 resolved: Update PHASE-B-ACTION-CHECKLIST.md Step 4 to use `/api/billing/webhook`
+- [ ] Blocker 2 resolved: Run `vercel link` inside apps/platform/
+- [ ] Blocker 3 resolved: Create Stripe products and obtain price_… IDs
+- [ ] Obtain NEXT_PUBLIC_SUPABASE_ANON_KEY from Supabase dashboard
+- [ ] Obtain SUPABASE_SERVICE_ROLE_KEY from Supabase dashboard
+- [ ] Obtain STRIPE_SECRET_KEY from Stripe dashboard
+- [ ] Obtain STRIPE_WEBHOOK_SECRET from Stripe dashboard (after webhook is registered)
+
+### Commits to push
 
 ```
-/ ○  /_not-found ○  /login ○  /register ○  /reset-password ○
-/api/billing/checkout ƒ  /api/billing/webhook ƒ
-/api/decisions ƒ  /api/decisions/[id]/outcome ƒ  /api/decisions/[id]/status ƒ
-/api/intelligence-hub ƒ  /api/profile ƒ  /api/recommendations ƒ
-/dashboard ƒ  /dashboard/intelligence-hub ƒ  /dashboard/recommendation-engine ƒ
+git push origin main
 ```
 
-### Tests
+Current local HEAD: 62343ed4a123f1cc8e1a58915885ed500b52ea0a (1 commit ahead of origin/main)
 
-| Component | Result |
+### Target
+
+- Branch: main
+- Vercel project: thekpihub-platform (target domain: thekpihub-platform.vercel.app)
+- Vercel build command: `next build` (from apps/platform)
+- Root directory in Vercel: apps/platform
+
+### Environment variables required in Vercel
+
+| Variable | Value source |
 |---|---|
-| `apps/platform` | NOT AVAILABLE — no test runner configured |
-| `apps/website` | NOT AVAILABLE — no test runner configured |
-| `apps/legacy-app` | NOT RUN — REFERENCE_ONLY |
+| NEXT_PUBLIC_APP_URL | https://thekpihub-platform.vercel.app |
+| NEXT_PUBLIC_SUPABASE_URL | eeuwkislidznpgdbvvbo.supabase.co |
+| NEXT_PUBLIC_SUPABASE_ANON_KEY | Supabase dashboard → Project Settings → API |
+| SUPABASE_SERVICE_ROLE_KEY | Supabase dashboard → Project Settings → API |
+| STRIPE_SECRET_KEY | Stripe dashboard → Developers → API keys |
+| STRIPE_WEBHOOK_SECRET | Stripe dashboard → Webhooks → signing secret |
+| STRIPE_PRICE_GROWTH | Stripe dashboard → Products (after creation) |
+| STRIPE_PRICE_ENTERPRISE | Stripe dashboard → Products (after creation) |
 
-### Runtime / Local Startup
+### Database migrations
 
-NOT ATTEMPTED — requires `apps/platform/.env.local` with real Supabase/Stripe credentials. See USER_SECRET_INPUT REQUIRED above.
+No Supabase migrations were run or verified during Sprint 4. Before production deployment, verify that the Supabase project schema matches what the platform expects — check any migration files in the codebase against the live Supabase project.
 
-### Database Connectivity
+### Webhook setup
 
-NOT ATTEMPTED — Supabase credentials not available on this machine. Supabase project ID `eeuwkislidznpgdbvvbo` confirmed in source. 3 migrations present: `0001_unified_core.sql`, `0002_intelligence_content_and_read_policies.sql`, `0003_module_snapshots_worker_write.sql`.
+After Vercel deployment succeeds:
+1. Go to Stripe dashboard → Developers → Webhooks → Add endpoint
+2. Endpoint URL: `https://thekpihub-platform.vercel.app/api/billing/webhook`
+3. Events to listen for: at minimum `checkout.session.completed`
+4. Copy the signing secret (whsec_…) and set it as STRIPE_WEBHOOK_SECRET in Vercel
 
-### Website Build Behavior Note
+### Verification plan (post-deploy)
 
-Running `npm run build:site` in `apps/website` runs `version-assets.mjs` which rewrites asset hash query strings (e.g. `?v=xxxx`) in all HTML files. These tracked HTML files will appear as modified after a local build. This is expected — restore with `git checkout -- apps/website/` before committing if no asset content changed.
+1. Visit https://thekpihub-platform.vercel.app — confirm homepage loads (HTTP 200)
+2. Attempt login/register — confirm Supabase auth flow works
+3. Confirm authenticated dashboard pages render without 500
+4. Test a growth-plan checkout session (use Stripe test card 4242 4242 4242 4242)
+5. Confirm Stripe webhook delivery shows 200 in Stripe dashboard → Webhooks
 
----
+### Rollback plan
 
-## 7. Security Baseline
+Vercel maintains deployment history. If the new deployment fails, roll back to the prior deployment from the Vercel dashboard → Deployments → select previous → Promote to Production. No database mutations are made at deployment time, so rollback does not require a DB restore.
 
-| Item | Status |
-|---|---|
-| Claude CLI path | `/home/nitr0/.local/bin/claude` |
-| Claude version | `2.1.247 (Claude Code)` |
-| Repo-local Claude config | None (`apps/platform/.claude/settings.json` absent) |
-| User Claude settings | `~/.claude/settings.json` — theme: dark, no sandbox keys |
-| User Claude local settings | `~/.claude/settings.local.json` — permission allowlist only |
-| `failIfUnavailable` | Not set (default) |
-| `allowUnsandboxedCommands` | Not set (default) — **REVIEW_REQUIRED** if hardening needed |
-| Secrets in repo | NONE — security scan passed, no `.env` files committed |
-| `.env` gitignored | CONFIRMED — `apps/platform/.env` and `.env.local` are ignored |
-| Build artifacts gitignored | CONFIRMED — `.next/` is ignored |
-| No hardcoded secrets | CONFIRMED — only placeholder values in `.env.example` files |
+### Risk
 
-**Sandbox note**: Home machine Claude settings do not explicitly configure `failIfUnavailable` or `allowUnsandboxedCommands`. Default sandbox behavior is in effect. Do not weaken settings to match office configuration.
-
----
-
-## 8. Historical Office Context
-
-- Office session SHA: `bbc34766d5d0be647f53f74a12eb9b1e1248ce18`
-- **This SHA is NOT present in the fetched refs of this repository.** It was a local office-only commit that was never pushed.
-- `AGENT-HANDOFF.md` (office) and `WSL-PILOT-SMOKE-TEST.md` were also not recovered.
-- These are NOT blockers. All current repository state was established from the verified HEAD `4be0a63` which is fully synced with `origin/main`.
-- The office session completed Phase A documentation. Phase B (Vercel deployment) was prepared but not executed.
+- **Medium**: Supabase schema may not match platform expectations if the schema was never migrated. Validate before directing real users to the platform.
+- **Low**: Stripe billing is isolated to /api/billing routes. A misconfigured webhook will not crash the platform; it will only silently fail to update subscription state.
+- **Low**: All REFERENCE_ONLY env vars (ANTHROPIC_API_KEY, OPENROUTER_API_KEY, etc.) can be omitted from Vercel at deployment time — they have zero effect on the platform at runtime.
 
 ---
 
-## 9. CI/CD Configuration
+## 14. Exact Resume Point and Next Action
 
-- **CI workflow**: `.github/workflows/ci.yml` — runs on push/PR to `main`
-- **Jobs**: install + audit + build for all components, typecheck for platform and builder, lint for legacy-app, py_compile for pipeline
-- **No CD**: No auto-deploy workflow exists. Vercel deployment requires manual `vercel link` or Vercel GitHub App integration.
-- **Hostinger deploy**: Documented as existing in a separate private `thekpihub-website` repo — NOT in this repo.
+**Current state**: Sprint 4 verification complete. All source-level quality gates pass. Local dev server starts cleanly (HTTP 200 on /, /login, /register). Three genuine deployment blockers documented.
 
----
+**Single next action**: Fix the wrong Stripe webhook URL in PHASE-B-ACTION-CHECKLIST.md (Blocker 1) — update Step 4 to reference `/api/billing/webhook` instead of `/api/webhooks/stripe`. This is a documentation correction that costs nothing and removes a silent-failure trap before any Stripe configuration is performed.
 
-## 10. Known Blockers
-
-| Blocker | Impact | Resolution |
-|---|---|---|
-| No `.env.local` for platform | Cannot run `npm run dev` locally | Provision credentials from Supabase/Stripe/Anthropic dashboards |
-| No Vercel project link | Cannot deploy `apps/platform` | Run `cd apps/platform && vercel link` with Vercel account |
-| Stripe products not configured | Subscription pricing non-functional | Create products in Stripe dashboard; copy price IDs |
-| No GitHub Actions secrets | CI cannot deploy automatically | Phase C: add secrets to repo for automated deploy |
-
----
-
-## 11. Completed Work This Session
-
-- [x] Verified repository at expected HEAD `4be0a63` — CLEAN
-- [x] Read all state documents (CURRENT-STATE.md, OPERATIONAL-STATUS.md, PHASE-A-INVENTORY.md, PHASE-A-SELF-TEST-REPORT.md, PHASE-B-ACTION-CHECKLIST.md, PHASE-B-DEPLOYMENT-GUIDE.md, README.md)
-- [x] Classified all components
-- [x] Inventoried all environment variables by name (14 platform + website + reference)
-- [x] Installed dependencies: platform ✓, website ✓, builder ✓
-- [x] Typecheck: platform PASS, builder PASS
-- [x] Build: platform PASS (12 routes), website PASS, pipeline compile PASS
-- [x] Verified `.env` and `.next/` are gitignored
-- [x] Verified no secrets in working tree
-- [x] Established Claude home security baseline
-- [x] Confirmed office SHA not in fetched refs — documented as non-blocker
-- [x] Created this AGENT-HANDOFF.md
-
----
-
-## 12. Exact Resume Point
-
-**Next action**: Phase B — Deploy `apps/platform` to Vercel
-
-**Steps**:
-
-1. Gather credentials (Supabase → Stripe → Anthropic → OpenRouter)
-2. Create `apps/platform/.env.local` with real values for local testing
-3. Run `npm run dev` in `apps/platform` to verify local startup
-4. Run `cd apps/platform && vercel link` to link Vercel project
-5. Add 14 environment variables in Vercel dashboard (see Section 4 above)
-6. Configure Stripe webhook endpoint pointing to `https://thekpihub-platform.vercel.app/api/billing/webhook`
-7. `git push origin main` → triggers Vercel auto-deploy
-8. Verify https://thekpihub-platform.vercel.app — auth, checkout, dashboard
-
-**After Phase B**: Phase C (GitHub Actions secrets + CD workflow), Phase D (health endpoints + monitoring)
-
----
-
-*This handoff was created on the home laptop after a complete Sprint 3 environment verification.*  
-*No secrets are present in this file or this repository.*
+**Sequence after that**:
+1. Fix PHASE-B-ACTION-CHECKLIST.md (Blocker 1 — doc fix, no credentials needed)
+2. Run `vercel link` inside apps/platform/ (Blocker 2 — infrastructure, no secrets needed)
+3. Create Stripe products in Stripe dashboard (Blocker 3 — Stripe dashboard access needed)
+4. Gather NEXT_PUBLIC_SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY from Supabase dashboard
+5. Set all required env vars in Vercel project settings
+6. `git push origin main`
+7. Trigger Vercel deployment
+8. Register Stripe webhook at /api/billing/webhook with the Vercel deployment URL
+9. Run post-deploy verification checklist (Section 13)
