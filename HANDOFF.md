@@ -27,6 +27,14 @@ only to manual review; none were merged, flattened, reset, or deleted.
 1. **Security reminder for 2026-08-28:** revoke the exposed GitHub personal
    access token (classic). Its contaminated checkout is quarantined, but
    quarantine does not revoke the credential.
+   The owner explicitly deferred this manual action on 2026-08-27. Treat all
+   existing KPI Hub tokens and long-lived deployment credentials as requiring
+   rotation on 2026-08-28. Do not test, display, reuse, or copy the exposed
+   token during the Hostinger migration. GitHub CLI was repaired separately
+   through the browser/device OAuth flow; that login does not confirm PAT
+   revocation. The installed CLI reported that its OAuth credential was saved
+   in plaintext because no system credential store was available, so securing
+   the local CLI credential store is also part of the manual security review.
 2. Review the legacy Hostinger website repository before deciding whether it
    is still a separately active production surface.
 3. Review dirty repositories, backups, bundles, exports, and unclear folders
