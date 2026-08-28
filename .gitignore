@@ -17,4 +17,5 @@ credentials.md
 *.key
 *.p12
 *.pfx
+.vercel/
 
