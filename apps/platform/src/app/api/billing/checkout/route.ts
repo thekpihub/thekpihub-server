@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { BadRequestError, parseCheckoutRequest, readJsonObject } from "@/lib/api/validation";
+import {
+  getPaymentProcessor,
+  getPrimaryProcessorForRegion,
+  getCurrencyForRegion,
+  getPriceInSmallestUnit,
+  detectUserRegion,
+  type PaymentProcessorType,
+} from "@/lib/payments";
 
-const priceEnvByPlan = {
-  growth: "STRIPE_PRICE_GROWTH",
-  enterprise: "STRIPE_PRICE_ENTERPRISE",
-} as const;
+interface CheckoutRequestWithProcessor extends Record<string, unknown> {
+  plan: "growth" | "enterprise";
+  processor?: PaymentProcessorType;
+  region?: string;
+}
 
 export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
@@ -17,19 +26,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 
-  if (!stripeSecretKey || !appUrl) {
+  if (!appUrl) {
     return NextResponse.json(
       { error: "Billing environment is not configured yet" },
       { status: 500 }
     );
   }
 
-  let body;
+  let body: CheckoutRequestWithProcessor;
   try {
-    body = parseCheckoutRequest(await readJsonObject(request));
+    const rawBody = await readJsonObject(request);
+    const validated = parseCheckoutRequest(rawBody);
+    body = {
+      ...validated,
+      processor: (rawBody.processor as PaymentProcessorType | undefined) || undefined,
+      region: (rawBody.region as string | undefined) || undefined,
+    };
   } catch (error) {
     if (error instanceof BadRequestError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -37,52 +51,45 @@ export async function POST(request: Request) {
     throw error;
   }
 
-  const priceId = process.env[priceEnvByPlan[body.plan]];
+  // Determine region and processor
+  const region = detectUserRegion(body.region);
+  const processorType =
+    body.processor || getPrimaryProcessorForRegion(region);
 
-  if (!priceId) {
+  try {
+    const processor = getPaymentProcessor(processorType);
+    const currency = getCurrencyForRegion(region);
+    const amount = getPriceInSmallestUnit(body.plan, currency);
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("email")
+      .eq("id", user.id)
+      .single();
+
+    const email = profile?.email ?? user.email ?? "";
+
+    const checkoutSession = await processor.createCheckout({
+      amount,
+      planId: body.plan,
+      email,
+      userId: user.id,
+      appUrl,
+    });
+
+    return NextResponse.json({
+      sessionId: checkoutSession.id,
+      url: checkoutSession.url,
+      clientSecret: checkoutSession.clientSecret,
+      processor: processorType,
+      currency: checkoutSession.currency,
+      amount: checkoutSession.amount,
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Payment processor error";
     return NextResponse.json(
-      { error: `${priceEnvByPlan[body.plan]} is not configured` },
+      { error: "Checkout session creation failed", details: errorMessage },
       { status: 500 }
     );
   }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("email")
-    .eq("id", user.id)
-    .single();
-
-  const params = new URLSearchParams();
-  params.set("ui_mode", "embedded");
-  params.set("mode", "subscription");
-  params.set("customer_email", profile?.email ?? user.email ?? "");
-  params.set("line_items[0][price]", priceId);
-  params.set("line_items[0][quantity]", "1");
-  params.set("return_url", `${appUrl}/dashboard?checkout_session_id={CHECKOUT_SESSION_ID}`);
-  params.set("metadata[user_id]", user.id);
-  params.set("metadata[plan]", body.plan);
-
-  const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${stripeSecretKey}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: params,
-    cache: "no-store",
-  });
-
-  const data = (await response.json()) as Record<string, unknown>;
-
-  if (!response.ok) {
-    return NextResponse.json(
-      { error: "Stripe session creation failed", details: data },
-      { status: response.status }
-    );
-  }
-
-  return NextResponse.json({
-    clientSecret: data.client_secret,
-    sessionId: data.id,
-  });
 }
