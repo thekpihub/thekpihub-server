@@ -23,7 +23,6 @@ jobs:
             apps/platform/package-lock.json
             apps/legacy-app/package-lock.json
             apps/wingcommander-reference/package-lock.json
-            tools/automated-website-builder/package-lock.json
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -59,13 +58,6 @@ jobs:
           npm ci
           npm audit --audit-level=moderate
           npm run build
-
-      - name: Builder install, audit, typecheck
-        working-directory: tools/automated-website-builder
-        run: |
-          npm ci
-          npm audit --audit-level=moderate
-          npm test
 
       - name: Pipeline syntax check
         working-directory: services/pipeline
