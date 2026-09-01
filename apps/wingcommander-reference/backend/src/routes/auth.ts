@@ -4,7 +4,7 @@ import { issueToken, verifyToken, type JWTPayload } from "../middleware/auth.js"
 
 const router = Router();
 
-// Shared secret between thekpihub.com and WingCommander backends.
+// Shared secret between thekpihub.com and Ditto Wingman backends.
 // Set HANDOFF_SECRET in both environments to the same random value.
 const HANDOFF_SECRET = process.env.HANDOFF_SECRET ?? "dev-handoff-secret-change-in-production";
 

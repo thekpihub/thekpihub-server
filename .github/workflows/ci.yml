@@ -45,11 +45,11 @@ jobs:
           npm run typecheck
           npm run build
 
-      # legacy-app / wingcommander-reference / automated-website-builder are
-      # documented as REFERENCE_ONLY (not deployed) — their `npm audit` runs
-      # stay informational (`|| true`) so a transitive advisory in unused code
-      # doesn't block CI for the two apps that actually ship (website, platform).
-      # Deployed apps above keep a hard `npm audit --audit-level=moderate` gate.
+      # legacy-app / automated-website-builder are documented as REFERENCE_ONLY
+      # (not deployed) — their `npm audit` runs stay informational (`|| true`)
+      # so a transitive advisory in unused code doesn't block CI. Deployed
+      # apps (website, platform, wingcommander-reference) keep a hard
+      # `npm audit --audit-level=moderate` gate.
       - name: Legacy app install, audit, lint, build
         working-directory: apps/legacy-app
         run: |
@@ -58,11 +58,15 @@ jobs:
           npm run lint
           npm run build
 
+      # wingcommander-reference (Ditto Wingman) is NOT reference-only: its
+      # Cloudflare Worker backs the live "weapon" tools on apps/website
+      # (auditor.html, cohort.html, etc.) and its Railway services are being
+      # repointed to deploy from this repo. Keep the strict audit gate.
       - name: Wing Commander install, audit, build
         working-directory: apps/wingcommander-reference
         run: |
           npm ci
-          npm audit --audit-level=moderate || true
+          npm audit --audit-level=moderate
           npm run build
 
       - name: Builder install, audit, typecheck

@@ -1,13 +1,12 @@
 import { Router, Request, Response } from "express";
 import Anthropic from "@anthropic-ai/sdk";
-import { getUserContext } from "./context.js";
 
 const router = Router();
 
 // Cached system prompts — marked with cache_control so Anthropic caches them
 // at the API level (saves tokens + latency on repeated calls)
 const SYSTEM_PROMPTS: Record<string, string> = {
-  code: `You are WingCommander, an elite AI software engineer powered by Claude Opus 4.7. You excel at:
+  code: `You are Ditto Wingman, an elite AI software engineer powered by Claude Opus 4.7. You excel at:
 - Building production-ready full-stack applications
 - Writing clean, type-safe TypeScript/JavaScript
 - Designing scalable system architectures
@@ -22,22 +21,22 @@ Always think step-by-step. Write complete, working implementations — never stu
 Prefer React 18, TypeScript, Tailwind CSS, Radix UI, and modern best practices.
 After generating code, summarise what was built and what to do next.`,
 
-  chat: `You are WingCommander, a highly capable AI assistant powered by Claude Opus 4.7 with 200K context.
+  chat: `You are Ditto Wingman, a highly capable AI assistant powered by Claude Opus 4.7 with 200K context.
 Answer questions thoughtfully and thoroughly. You have access to extended thinking for complex problems.
 Be direct, honest, and genuinely helpful. Format responses with markdown when appropriate.`,
 
-  rag: `You are WingCommander operating in RAG (Retrieval-Augmented Generation) mode.
+  rag: `You are Ditto Wingman operating in RAG (Retrieval-Augmented Generation) mode.
 You analyze documents, extract insights, and answer questions based on provided context.
 ALWAYS cite the exact source document name and section when referencing information.
 Format citations as: [Source: <document_name>, Section: <section>]
 Be precise and accurate. Clearly flag uncertainty. Never hallucinate facts not in the documents.`,
 
-  image: `You are WingCommander in image generation mode.
+  image: `You are Ditto Wingman in image generation mode.
 Help users create detailed, optimised prompts for AI image generation.
 Structure prompts with: subject, style, lighting, composition, color palette, quality modifiers.
 Also help analyse uploaded images and suggest improvements or variations.`,
 
-  autonomous: `You are WingCommander in autonomous agent mode powered by Claude Opus 4.7 with extended thinking.
+  autonomous: `You are Ditto Wingman in autonomous agent mode powered by Claude Opus 4.7 with extended thinking.
 You execute complex multi-step tasks autonomously:
 1. Analyse the full task scope before starting
 2. Break into ordered subtasks with clear success criteria
@@ -116,22 +115,10 @@ router.post("/", async (req: Request, res: Response) => {
   try {
     const baseSystem = SYSTEM_PROMPTS[mode] ?? SYSTEM_PROMPTS.code;
 
-    // KPI Memory Layer™ — inject the user's business context if available.
-    let kpiContext = "";
-    if (userId) {
-      try {
-        const ctx = await getUserContext(userId, "pro");
-        kpiContext = `\n\n--- KPI CONTEXT ---\n${ctx.context}\n--- END KPI CONTEXT ---`;
-      } catch {
-        // context unavailable — proceed without it
-      }
-    }
-
     // Append RAG context if provided (vector search results injected here)
-    const systemText =
-      (ragContext
-        ? `${baseSystem}\n\n--- RETRIEVED CONTEXT ---\n${ragContext}\n--- END CONTEXT ---`
-        : baseSystem) + kpiContext;
+    const systemText = ragContext
+      ? `${baseSystem}\n\n--- RETRIEVED CONTEXT ---\n${ragContext}\n--- END CONTEXT ---`
+      : baseSystem;
 
     const useThinking =
       mode === "autonomous" || (mode === "code" && messages.length <= 2);

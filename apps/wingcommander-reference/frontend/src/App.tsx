@@ -10,16 +10,15 @@ import AuthPage from "@/pages/AuthPage";
 import DashboardPage from "@/pages/DashboardPage";
 import WorkspacePage from "@/pages/WorkspacePage";
 import SettingsPage from "@/pages/SettingsPage";
-import AdminPage from "@/pages/AdminPage";
 import type { User } from "@/types";
 
 // ── Loading spinner ───────────────────────────────────────────────────────────
 
-function LoadingScreen({ message = "Loading WingCommander..." }: { message?: string }) {
+function LoadingScreen({ message = "Loading Ditto Wingman..." }: { message?: string }) {
   return (
     <div className="h-screen flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-wing-400 to-wing-700 flex items-center justify-center animate-pulse">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-ditto-400 to-ditto-700 flex items-center justify-center animate-pulse">
           <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
           </svg>
@@ -144,14 +143,6 @@ function AppRoutes() {
         element={
           <RequireAuth>
             <SettingsPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/admin"
-        element={
-          <RequireAuth>
-            <AdminPage />
           </RequireAuth>
         }
       />

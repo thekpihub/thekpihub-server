@@ -4,50 +4,48 @@
 
 @layer base {
   :root {
-    /* Light mode */
     --background: 0 0% 100%;
-    --foreground: 240 70% 6%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 240 70% 6%;
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 70% 6%;
-    --primary: 38 82% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 38 20% 94%;
-    --secondary-foreground: 240 70% 6%;
-    --muted: 38 20% 94%;
-    --muted-foreground: 240 20% 50%;
-    --accent: 170 60% 90%;
-    --accent-foreground: 240 70% 6%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 237 100% 69%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 38 20% 88%;
-    --input: 38 20% 88%;
-    --ring: 38 82% 45%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 237 100% 69%;
     --radius: 0.625rem;
   }
 
   .dark {
-    /* KPI Hub navy dark theme */
-    --background: 240 70% 6%;
-    --foreground: 38 30% 90%;
-    --card: 240 60% 8%;
-    --card-foreground: 38 30% 90%;
-    --popover: 240 60% 8%;
-    --popover-foreground: 38 30% 90%;
-    --primary: 38 82% 53%;
-    --primary-foreground: 240 70% 6%;
-    --secondary: 240 50% 12%;
-    --secondary-foreground: 38 30% 90%;
-    --muted: 240 50% 12%;
-    --muted-foreground: 240 20% 55%;
-    --accent: 240 45% 14%;
-    --accent-foreground: 38 30% 90%;
+    --background: 222 47% 5%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 7%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 7%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 237 100% 69%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 12%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 12%;
+    --muted-foreground: 215 20.2% 55%;
+    --accent: 217.2 32.6% 15%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 240 45% 12%;
-    --input: 240 45% 12%;
-    --ring: 38 82% 53%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 13%;
+    --input: 217.2 32.6% 13%;
+    --ring: 237 100% 69%;
   }
 }
 
@@ -93,7 +91,7 @@
   }
 
   .gradient-text {
-    @apply bg-gradient-to-r from-wing-400 to-wing-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-ditto-400 to-ditto-600 bg-clip-text text-transparent;
   }
 
   .shimmer-bg {
@@ -121,13 +119,13 @@
 }
 
 /* Prose styles for markdown rendering */
-.prose-wing {
+.prose-ditto {
   @apply prose prose-sm max-w-none;
   @apply dark:prose-invert;
 }
-.prose-wing pre {
+.prose-ditto pre {
   @apply bg-secondary rounded-lg border border-border;
 }
-.prose-wing code {
+.prose-ditto code {
   @apply font-mono text-sm;
 }

@@ -3,8 +3,14 @@ name: Docker Image CI
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - "backend/**"
+      - ".github/workflows/docker-image.yml"
   pull_request:
     branches: [ "main" ]
+    paths:
+      - "backend/**"
+      - ".github/workflows/docker-image.yml"
 
 jobs:
 
@@ -14,7 +20,5 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Build backend image
-      run: docker build -f backend/Dockerfile -t wingcommander-backend:ci .
-    - name: Build frontend image
-      run: docker build -f frontend/Dockerfile -t wingcommander-frontend:ci .
+    - name: Build the Docker image
+      run: docker build . --file backend/Dockerfile --tag ditto-wingman-backend:$(date +%s)

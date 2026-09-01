@@ -27,7 +27,7 @@ export default function PremiumGate({
     return (
       <div className="h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-wing-400 to-wing-700 flex items-center justify-center animate-pulse">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-ditto-400 to-ditto-700 flex items-center justify-center animate-pulse">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
@@ -55,20 +55,20 @@ export default function PremiumGate({
       >
         {/* Icon */}
         <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-wing-500/20 to-wing-700/20 border border-wing-500/30 flex items-center justify-center">
-            <Lock className="w-7 h-7 text-wing-400" />
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-ditto-500/20 to-ditto-700/20 border border-ditto-500/30 flex items-center justify-center">
+            <Lock className="w-7 h-7 text-ditto-400" />
           </div>
         </div>
 
         {/* Heading */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-semibold font-display mb-2">
+          <h1 className="text-2xl font-semibold font-figtree mb-2">
             Premium Feature
           </h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            WingCommander is included in the{" "}
-            <span className="text-wing-400 font-medium">Pro</span> and{" "}
-            <span className="text-wing-400 font-medium">Business</span> plans
+            Ditto Wingman is included in the{" "}
+            <span className="text-ditto-400 font-medium">Premium</span> and{" "}
+            <span className="text-ditto-400 font-medium">Enterprise</span> plans
             on thekpihub.com.
           </p>
         </div>
@@ -80,7 +80,7 @@ export default function PremiumGate({
           </p>
           {FEATURES.map((f) => (
             <div key={f} className="flex items-center gap-2 text-sm">
-              <Zap className="w-3.5 h-3.5 text-wing-400 shrink-0" />
+              <Zap className="w-3.5 h-3.5 text-ditto-400 shrink-0" />
               <span>{f}</span>
             </div>
           ))}
@@ -100,18 +100,18 @@ export default function PremiumGate({
             Already a subscriber?{" "}
             <a
               href="https://thekpihub.com/dashboard"
-              className="text-wing-400 hover:underline"
+              className="text-ditto-400 hover:underline"
             >
               Go to your dashboard
             </a>{" "}
-            to open WingCommander.
+            to open Wingman.
           </p>
         </div>
 
         {/* Branding */}
         <div className="mt-8 flex items-center justify-center gap-2 text-xs text-muted-foreground/50">
           <Sparkles className="w-3 h-3" />
-          <span>WingCommander · thekpihub.com · Premium AI</span>
+          <span>Ditto Wingman · For humanity · Forever</span>
         </div>
 
         {/* Badge */}

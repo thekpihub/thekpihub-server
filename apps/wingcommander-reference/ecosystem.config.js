@@ -1,8 +1,8 @@
 module.exports = {
   apps: [
     {
-      name: 'thekpihub-wingcommander',
-      cwd: '/var/www/thekpihub-wingcommander',
+      name: 'ditto-wingman',
+      cwd: '/var/www/ditto-wingman',
       script: 'node_modules/.bin/next',
       args: 'start',
       instances: 1,
@@ -13,8 +13,8 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 3000,
       },
-      error_file: '/var/log/thekpihub-wingcommander-error.log',
-      out_file: '/var/log/thekpihub-wingcommander-out.log',
+      error_file: '/var/log/ditto-wingman-error.log',
+      out_file: '/var/log/ditto-wingman-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
     },
   ],

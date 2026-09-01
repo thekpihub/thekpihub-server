@@ -5,7 +5,6 @@ node_modules/
 
 # Build output
 dist/
-dist-lib/
 build/
 .next/
 out/
@@ -35,10 +34,3 @@ yarn-error.log*
 # Runtime
 .cache/
 tmp/
-
-# design-sync (regenerated build/converter state — see frontend/.design-sync/NOTES.md)
-.ds-sync/
-ds-bundle/
-.design-sync/.cache/
-.design-sync/learnings/
-.design-sync/node_modules

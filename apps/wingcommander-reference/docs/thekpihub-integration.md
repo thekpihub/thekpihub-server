@@ -1,4 +1,4 @@
-# Integrating WingCommander into thekpihub.com
+# Integrating Ditto Wingman into thekpihub.com
 
 ## Overview
 
@@ -36,7 +36,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
 
-const WINGMAN_API   = process.env.WINGMAN_API_URL ?? "https://thekpihub-wingcommander-api.up.railway.app";
+const WINGMAN_API   = process.env.WINGMAN_API_URL ?? "https://ditto-wingman-api.up.railway.app";
 const WINGMAN_URL   = process.env.WINGMAN_URL     ?? "https://agent.thekpihub.com";
 const HANDOFF_SECRET = process.env.HANDOFF_SECRET!;
 
@@ -98,7 +98,7 @@ function OpenWingmanButton() {
 
   return (
     <button onClick={handleClick} className="btn-premium">
-      Open WingCommander ↗
+      Open Ditto Wingman ↗
     </button>
   );
 }

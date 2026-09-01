@@ -351,7 +351,7 @@ export default function AgentPanel({ projectId, onFileGenerated }: AgentPanelPro
               {/* Token usage */}
               {activeRun.tokenUsage && (
                 <div className="flex items-center gap-3 text-xs text-muted-foreground p-2 rounded-lg bg-secondary">
-                  <Sparkles className="w-3 h-3 text-wing-400" />
+                  <Sparkles className="w-3 h-3 text-ditto-400" />
                   <span>{activeRun.tokenUsage.input.toLocaleString()} tokens</span>
                   {activeRun.tokenUsage.cacheHits > 0 && (
                     <Badge variant="success" className="text-xs">

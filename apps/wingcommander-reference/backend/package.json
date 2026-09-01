@@ -1,5 +1,8 @@
 {
-  "name": "thekpihub-wingcommander-backend",
+  "engines": {
+    "node": "22.x"
+  },
+  "name": "ditto-wingman-backend",
   "private": true,
   "version": "0.1.0",
   "type": "module",
