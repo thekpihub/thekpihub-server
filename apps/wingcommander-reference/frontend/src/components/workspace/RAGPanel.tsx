@@ -232,7 +232,7 @@ export default function RAGPanel({ projectId }: RAGPanelProps) {
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="mt-2 space-y-1">
                 {uploading.map((s) => (
                   <div key={s.filename} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-secondary text-xs">
-                    {s.status === "uploading" && <Loader2 className="w-3 h-3 animate-spin text-wing-400 shrink-0" />}
+                    {s.status === "uploading" && <Loader2 className="w-3 h-3 animate-spin text-ditto-400 shrink-0" />}
                     {s.status === "done" && <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />}
                     {s.status === "error" && <AlertCircle className="w-3 h-3 text-destructive shrink-0" />}
                     <span className="truncate flex-1">{s.filename}</span>
@@ -292,13 +292,13 @@ export default function RAGPanel({ projectId }: RAGPanelProps) {
             {streamedAnswer && (
               <div className="mb-4">
                 <div className="flex items-center gap-1.5 mb-2">
-                  <Sparkles className="w-3.5 h-3.5 text-wing-400" />
+                  <Sparkles className="w-3.5 h-3.5 text-ditto-400" />
                   <span className="text-xs font-medium">Answer</span>
                   {querying && <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />}
                 </div>
                 <div className="text-sm leading-relaxed whitespace-pre-wrap bg-secondary rounded-xl p-3 border border-border">
                   {streamedAnswer}
-                  {querying && <span className="inline-block w-1.5 h-4 bg-wing-400 animate-pulse ml-0.5 rounded-sm" />}
+                  {querying && <span className="inline-block w-1.5 h-4 bg-ditto-400 animate-pulse ml-0.5 rounded-sm" />}
                 </div>
 
                 {sources.length > 0 && (
@@ -326,7 +326,7 @@ export default function RAGPanel({ projectId }: RAGPanelProps) {
                 <p className="text-xs font-medium text-muted-foreground">Query history</p>
                 {queryHistory.map((h, i) => (
                   <div key={i} className="space-y-1.5">
-                    <p className="text-xs font-medium text-wing-400">Q: {h.q}</p>
+                    <p className="text-xs font-medium text-ditto-400">Q: {h.q}</p>
                     <p className="text-xs text-muted-foreground line-clamp-3">{h.r.answer}</p>
                   </div>
                 ))}

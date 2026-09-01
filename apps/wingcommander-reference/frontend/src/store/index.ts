@@ -18,7 +18,7 @@ export const useThemeStore = create<ThemeStore>()(
         set({ theme });
       },
     }),
-    { name: "wingcommander-theme" }
+    { name: "ditto-theme" }
   )
 );
 
@@ -114,6 +114,6 @@ export const useChatStore = create<ChatStore>()(
       setSelectedModel: (selectedModel) => set({ selectedModel }),
       setAgentMode: (agentMode) => set({ agentMode }),
     }),
-    { name: "wingcommander-chat", partialize: (s) => ({ selectedModel: s.selectedModel, agentMode: s.agentMode }) }
+    { name: "ditto-chat", partialize: (s) => ({ selectedModel: s.selectedModel, agentMode: s.agentMode }) }
   )
 );

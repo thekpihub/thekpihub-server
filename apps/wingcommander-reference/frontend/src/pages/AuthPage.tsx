@@ -72,29 +72,29 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Left panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-wing-950 via-wing-900/50 to-background p-12 flex-col justify-between overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-ditto-950 via-ditto-900/50 to-background p-12 flex-col justify-between overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-wing-500/20 rounded-full blur-[80px]" />
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-ditto-500/20 rounded-full blur-[80px]" />
           <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-violet-500/15 rounded-full blur-[60px]" />
         </div>
 
-        <Link to="/" className="relative flex items-center gap-2 font-display font-bold text-xl">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-wing-400 to-wing-700 flex items-center justify-center">
+        <Link to="/" className="relative flex items-center gap-2 font-figtree font-bold text-xl">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-ditto-400 to-ditto-700 flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
-          <span className="gradient-text">WingCommander</span>
+          <span className="gradient-text">Ditto Wingman</span>
         </Link>
 
         <div className="relative">
-          <blockquote className="text-2xl font-display font-medium text-foreground/90 leading-relaxed mb-6">
+          <blockquote className="text-2xl font-figtree font-medium text-foreground/90 leading-relaxed mb-6">
             "Build production-ready applications with the most capable AI — powered by Claude Opus 4.7's extended thinking."
           </blockquote>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-wing-500/30 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-wing-400" />
+            <div className="w-10 h-10 rounded-full bg-ditto-500/30 flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-ditto-400" />
             </div>
             <div>
-              <p className="font-medium text-sm">WingCommander</p>
+              <p className="font-medium text-sm">Ditto Wingman</p>
               <p className="text-xs text-muted-foreground">AI-powered app builder</p>
             </div>
           </div>
@@ -125,12 +125,12 @@ export default function AuthPage() {
             transition={{ duration: 0.4 }}
           >
             <div className="mb-8">
-              <h1 className="text-2xl font-display font-bold mb-2">
+              <h1 className="text-2xl font-figtree font-bold mb-2">
                 {mode === "signin" ? "Welcome back" : "Create an account"}
               </h1>
               <p className="text-muted-foreground text-sm">
                 {mode === "signin"
-                  ? "Sign in to your WingCommander account"
+                  ? "Sign in to your Ditto Wingman account"
                   : "Start building with the most capable AI"}
               </p>
             </div>
@@ -180,7 +180,7 @@ export default function AuthPage() {
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-sm font-medium">Password</label>
                   {mode === "signin" && (
-                    <a href="#" className="text-xs text-wing-400 hover:underline">Forgot password?</a>
+                    <a href="#" className="text-xs text-ditto-400 hover:underline">Forgot password?</a>
                   )}
                 </div>
                 <div className="relative">
@@ -222,7 +222,7 @@ export default function AuthPage() {
               {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
               <button
                 onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setError(null); }}
-                className="text-wing-400 hover:underline font-medium"
+                className="text-ditto-400 hover:underline font-medium"
               >
                 {mode === "signin" ? "Sign up" : "Sign in"}
               </button>

@@ -99,7 +99,7 @@ function FileNode({ file, depth = 0, activeFileId, onSelect, onDelete, onRename 
   return (
     <div
       className={`flex items-center gap-1.5 px-2 py-1 rounded-md cursor-pointer transition-colors group text-sm ${
-        isActive ? "bg-wing-500/15 text-foreground" : "hover:bg-accent text-muted-foreground hover:text-foreground"
+        isActive ? "bg-ditto-500/15 text-foreground" : "hover:bg-accent text-muted-foreground hover:text-foreground"
       }`}
       style={{ paddingLeft: `${8 + indent}px` }}
       onClick={() => !renaming && onSelect(file)}

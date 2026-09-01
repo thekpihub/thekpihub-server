@@ -1,5 +1,8 @@
 {
-  "name": "thekpihub-wingcommander",
+  "engines": {
+    "node": "22.x"
+  },
+  "name": "ditto-wingman",
   "private": true,
   "workspaces": [
     "frontend",
@@ -19,7 +22,6 @@
   },
   "dependencies": {
     "esbuild": "0.28.1",
-    "monaco-editor": "0.53.0",
-    "react-router-dom": "^7.18.2"
+    "monaco-editor": "0.53.0"
   }
 }

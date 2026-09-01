@@ -1,5 +1,5 @@
 /**
- * WingCommander — Cloudflare Worker API Proxy
+ * Ditto Wingman — Cloudflare Worker API Proxy
  *
  * Deploy steps:
  * 1. Go to dash.cloudflare.com → Workers & Pages → Create Worker

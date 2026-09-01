@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   ArrowLeft, Key, Save, Eye, EyeOff, CheckCircle2, AlertCircle,
   Cpu, Database, Image as ImageIcon, Globe, Sparkles, Trash2,
-  RefreshCw, Moon, Sun, Monitor, Lock, Plus, Loader2, Shield,
+  RefreshCw, Moon, Sun, Monitor,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,26 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { useThemeStore, useAuthStore } from "@/store";
-import { getHandoffToken } from "@/hooks/useAuthHandoff";
 import type { Theme } from "@/types";
-
-const API = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
-
-interface ServerKey {
-  id: string;
-  provider: string;
-  key_hint: string;
-  label: string;
-  is_active: boolean;
-}
-
-const BYOK_PROVIDERS = [
-  { id: "anthropic", label: "Anthropic", models: "Claude Opus 4.7, Sonnet 4.6, Haiku 4.5" },
-  { id: "openai",    label: "OpenAI",    models: "GPT-4o, o3-mini" },
-  { id: "google",    label: "Google AI", models: "Gemini 2.0 Flash, Gemini 2.0 Pro" },
-  { id: "mistral",   label: "Mistral",   models: "Mistral Large, Mixtral" },
-  { id: "groq",      label: "Groq",      models: "Llama 3.3 70B (ultra-fast)" },
-];
 
 const STORAGE_KEYS = {
   ANTHROPIC_API_KEY: "ditto_anthropic_key",
@@ -57,7 +38,7 @@ const API_KEY_FIELDS: ApiKeyField[] = [
     label: "Anthropic API Key",
     description: "Powers all chat, code generation, and autonomous agent features. Required.",
     icon: Cpu,
-    color: "text-wing-400",
+    color: "text-ditto-400",
     required: true,
   },
   {
@@ -169,12 +150,6 @@ export default function SettingsPage() {
   });
 
   const [backendStatus, setBackendStatus] = useState<"checking" | "ok" | "error">("checking");
-  const [byokApproved, setByokApproved] = useState<boolean | null>(null);
-  const [serverKeys, setServerKeys] = useState<ServerKey[]>([]);
-  const [byokLoading, setByokLoading] = useState(false);
-  const [addingKey, setAddingKey] = useState<string | null>(null);
-  const [newKeyValue, setNewKeyValue] = useState("");
-  const [byokMsg, setByokMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   useEffect(() => {
     // Load from localStorage
@@ -188,65 +163,7 @@ export default function SettingsPage() {
     fetch("/api/health")
       .then((r) => setBackendStatus(r.ok ? "ok" : "error"))
       .catch(() => setBackendStatus("error"));
-
-    // Check BYOK approval status (only if handoff token exists)
-    const token = getHandoffToken();
-    if (token) {
-      fetch(`${API}/api/user/byok-status`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((r) => r.ok ? r.json() : null)
-        .then((d) => {
-          if (d?.approved) {
-            setByokApproved(true);
-            fetchServerKeys(token);
-          } else {
-            setByokApproved(false);
-          }
-        })
-        .catch(() => setByokApproved(false));
-    }
   }, []);
-
-  async function fetchServerKeys(token: string) {
-    const r = await fetch(`${API}/api/user/api-keys`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (r.ok) setServerKeys(await r.json());
-  }
-
-  async function saveServerKey(provider: string) {
-    const token = getHandoffToken();
-    if (!token || !newKeyValue.trim()) return;
-    setByokLoading(true);
-    const r = await fetch(`${API}/api/user/api-keys`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ provider, key: newKeyValue.trim(), label: provider }),
-    });
-    setByokLoading(false);
-    if (r.ok) {
-      setByokMsg({ type: "ok", text: `${provider} key saved.` });
-      setAddingKey(null);
-      setNewKeyValue("");
-      fetchServerKeys(token);
-    } else {
-      setByokMsg({ type: "err", text: "Failed to save key. Try again." });
-    }
-    setTimeout(() => setByokMsg(null), 3500);
-  }
-
-  async function deleteServerKey(provider: string) {
-    const token = getHandoffToken();
-    if (!token) return;
-    setByokLoading(true);
-    await fetch(`${API}/api/user/api-keys/${provider}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setByokLoading(false);
-    fetchServerKeys(token);
-  }
 
   const handleKeyChange = (key: keyof typeof STORAGE_KEYS, value: string) => {
     setApiKeys((prev) => ({ ...prev, [key]: value }));
@@ -271,8 +188,8 @@ export default function SettingsPage() {
           <Button size="icon-sm" variant="ghost" onClick={() => navigate(-1)} className="h-7 w-7">
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <div className="w-5 h-5 rounded bg-wing-500/20 flex items-center justify-center">
-            <Sparkles className="w-3 h-3 text-wing-400" />
+          <div className="w-5 h-5 rounded bg-ditto-500/20 flex items-center justify-center">
+            <Sparkles className="w-3 h-3 text-ditto-400" />
           </div>
           <span className="font-medium text-sm">Settings</span>
           <div className="ml-auto flex items-center gap-2">
@@ -307,7 +224,7 @@ export default function SettingsPage() {
             </h2>
             <div className="rounded-xl border border-border bg-card/40 p-4 space-y-2">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-wing-500/20 flex items-center justify-center text-wing-400 font-semibold text-sm">
+                <div className="w-9 h-9 rounded-full bg-ditto-500/20 flex items-center justify-center text-ditto-400 font-semibold text-sm">
                   {(user?.name ?? user?.email ?? "?")[0].toUpperCase()}
                 </div>
                 <div>
@@ -371,111 +288,6 @@ export default function SettingsPage() {
               ))}
             </div>
           </motion.section>
-
-          {/* BYOK Integration Keys — only visible if admin-approved */}
-          {byokApproved === true && (
-            <>
-              <Separator />
-              <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}>
-                <div className="flex items-center gap-2 mb-1">
-                  <Shield className="w-4 h-4 text-wing-400" />
-                  <h2 className="text-base font-semibold">Integration API Keys</h2>
-                  <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-wing-500/15 text-wing-400 font-medium">Admin Approved</span>
-                </div>
-                <p className="text-xs text-muted-foreground mb-4">
-                  Keys are stored AES-256-GCM encrypted on the server. WingCommander uses your key for that provider — zero platform cost on your usage.
-                </p>
-
-                {byokMsg && (
-                  <div className={`mb-3 px-3 py-2 rounded-lg text-xs ${byokMsg.type === "ok" ? "bg-emerald-500/10 text-emerald-400" : "bg-destructive/10 text-destructive"}`}>
-                    {byokMsg.text}
-                  </div>
-                )}
-
-                <div className="rounded-xl border border-border bg-card/40 p-4 space-y-4">
-                  {BYOK_PROVIDERS.map((p) => {
-                    const existing = serverKeys.find((k) => k.provider === p.id);
-                    const isAdding = addingKey === p.id;
-                    return (
-                      <div key={p.id} className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Lock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                          <span className="text-sm font-medium">{p.label}</span>
-                          <span className="text-xs text-muted-foreground">{p.models}</span>
-                          {existing ? (
-                            <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono">
-                              ···{existing.key_hint}
-                            </span>
-                          ) : (
-                            <span className="ml-auto text-xs text-muted-foreground">Not set</span>
-                          )}
-                        </div>
-
-                        {existing ? (
-                          <div className="flex gap-2 pl-5">
-                            <Button
-                              size="sm" variant="outline"
-                              className="h-7 text-xs gap-1 text-destructive border-destructive/40 hover:bg-destructive/10"
-                              onClick={() => deleteServerKey(p.id)}
-                              disabled={byokLoading}
-                            >
-                              <Trash2 className="w-3 h-3" /> Remove
-                            </Button>
-                            <Button
-                              size="sm" variant="ghost"
-                              className="h-7 text-xs gap-1"
-                              onClick={() => { setAddingKey(p.id); setNewKeyValue(""); }}
-                            >
-                              <RefreshCw className="w-3 h-3" /> Replace
-                            </Button>
-                          </div>
-                        ) : !isAdding ? (
-                          <div className="pl-5">
-                            <Button
-                              size="sm" variant="outline"
-                              className="h-7 text-xs gap-1"
-                              onClick={() => { setAddingKey(p.id); setNewKeyValue(""); }}
-                            >
-                              <Plus className="w-3 h-3" /> Add Key
-                            </Button>
-                          </div>
-                        ) : null}
-
-                        {isAdding && (
-                          <div className="flex gap-2 pl-5">
-                            <input
-                              type="password"
-                              value={newKeyValue}
-                              onChange={(e) => setNewKeyValue(e.target.value)}
-                              placeholder="Paste API key…"
-                              className="flex-1 h-8 text-xs font-mono bg-background border border-border rounded-md px-3 text-foreground outline-none focus:border-wing-400 transition-colors"
-                              autoFocus
-                            />
-                            <Button
-                              size="sm" variant="gradient"
-                              className="h-8 text-xs gap-1"
-                              onClick={() => saveServerKey(p.id)}
-                              disabled={byokLoading || !newKeyValue.trim()}
-                            >
-                              {byokLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-                              Save
-                            </Button>
-                            <Button
-                              size="sm" variant="ghost"
-                              className="h-8 text-xs"
-                              onClick={() => { setAddingKey(null); setNewKeyValue(""); }}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </motion.section>
-            </>
-          )}
 
           <Separator />
 

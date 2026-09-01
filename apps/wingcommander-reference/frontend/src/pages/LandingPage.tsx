@@ -88,7 +88,7 @@ const PERSONAS = [
   {
     num:"01", role:"CMO", title:"Chief Marketing Officer", forLabel:"For CMOs",
     headline:"Know which campaigns", highlight:"move the needle",
-    body:"Stop guessing which channels drive revenue. WingCommander connects your marketing KPIs, detects anomalies in real time, and drafts executive briefs before your Monday standup.",
+    body:"Stop guessing which channels drive revenue. Wingman connects your marketing KPIs, detects anomalies in real time, and drafts executive briefs before your Monday standup.",
     kpis:[
       {label:"CAC",   value:"$142",  delta:"−18%",  up:true},
       {label:"LTV/CAC",value:"4.2×", delta:"+0.8",  up:true},
@@ -100,7 +100,7 @@ const PERSONAS = [
   {
     num:"02", role:"CFO", title:"Chief Financial Officer", forLabel:"For CFOs",
     headline:"Real-time", highlight:"financial intelligence",
-    body:"From burn rate to EBITDA variance, WingCommander surfaces the numbers that matter and explains the 'why' behind every swing — in plain language, not pivot tables.",
+    body:"From burn rate to EBITDA variance, Wingman surfaces the numbers that matter and explains the 'why' behind every swing — in plain language, not pivot tables.",
     kpis:[
       {label:"Burn",   value:"$84K", delta:"on plan", up:true},
       {label:"Runway", value:"18mo", delta:"+2mo",    up:true},
@@ -112,7 +112,7 @@ const PERSONAS = [
   {
     num:"03", role:"Sales", title:"Sales Director", forLabel:"For Sales Leaders",
     headline:"Pipeline clarity that", highlight:"closes deals",
-    body:"Track rep performance, forecast accuracy, and deal velocity in one view. WingCommander flags at-risk deals and auto-generates weekly pipeline narratives for your CRO.",
+    body:"Track rep performance, forecast accuracy, and deal velocity in one view. Wingman flags at-risk deals and auto-generates weekly pipeline narratives for your CRO.",
     kpis:[
       {label:"Pipeline",value:"$2.1M", delta:"+$340K", up:true},
       {label:"Win Rate",value:"28%",   delta:"+4pp",   up:true},
@@ -124,7 +124,7 @@ const PERSONAS = [
   {
     num:"04", role:"Ops", title:"Operations Manager", forLabel:"For Ops",
     headline:"Efficiency metrics,", highlight:"automatically explained",
-    body:"Monitor SLAs, utilisation, and process efficiency across every team. When something crosses a threshold, WingCommander traces the root cause and proposes a fix.",
+    body:"Monitor SLAs, utilisation, and process efficiency across every team. When something crosses a threshold, Wingman traces the root cause and proposes a fix.",
     kpis:[
       {label:"SLA Met",  value:"96.4%", delta:"−0.8pp", up:false},
       {label:"Utilisation",value:"78%", delta:"+3pp",   up:true},
@@ -162,7 +162,7 @@ function PersonaDash({ p }: { p: typeof PERSONAS[0] }) {
           {p.alert.ok ? "✓" : "!"}
         </div>
         <div style={{ fontFamily:"Inter,sans-serif", fontSize:"0.78rem", color:"rgba(255,255,255,0.55)", lineHeight:1.45 }}>
-          <strong style={{ color:"rgba(255,255,255,0.9)" }}>WingCommander: </strong>{p.alert.msg}
+          <strong style={{ color:"rgba(255,255,255,0.9)" }}>Wingman: </strong>{p.alert.msg}
         </div>
       </div>
 
@@ -279,7 +279,7 @@ function WorkflowMock() {
       {[
         {tag:"WHEN",color:GOLD,bg:"rgba(233,161,35,0.1)",border:BORD, text:"Churn rate exceeds 3%"},
         {tag:"THEN",color:TEAL,bg:"rgba(0,201,167,0.08)",border:"rgba(0,201,167,0.2)", text:"Notify Slack #retention + create Jira ticket"},
-        {tag:"AND",color:"rgba(255,255,255,0.35)",bg:"rgba(255,255,255,0.03)",border:"rgba(255,255,255,0.08)", text:"Draft retention playbook via WingCommander"},
+        {tag:"AND",color:"rgba(255,255,255,0.35)",bg:"rgba(255,255,255,0.03)",border:"rgba(255,255,255,0.08)", text:"Draft retention playbook via Wingman AI"},
       ].map((n,i) => (
         <div key={i}>
           <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 14px", background:n.bg, border:`1px solid ${n.border}`, borderRadius:8, marginBottom:6 }}>
@@ -301,7 +301,7 @@ const FEATURES = [
   { num:"02", name:"Anomaly Detection", claim:"AI spots what you miss",    flip:true,
     body:"Statistical models trained on your historical data identify anomalies the moment they appear. Each alert comes with a plain-English explanation and a suggested action." },
   { num:"03", name:"AI Report Writer",  claim:"Narratives, not spreadsheets", flip:false,
-    body:"Turn raw KPI data into board-ready reports in seconds. WingCommander drafts executive summaries, variance analyses, and weekly digests in your brand's tone and format." },
+    body:"Turn raw KPI data into board-ready reports in seconds. Wingman drafts executive summaries, variance analyses, and weekly digests in your brand's tone and format." },
   { num:"04", name:"Smart Workflows",   claim:"Automate your metric ops",  flip:true,
     body:"Set trigger-based workflows: when a KPI crosses a threshold, automatically notify stakeholders, update a Notion doc, or create a Jira ticket. No code required." },
 ];
@@ -337,7 +337,7 @@ export default function LandingPage() {
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
             <a href="https://thekpihub.com" style={{ fontFamily:"Figtree,sans-serif", fontSize:"0.76rem", fontWeight:700, color:"rgba(255,255,255,0.38)", textDecoration:"none", letterSpacing:"0.1em", textTransform:"uppercase" }}>The KPI Hub</a>
             <span style={{ color:BORD, fontSize:"1.1rem", lineHeight:1 }}>/</span>
-            <span style={{ fontFamily:"Figtree,sans-serif", fontSize:"0.9rem", fontWeight:800, color:GOLD, letterSpacing:"0.02em" }}>WingCommander</span>
+            <span style={{ fontFamily:"Figtree,sans-serif", fontSize:"0.9rem", fontWeight:800, color:GOLD, letterSpacing:"0.02em" }}>AI Wingman</span>
           </div>
           <div style={{ display:"flex", gap:28 }} className="hidden md:flex">
             {[["Features","#features"],["How it works","#how-it-works"],["Pricing","#pricing"]].map(([l,h]) => (
@@ -346,7 +346,7 @@ export default function LandingPage() {
           </div>
           <div style={{ display:"flex", gap:10 }}>
             {user
-              ? <button onClick={() => navigate("/dashboard")} style={{ padding:"8px 20px", background:GOLD, color:BG, border:"none", borderRadius:7, fontFamily:"Figtree,sans-serif", fontSize:"0.76rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>Open WingCommander</button>
+              ? <button onClick={() => navigate("/dashboard")} style={{ padding:"8px 20px", background:GOLD, color:BG, border:"none", borderRadius:7, fontFamily:"Figtree,sans-serif", fontSize:"0.76rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>Open Wingman</button>
               : <>
                   <button onClick={() => navigate("/auth")} style={{ padding:"8px 16px", background:"transparent", border:`1px solid ${BORD}`, color:"rgba(255,255,255,0.55)", borderRadius:7, fontFamily:"Figtree,sans-serif", fontSize:"0.76rem", fontWeight:600, cursor:"pointer" }}>Sign in</button>
                   <button onClick={openWingman} style={{ padding:"8px 20px", background:GOLD, color:BG, border:"none", borderRadius:7, fontFamily:"Figtree,sans-serif", fontSize:"0.76rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer" }}>Get Premium</button>
@@ -371,7 +371,7 @@ export default function LandingPage() {
               {" "}by AI
             </h1>
             <p style={{ fontFamily:"Inter,sans-serif", fontSize:"1.15rem", fontWeight:300, color:"rgba(255,255,255,0.5)", lineHeight:1.65, maxWidth:600, margin:"0 auto 44px" }}>
-              WingCommander is the AI agent built into The KPI Hub. It monitors your metrics, detects anomalies, writes executive reports, and answers any question about your data — in plain language.
+              Ditto Wingman is the AI agent built into The KPI Hub. It monitors your metrics, detects anomalies, writes executive reports, and answers any question about your data — in plain language.
             </p>
             <div style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
               <button onClick={openWingman} style={{ padding:"14px 32px", background:GOLD, color:BG, border:"none", borderRadius:8, fontFamily:"Figtree,sans-serif", fontSize:"0.82rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", cursor:"pointer", display:"flex", alignItems:"center", gap:8 }}>
@@ -379,7 +379,7 @@ export default function LandingPage() {
               </button>
               {user && (
                 <button onClick={() => navigate("/dashboard")} style={{ padding:"14px 28px", background:"transparent", border:`1px solid ${BORD}`, color:"rgba(255,255,255,0.65)", borderRadius:8, fontFamily:"Figtree,sans-serif", fontSize:"0.82rem", fontWeight:600, cursor:"pointer" }}>
-                  Open WingCommander
+                  Open Wingman
                 </button>
               )}
             </div>
@@ -442,7 +442,7 @@ export default function LandingPage() {
       {/* ── Feature blocks ────────────────────────────────────────────────── */}
       <section id="how-it-works" style={{ padding:"100px 24px" }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
-          <SectionEyebrow label="What WingCommander does" />
+          <SectionEyebrow label="What Wingman does" />
           <h2 style={{ fontFamily:"Figtree,sans-serif", fontSize:"clamp(2rem,4vw,3.2rem)", fontWeight:700, letterSpacing:"-0.025em", lineHeight:1.1, marginBottom:56 }}>
             Four engines, one{" "}
             <em style={{ fontStyle:"italic", color:GOLD }}>intelligent</em> platform
@@ -478,7 +478,7 @@ export default function LandingPage() {
               <em style={{ fontStyle:"italic", color:GOLD }}>thekpihub.com</em> Premium
             </h2>
             <p style={{ fontFamily:"Inter,sans-serif", fontSize:"1rem", color:"rgba(255,255,255,0.42)", maxWidth:500, margin:"0 auto" }}>
-              WingCommander is not a separate product — it's built into your KPI Hub subscription. No extra sign-up, no extra fee.
+              Ditto Wingman is not a separate product — it's built into your KPI Hub subscription. No extra sign-up, no extra fee.
             </p>
           </div>
 
@@ -486,7 +486,7 @@ export default function LandingPage() {
             {[
               { name:"Starter",   forText:"For small teams",          price:"Included", period:"in KPI Hub Starter",       pop:false,
                 features:["5 KPI dashboards","Weekly AI digest","Anomaly alerts (email)","Basic report writer"] },
-              { name:"Premium",   forText:"The full WingCommander experience", price:"From $49", period:"/month on thekpihub.com", pop:true,
+              { name:"Premium",   forText:"The full Wingman experience", price:"From $49", period:"/month on thekpihub.com", pop:true,
                 features:["Unlimited dashboards","Real-time Pulse Engine","AI anomaly detection","Auto-generated reports","4 role-based persona views","Slack & Notion integrations"] },
               { name:"Enterprise", forText:"For large orgs",          price:"Custom",   period:"contact us",               pop:false,
                 features:["Everything in Premium","SSO / SAML","Custom data connectors","Dedicated AI instance","SLA guarantee","White-label option"] },
@@ -533,7 +533,7 @@ export default function LandingPage() {
             Start <em style={{ fontStyle:"italic", color:GOLD }}>understanding</em> them.
           </h2>
           <p style={{ fontFamily:"Inter,sans-serif", fontSize:"1.05rem", color:"rgba(255,255,255,0.42)", lineHeight:1.7, maxWidth:500, margin:"0 auto 44px" }}>
-            Upgrade to The KPI Hub Premium and get instant access to WingCommander — the AI that turns your metrics into decisions.
+            Upgrade to The KPI Hub Premium and get instant access to Ditto Wingman — the AI that turns your metrics into decisions.
           </p>
           <div style={{ display:"flex", justifyContent:"center", gap:14, flexWrap:"wrap" }}>
             <a href="https://thekpihub.com/pricing" style={{ padding:"14px 32px", background:GOLD, color:BG, borderRadius:8, fontFamily:"Figtree,sans-serif", fontSize:"0.82rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", textDecoration:"none", display:"inline-flex", alignItems:"center", gap:8 }}>
@@ -541,7 +541,7 @@ export default function LandingPage() {
             </a>
             {user && (
               <button onClick={() => navigate("/dashboard")} style={{ padding:"14px 28px", background:"transparent", border:`1px solid ${BORD}`, color:"rgba(255,255,255,0.6)", borderRadius:8, fontFamily:"Figtree,sans-serif", fontSize:"0.82rem", fontWeight:600, cursor:"pointer" }}>
-                Open WingCommander now
+                Open Wingman now
               </button>
             )}
           </div>
@@ -557,7 +557,7 @@ export default function LandingPage() {
                 <span style={{ width:6, height:6, borderRadius:"50%", background:GOLD, boxShadow:`0 0 10px ${GOLD}` }} />The KPI Hub
               </div>
               <p style={{ fontFamily:"Inter,sans-serif", fontSize:"0.86rem", color:"rgba(255,255,255,0.38)", lineHeight:1.6, maxWidth:260 }}>
-                WingCommander is the AI intelligence layer built into The KPI Hub — the performance analytics platform for modern teams.
+                Ditto Wingman is the AI intelligence layer built into The KPI Hub — the performance analytics platform for modern teams.
               </p>
             </div>
             {[
@@ -576,7 +576,7 @@ export default function LandingPage() {
             ))}
           </div>
           <div style={{ borderTop:`1px solid ${BORD}`, paddingTop:24, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:12, fontFamily:"JetBrains Mono,monospace", fontSize:"0.7rem", color:"rgba(255,255,255,0.24)" }}>
-            <span>© 2025 The KPI Hub. WingCommander is a KPI Hub product.</span>
+            <span>© 2025 The KPI Hub. Ditto Wingman is a KPI Hub product.</span>
             <span>Powered by Claude Opus 4.7 · <span style={{ color:GOLD }}>agent.thekpihub.com</span></span>
           </div>
         </div>

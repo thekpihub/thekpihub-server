@@ -24,7 +24,7 @@ import type { ProjectFile } from "@/types";
 type PanelLayout = "chat" | "editor" | "split";
 type RightPanel = "chat" | "rag" | "image" | "agent";
 
-const DEFAULT_CODE = `// Welcome to WingCommander Workspace
+const DEFAULT_CODE = `// Welcome to Ditto Wingman Workspace
 // Select a file from the tree or start chatting to generate code.
 
 export function greet(name: string): string {
@@ -33,7 +33,7 @@ export function greet(name: string): string {
 `;
 
 const RIGHT_PANEL_TABS: { id: RightPanel; label: string; icon: React.ElementType; color: string }[] = [
-  { id: "chat", label: "Chat", icon: MessageSquare, color: "text-wing-400" },
+  { id: "chat", label: "Chat", icon: MessageSquare, color: "text-ditto-400" },
   { id: "agent", label: "Agent", icon: Zap, color: "text-rose-400" },
   { id: "rag", label: "RAG", icon: Database, color: "text-emerald-400" },
   { id: "image", label: "Images", icon: ImageIcon, color: "text-amber-400" },
@@ -147,7 +147,7 @@ export default function WorkspacePage() {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-wing-400 mx-auto mb-3" />
+          <Loader2 className="w-8 h-8 animate-spin text-ditto-400 mx-auto mb-3" />
           <p className="text-muted-foreground">Loading project...</p>
         </div>
       </div>
@@ -164,8 +164,8 @@ export default function WorkspacePage() {
           </Button>
 
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <div className="w-5 h-5 rounded bg-wing-500/20 flex items-center justify-center shrink-0">
-              <Sparkles className="w-3 h-3 text-wing-400" />
+            <div className="w-5 h-5 rounded bg-ditto-500/20 flex items-center justify-center shrink-0">
+              <Sparkles className="w-3 h-3 text-ditto-400" />
             </div>
             <span className="font-medium text-sm truncate">{project.name}</span>
             <Badge variant="outline" className="text-xs shrink-0 capitalize">{project.mode}</Badge>
@@ -249,7 +249,7 @@ export default function WorkspacePage() {
           {(layout === "split" || layout === "editor") && (
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="w-3 bg-border/50 hover:bg-wing-500/20 transition-colors flex items-center justify-center shrink-0"
+              className="w-3 bg-border/50 hover:bg-ditto-500/20 transition-colors flex items-center justify-center shrink-0"
             >
               {sidebarCollapsed ? <ChevronRight className="w-2 h-2" /> : <ChevronLeft className="w-2 h-2" />}
             </button>
