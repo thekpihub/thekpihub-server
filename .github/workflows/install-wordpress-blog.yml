@@ -154,6 +154,35 @@ jobs:
             > /tmp/render.html 2>&1
           echo "exit status was: $?"
           set -e
+          echo "--- rendered output size ---"
+          wc -c /tmp/render.html
           echo "--- rendered output, first 100 lines ---"
           head -n 100 /tmp/render.html
+          echo "--- writing a temporary web-facing diagnostic script (real PHP-FPM, not CLI) ---"
+          cat > __diag.php <<'PHPEOF'
+          <?php
+          echo "PHP_SAPI_VERSION=" . phpversion() . PHP_EOL;
+          echo "SAPI=" . php_sapi_name() . PHP_EOL;
+          echo "error_log_ini=" . ini_get('error_log') . PHP_EOL;
+          echo "display_errors=" . ini_get('display_errors') . PHP_EOL;
+          echo "log_errors=" . ini_get('log_errors') . PHP_EOL;
+          PHPEOF
+          echo "diagnostic script written"
           REMOTE_SCRIPT
+
+      - name: Fetch the web-facing PHP diagnostic over real HTTP
+        run: |
+          echo "--- curl __diag.php over HTTPS ---"
+          curl -sS https://blog.thekpihub.com/__diag.php
+          echo ""
+          echo "--- now curl the homepage again for comparison ---"
+          curl -sS -D - -o /tmp/home2.html https://blog.thekpihub.com/
+          wc -c /tmp/home2.html
+
+      - name: Clean up temporary diagnostic script
+        if: always()
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            "rm -f '/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress/__diag.php'"
