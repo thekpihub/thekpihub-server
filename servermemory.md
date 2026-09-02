@@ -106,11 +106,32 @@ only against the site's own copy") rather than resolving it:
   that isn't sold anywhere else on the site, or to "Growth"/"Enterprise" at prices that don't
   match what pricing.html/the homepage advertise.
 
-**Not fixed — this is a business decision, not a code bug.** Don't know which side is "right":
-maybe `config.js`'s price IDs are stale and need updating to match the ₹5,999/mo Growth figure,
-maybe pricing.html's copy is aspirational and Stripe has the real numbers, maybe `starter`
-should be removed from `config.js` entirely now that it's not sold. Flagged to the user with
-the concrete numbers rather than guessed at or silently changed.
+**Correction from the user, same day:** the framing above ("maybe config.js's price IDs are
+stale, reconcile them") was wrong — Stripe isn't usable for this business at all (not
+Indian-business-friendly, per the user directly). That's *why* Razorpay + PayPal exist. So
+"fix the Stripe price IDs" was never the right task.
+
+**What actually exists, checked directly in `apps/platform` (not `apps/website`):** a real,
+recently-built, region-aware payment system —
+`src/lib/payments/{config,factory,index,types}.ts`, `RazorpayProcessor.ts`,
+`PayPalProcessor.ts`, `api/billing/checkout/route.ts`, dedicated webhook handlers for both
+(`api/billing/webhook/{razorpay,paypal}/route.ts`). `getPrimaryProcessorForRegion()`: India →
+Razorpay, everywhere else → PayPal, with the other as fallback. Last touched 2026-08-29,
+commit message "Razorpay Standard Web Checkout Integration - Production Ready."
+
+**But it's not actually wired to anything a real user reaches.** The only frontend page using
+the `RazorpayCheckout` component is `apps/platform/src/app/razorpay-demo/page.tsx` — a demo
+page, not a real subscribe flow. Meanwhile `apps/website/upgrade.html` — the page actually
+reachable at `thekpihub.com/upgrade.html` right now — still runs the old Stripe integration.
+
+**A fourth set of numbers, not two.** `apps/platform/src/lib/payments/config.ts`'s
+`PRICING_CONFIG` has yet another growth/enterprise pricing pair (`INR.growth: 4999`,
+`INR.enterprise: 14999`, labeled "paisa" in a comment — if that's literal, ₹49.99/₹149.99,
+implausibly low for these tiers; if the comment is wrong and it's rupees, ₹4,999/₹14,999,
+still neither matches pricing.html's ₹5,999/mo nor `config.js`'s Stripe ₹2,499/mo). Three
+different pricing sources now disagree, not one broken one. Not resolved — needs the user to
+say which numbers are canonical, and whether the intent is to wire this real Razorpay/PayPal
+system into a live subscribe page and retire `/upgrade.html`'s Stripe flow, or something else.
 
 ---
 
