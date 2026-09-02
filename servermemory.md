@@ -62,9 +62,30 @@ one cron trigger — the "twice a day" symptom was the *other* workflow collidin
 second trigger inside daily-pipeline.yml). Both workflows keep their own cadence (daily vs.
 every-2-days); they just no longer land in the same few minutes.
 
-**Still unverified:** an actual end-to-end connection + insert has not been run yet (no
-MySQL/Python/Node/PHP client in this working environment) — the first real GitHub Actions run
-of these workflows will be the first live test of the whole path.
+**Live-tested end-to-end (2026-09-02), on `main` post-merge:** ran `daily-pipeline.yml` via
+`workflow_dispatch` twice — first `dry_run=true` (confirms code/imports/env validation clean,
+run 33625459936, 7m19s, all green), then a real `dry_run=false` run (33626840842, 6m2s).
+The real run wrote 4 posts (`wp_posts` IDs 48–51) and their category/tag rows into
+`u117990013_Thekpihub` — verified directly via phpMyAdmin's SQL tab, not just trusted from the
+log: `SELECT ... FROM wp_posts WHERE ID >= 48` returned all 4 rows with correct
+`post_author=1`, `post_status='publish'` (correct — `PUBLISH_AT` was earlier that same day, so
+the future-vs-publish check in `publish_to_wordpress()` correctly fell through to `publish`,
+same as what the old WP REST API would have done server-side for a past date), real titles and
+content. A join across `wp_term_relationships`/`wp_term_taxonomy`/`wp_terms` confirmed the
+category + up to 5 tags were created and linked correctly for each post (24 relationship rows
+across the 4 posts). **The MySQL write path works.**
+
+**Separate, pre-existing bug surfaced by this run — not caused by this session's changes,
+not yet fixed:** 3 of the 7 articles failed at Engine 2B (article generation, in
+`generate_article()`), before ever reaching the new DB code: `'ThinkingBlock' object has no
+attribute 'text'`. `resp.content[0].text` assumes `content[0]` is always a `TextBlock`, but the
+Claude response is sometimes returning a `ThinkingBlock` first instead. Affected this run:
+`market_flash`, `kpi_spotlight`, `founders_brief`. Needs a fix that finds the first text block
+in `resp.content` rather than assuming index 0, in both `apps/website/pipeline.py` (used in
+`generate_article()`, `synthesize_daily_report()`, and `verify_article_claims()` — all three
+call `claude_call(...)` and then do `resp.content[0].text`) and check
+`services/pipeline/pipeline.py`'s `engine2_synthesize()` too. Flagged to the user, not yet
+actioned.
 
 ---
 
