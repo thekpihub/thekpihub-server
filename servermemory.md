@@ -52,15 +52,19 @@ actually reachable), publish by writing straight into `wp_posts`/`wp_postmeta`/
   each post's `guid`.
 - Added `PyMySQL` to both `requirements.txt` files.
 
-**Not done / flagged, not fixed:** discovered while reading the workflows that
-`daily-pipeline.yml` and `premium-pipeline.yml` both run `apps/website/pipeline.py` at the same
-`21:33 UTC` cron time on odd calendar days (the premium one every 2 days), racing to publish the
-same date-based slugs. The per-slug idempotency check should mostly prevent duplicate posts, but
-there's still a real race window, and it's a separate, pre-existing scheduling problem from
-before this session — out of scope for "wire the MySQL client in," flagged to the user rather
-than fixed unprompted. Also unverified: an actual end-to-end connection + insert has not been
-run yet (no MySQL/Python/Node/PHP client in this working environment) — the first real
-GitHub Actions run of these workflows will be the first live test of the whole path.
+**Also fixed this session, on the user's follow-up request:** discovered while reading the
+workflows that `daily-pipeline.yml` and `premium-pipeline.yml` both ran `apps/website/pipeline.py`
+at the same `21:33 UTC` cron slot on odd calendar days (the premium one every 2 days), racing
+to publish the same date-based slugs. Flagged it in the PR; user then explicitly asked for
+daily-pipeline to run only once a day. Fix: moved `premium-pipeline.yml`'s cron to `33 9 1-31/2 * *`
+(15:03 IST / 09:33 UTC) instead of changing `daily-pipeline.yml` itself (which already only had
+one cron trigger — the "twice a day" symptom was the *other* workflow colliding with it, not a
+second trigger inside daily-pipeline.yml). Both workflows keep their own cadence (daily vs.
+every-2-days); they just no longer land in the same few minutes.
+
+**Still unverified:** an actual end-to-end connection + insert has not been run yet (no
+MySQL/Python/Node/PHP client in this working environment) — the first real GitHub Actions run
+of these workflows will be the first live test of the whole path.
 
 ---
 
