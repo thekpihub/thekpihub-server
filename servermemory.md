@@ -75,6 +75,64 @@ content. A join across `wp_term_relationships`/`wp_term_taxonomy`/`wp_terms` con
 category + up to 5 tags were created and linked correctly for each post (24 relationship rows
 across the 4 posts). **The MySQL write path works.**
 
+## 2026-09-02 — pipeline.yml: once/day + artifact-capture fix; MySQL connectivity NOT transient; WP backup history checked
+
+**Both done, on explicit user request:**
+- `pipeline.yml` cron: `0 1,7,13,19 * * *` (4x/day) → `0 13 * * *` (once/day, 13:00 UTC /
+  18:30 IST — picked clear of `daily-pipeline.yml`'s 21:33 UTC and `premium-pipeline.yml`'s
+  09:33 UTC). Commit `6beaf95`.
+- `upload-artifact` in the same workflow now also captures `services/pipeline/articles/`
+  (previously only `pipeline.log`) — **verified by downloading the artifact from a real run**:
+  all 3 fallback JSON files were present alongside the log. Same commit.
+
+**MySQL connectivity from `pipeline.yml` — NOT transient, reproduced twice in a row.**
+Re-dispatched `pipeline.yml` after the fixes (run 33630386644) specifically to check whether
+the earlier connection failure (run 33629397860) was a one-off. It wasn't — identical failure,
+same two-stage pattern, for all 3 articles again:
+```
+DB connect via <hostname> failed: (2003, "... [Errno 101] Network is unreachable")
+DB connect via <IP> failed: (2003, "... timed out")
+```
+Working hypothesis, not confirmed: the one run that *did* connect successfully
+(`apps/website`'s live run, 33626840842) logged `Azure Region: westus`; both failures logged
+`centralus`/`eastus`. GitHub-hosted runners land in different Azure regions per run with no
+user control over which, and "Network is unreachable" (ENETUNREACH) is a local-routing-table
+error, not a remote refusal — consistent with a region-dependent routing/IPv6 issue between
+that particular Azure region and Hostinger's server, rather than anything wrong with the Any
+Host (%) rule itself (which did work, from `westus`). Not root-caused further this session —
+flagged to the user rather than guessed at with more code changes. The JSON-fallback +
+now-captured-artifact path means no data is lost when this happens, just not written to the DB
+automatically.
+
+**WordPress backup history checked — conclusive, restore is not viable.** Went through hPanel
+Backups → Restore and download → Files backup for `thekpihub.com`, oldest available backup is
+**2026-07-19** (six weeks before this check; backups exist from 2026-06-25 per hPanel's own
+note, but the UI only surfaces this far back). Browsed that oldest backup's full file listing
+end-to-end: identical static-site repo structure to today (`.git`, `.github`, `account/`,
+`api/`, ... `wp-plugin/`) — **no `wp-admin`, `wp-content`, `wp-includes`, or `wp-config.php`
+anywhere, confirmed by scrolling the complete alphabetical listing**. Combined with the earlier
+finding that `wp_posts`' oldest rows are dated 2025-11-24 — seven months before this Hostinger
+website was even created (2026-06-20) — the likely explanation is that the WordPress
+**database** was migrated in from a prior, different WordPress installation at some point, but
+the WordPress **application files** were never installed on this hosting account at all. This
+settles the restore-vs-reinstall question: there is nothing to restore from backups; a fresh
+WordPress install is the only path if that route is taken.
+
+**Recommendation given to the user, not yet actioned:** reinstall WordPress core under a
+subdomain (`blog.thekpihub.com`) pointed at the existing `u117990013_Thekpihub` database, over
+a subdirectory/root-domain install or a custom-built frontend. Reasoning: the pipeline already
+writes 100%-WordPress-native rows (proper `wp_posts`/taxonomy relationships, and a
+`_yoast_wpseo_metadesc` postmeta key implying the original stack included Yoast SEO) — a real
+WordPress install renders all of that correctly with zero further data work, which a bespoke
+frontend would have to reimplement and maintain. A subdomain avoids two real risks a
+subdirectory install would carry: `apps/website`'s deploy workflow runs `rsync --delete`
+(protected only by `.deploy-exclude` — see `apps/website/CLAUDE.md`), and a WP folder not added
+to that exclude list before the next automated deploy would be wiped; a subdomain's docroot is
+untouched by that pipeline entirely. Root domain was ruled out outright — would mean replacing
+the live static site's docroot.
+
+---
+
 **Separate, pre-existing bug surfaced by this run — not caused by this session's changes —
 fixed same day.** 3 of the 7 articles failed at Engine 2B (article generation, in
 `generate_article()`), before ever reaching the new DB code: `'ThinkingBlock' object has no
