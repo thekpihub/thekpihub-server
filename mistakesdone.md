@@ -6,6 +6,54 @@ or pushed, from 2026-09-02 onward, for as long as this repo exists.** Newest ent
 
 ---
 
+## 2026-09-02 — Applied Twenty Twenty-Five to fix a blank page, never audited its own default demo content
+
+**What happened:** Earlier the same day, `blog.thekpihub.com` was returning a blank homepage
+because the DB's active theme (`hello-elementor`) wasn't installed. Fixed that by switching to
+`twentytwentyfive` (bundled with WP core) and verified the fix by checking that the homepage
+and article body rendered real content — which they did. Declared it working and moved on to
+other tasks (link audit, brand CSS, admin login, permalinks) without ever scrolling to the
+footer or clicking its nav links. The user did that, and found all 8 footer links
+(Blog/About/FAQs/Authors/Events/Shop/Patterns/Themes) went nowhere — `href="#"` on an
+already-loaded page just stays put, so every one of them appeared to "show the same article,"
+making it look across 7+ pages like content had been duplicated everywhere.
+
+**What was actually true, checked directly before writing this entry, not assumed:** those
+`url:"#"` links were not something introduced for this site — they're literally hardcoded in
+Twenty Twenty-Five's own shipped `wp-content/themes/twentytwentyfive/patterns/footer.php`,
+confirmed by reading that file straight off the server. It's official WordPress demo/placeholder
+content, intended for a site owner to fill in with real destinations after activating the
+theme — exactly the step that was skipped.
+
+**Why it happened:** "the homepage renders real content" and "the theme is safely usable as
+shipped" are not the same claim, and this session treated them as equivalent. The verification
+done (homepage body renders, article body renders, permalink URLs 200) was real and accurate as
+far as it went — it just never went far enough to cover the parts of the page a first-time
+visitor scrolls past every single time: header nav and footer. A theme swap done to fix one
+narrow rendering bug still ships with all of that theme's own default content, and none of it
+gets a pass just because the bug that prompted the swap is fixed.
+
+**Correction that should have happened instead, at the time the theme was switched:**
+1. After any theme change, load the actual rendered page and check *every* visible interactive
+   element — nav, footer, sidebar — not just confirm the main content area has real text. A
+   visual scroll-through, not just a byte-count check, was the missing step.
+2. Specifically distrust default/demo content shipped by a theme that was never customized for
+   this site. Block themes like Twenty Twenty-Five ship extensive demo patterns (footer nav,
+   CTA blocks, sample pages) precisely because they're meant to be replaced, not because
+   they're meant to work as-is.
+3. When applying a theme as a fix for one specific bug, say so explicitly and flag what wasn't
+   checked, rather than reporting "the blank page is fixed" in a way that reads as "the theme is
+   fully ready" when only the one symptom was verified.
+
+**Correction applied once found:** read `footer.php` directly off the server rather than
+guessing at what to change; replaced the two nav groups with one containing only real,
+honest destinations (`Blog` → the blog's own home, `About The KPI Hub` → the main site) and
+removed the `Events`/`Shop`/`Patterns`/`Themes` group entirely rather than inventing content to
+fill it, since none of those apply to a content blog. Also swapped the leftover literal
+"Twenty Twenty-Five" text for a real copyright line while in the file.
+
+---
+
 ## 2026-09-02 — Overstated why Ditto Wingman mattered to the live site (second instance, same class of error)
 
 **What happened:** Told the user Ditto Wingman's Cloudflare Worker was "load-bearing backend

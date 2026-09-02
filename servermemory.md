@@ -75,6 +75,38 @@ content. A join across `wp_term_relationships`/`wp_term_taxonomy`/`wp_terms` con
 category + up to 5 tags were created and linked correctly for each post (24 relationship rows
 across the 4 posts). **The MySQL write path works.**
 
+## 2026-09-02 — Footer nav's dead placeholder links fixed (real mistake, see mistakesdone.md)
+
+The user caught something the earlier theme-swap fix missed: `blog.thekpihub.com`'s footer had
+8 nav links (Blog/About/FAQs/Authors/Events/Shop/Patterns/Themes) that all went nowhere —
+`href="#"`, which just stays on whatever page you're already on, making every article look like
+it "duplicated the homepage" when clicked. Full mistake writeup with what should have been
+checked at the time is in `mistakesdone.md` — this entry is the technical record of the fix.
+
+**Root cause, verified by reading the actual source file, not assumed:** those `url:"#"` values
+are hardcoded in `wp-content/themes/twentytwentyfive/patterns/footer.php` — Twenty Twenty-Five's
+own shipped demo footer pattern, confirmed with `cat` over SSH. Genuinely official WordPress
+theme placeholder content, not something introduced for this site — but applying that theme
+(to fix the earlier blank-page bug) without ever auditing its own default content was the gap.
+
+**Fix:** wrote a corrected `footer.php` (`.github/workflows/assets/blog-footer.php`, uploaded via
+`scp` in the same SSH-based workflow used throughout this session) with a single nav group
+containing two real links — `Blog` → `home_url('/')`, `About The KPI Hub` → `https://thekpihub.com`
+— and removed the `Events`/`Shop`/`Patterns`/`Themes` group entirely rather than inventing fake
+destinations for options that don't apply to a content blog. Also swapped the leftover literal
+"Twenty Twenty-Five" text for a real copyright line.
+
+**Verified directly in a live browser session, not just the fix script's own output:**
+`find()` on the rendered footer returned exactly 2 links (down from 8); read their actual
+`href` attributes: `Blog` → `https://blog.thekpihub.com/`, `About The KPI Hub` →
+`https://thekpihub.com`. Both real, both correct.
+
+**Recurring SSH-flakiness pattern held again:** first attempt at this exact fix failed with the
+same `Connection timed out` (exit 255) on the very first SSH step; a same-workflow retry
+succeeded, consistent with every prior occurrence this session.
+
+---
+
 ## 2026-09-02 — CTA links fixed, pretty-permalink 404s fixed (both independently re-verified)
 
 Two more fixes on the same install, both confirmed working via a fresh, independent check
