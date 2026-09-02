@@ -1,0 +1,102 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# One-off / rarely-run provisioning tool, NOT part of regular CI.
+#
+# Installs WordPress core under public_html/blog-wordpress (served at
+# blog.thekpihub.com, a subdomain created 2026-09-02) and wires it to the
+# EXISTING u117990013_Thekpihub database -- the one the content pipeline
+# already writes into directly via PyMySQL (see servermemory.md, 2026-09-02).
+# No new database, no data migration: WordPress just starts rendering rows
+# that are already there (table prefix wp_, matching what's already in use).
+#
+# Safe to re-run: overwrites wp-config.php and re-extracts core files, but
+# never touches the database contents, and the docroot (blog-wordpress/) is
+# outside the allow-listed website-payload the regular deploy workflow
+# uploads, so the two never collide.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Install WordPress (blog.thekpihub.com)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    name: Install WordPress core + wire existing DB
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    env:
+      HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+      HOSTINGER_PORT: ${{ secrets.HOSTINGER_PORT }}
+      HOSTINGER_USERNAME: ${{ secrets.HOSTINGER_USERNAME }}
+      HOSTINGER_SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      HOSTINGER_SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+      WP_DB_NAME: ${{ secrets.WP_DB_NAME }}
+      WP_DB_USER: ${{ secrets.WP_DB_USER }}
+      WP_DB_PASSWORD: ${{ secrets.WP_DB_PASSWORD }}
+      WP_DB_HOST: ${{ secrets.WP_DB_HOST }}
+    steps:
+      - name: Configure verified SSH
+        run: |
+          test -n "$HOSTINGER_HOST"
+          test -n "$HOSTINGER_PORT"
+          test -n "$HOSTINGER_USERNAME"
+          test -n "$HOSTINGER_SSH_KEY"
+          test -n "$HOSTINGER_SSH_KNOWN_HOSTS"
+          test -n "$WP_DB_NAME"
+          test -n "$WP_DB_USER"
+          test -n "$WP_DB_PASSWORD"
+          test -n "$WP_DB_HOST"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$HOSTINGER_SSH_KEY" > ~/.ssh/hostinger_deploy_key
+          printf '%s\n' "$HOSTINGER_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/hostinger_deploy_key
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Install WordPress core on the remote server
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- "$WP_DB_NAME" "$WP_DB_USER" "$WP_DB_PASSWORD" "$WP_DB_HOST" \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          DB_NAME="$1"; DB_USER="$2"; DB_PASS="$3"; DB_HOST="$4"
+
+          cd "/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress"
+
+          echo "Downloading WordPress core..."
+          curl -sSL -o wordpress.zip https://wordpress.org/latest.zip
+
+          echo "Extracting..."
+          unzip -q -o wordpress.zip
+          rm -f default.php wordpress.zip
+          shopt -s dotglob
+          mv wordpress/* .
+          rmdir wordpress
+
+          echo "Fetching fresh secret keys..."
+          SALT="$(curl -sSL https://api.wordpress.org/secret-key/1.1/salt/)"
+
+          echo "Writing wp-config.php..."
+          {
+            echo "<?php"
+            echo "define('DB_NAME', '${DB_NAME}');"
+            echo "define('DB_USER', '${DB_USER}');"
+            echo "define('DB_PASSWORD', '${DB_PASS}');"
+            echo "define('DB_HOST', '${DB_HOST}');"
+            echo "define('DB_CHARSET', 'utf8mb4');"
+            echo "define('DB_COLLATE', '');"
+            echo "\$table_prefix = 'wp_';"
+            echo "$SALT"
+            echo "define('WP_HOME', 'https://blog.thekpihub.com');"
+            echo "define('WP_SITEURL', 'https://blog.thekpihub.com');"
+            echo "define('FS_METHOD', 'direct');"
+            echo "if ( ! defined('ABSPATH') ) define('ABSPATH', __DIR__ . '/');"
+            echo "require_once ABSPATH . 'wp-settings.php';"
+          } > wp-config.php
+
+          echo "INSTALL_OK"
+          REMOTE_SCRIPT
