@@ -1,0 +1,89 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# KPI Hub — 48-Hour Intelligence Pipeline
+# Schedule: Every 2 days at 03:03 AM IST (21:33 UTC)
+# Publishes Premium Content: Deep-dive analyses, trend reports, benchmark studies
+# Ported from thekpihub/thekpihub-website (root .github/workflows/ only runs
+# for the repo it lives in — this monorepo needs its own root-level copy).
+# ─────────────────────────────────────────────────────────────────────────────
+name: 48-Hour Premium Pipeline
+
+on:
+  schedule:
+    - cron: "33 21 1-31/2 * *"   # Every odd day at 03:03 AM IST
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (skip WP publish + Telegram)"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
+
+concurrency:
+  group: kpihub-premium-pipeline-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  run-premium-pipeline:
+    name: "🎯 Premium Pipeline — ${{ github.event.inputs.dry_run == 'true' && 'DRY RUN' || 'LIVE' }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: apps/website
+
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      SERPAPI_KEY:        ${{ secrets.SERPAPI_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+      WP_SITE_URL:        ${{ secrets.WP_SITE_URL }}
+      WP_USERNAME:        ${{ secrets.WP_USERNAME }}
+      WP_APP_PASSWORD:    ${{ secrets.WP_APP_PASSWORD }}
+      CLAUDE_MODEL:       "claude-opus-5"
+      DRY_RUN:            ${{ github.event.inputs.dry_run || 'false' }}
+      PIPELINE_TYPE:      "premium"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: apps/website/requirements.txt
+
+      - name: Install dependencies
+        run: pip install --upgrade pip && pip install -r requirements.txt
+
+      - name: Prepare reports directory
+        run: mkdir -p reports
+
+      - name: Run premium intelligence pipeline
+        id: pipeline
+        run: python pipeline.py ${{ env.DRY_RUN == 'true' && '--dry-run' || '' }}
+
+      - name: Upload pipeline logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: premium-pipeline-logs-${{ github.run_id }}
+          path: |
+            apps/website/pipeline_premium.log
+            apps/website/reports/
+          retention-days: 14
+
+      - name: Notify Telegram on failure
+        if: failure()
+        run: |
+          MESSAGE="❌ *KPI Hub Premium Pipeline FAILED*%0A"
+          MESSAGE+="Run: \"${{ github.run_id }}\"%0A"
+          MESSAGE+="Branch: ${{ github.ref_name }}%0A"
+          MESSAGE+="Triggered by: ${{ github.event_name }}%0A"
+          MESSAGE+="Logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "text=${MESSAGE}" \
+            -d "parse_mode=Markdown"
