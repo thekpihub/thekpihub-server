@@ -75,6 +75,45 @@ content. A join across `wp_term_relationships`/`wp_term_taxonomy`/`wp_terms` con
 category + up to 5 tags were created and linked correctly for each post (24 relationship rows
 across the 4 posts). **The MySQL write path works.**
 
+## 2026-09-02 — Payment links + pricing packages verified live on thekpihub.com (main site, not the blog)
+
+User asked to verify payment links work and how many packages are currently listed. Checked
+the live site directly, not any doc.
+
+**Razorpay (KPI Audit Lite, ₹2,999 one-time) — live and correct.** `get-audit.html`'s
+`PAYMENT_LINK_URL` is `https://rzp.io/rzp/hLRfwonD`. Confirmed via a read-only GET (no
+interaction, no payment data entered — screenshotting it was correctly blocked by the browser
+tool's own payment-domain safety restriction, so verified via `curl` instead): HTTP 200,
+description "Payment of INR 2999.00 requested by The KPI Hub", amount `299900` (paise) =
+₹2,999.00, matches the published price exactly.
+
+**Stripe (`/upgrade.html`, subscriptions) — live, but wired to numbers that don't match what's
+published.** This confirms, with concrete live evidence, the caveat `apps/website/CLAUDE.md`
+already flagged ("Do not treat the ₹5,999/mo figure as verified against Stripe — it is verified
+only against the site's own copy") rather than resolving it:
+- Live `pricing.html` and the homepage both publish exactly **3 packages**: KPI Audit Lite
+  (₹2,999 one-time), Growth (₹5,999/mo, "coming Q3 2026"), Enterprise (custom/contact).
+- Live `config.js` (fetched straight from `https://thekpihub.com/config.js`, not the repo —
+  it's server-only, `.deploy-exclude`-protected) actually wires **3 different Stripe price
+  IDs**: `starter` (₹999/mo — a tier that doesn't exist in current published pricing at all),
+  `growth` (₹2,499/mo — not ₹5,999/mo as advertised), `enterprise` (₹7,999/mo — a specific
+  number, despite Enterprise being marketed as "Custom"/contact-only).
+- `/upgrade.html` itself is publicly reachable (`HTTP 200`, no auth gate) and its backend
+  (`kpihub-backend-...-run.app/stripe-session`) is alive (`OPTIONS` → `204`) — confirmed without
+  actually creating a checkout session (no POST sent; a session isn't a financial transaction,
+  but wasn't necessary to prove the endpoint is live).
+- Net effect: anyone who finds `/upgrade.html` can attempt to subscribe to a "starter" plan
+  that isn't sold anywhere else on the site, or to "Growth"/"Enterprise" at prices that don't
+  match what pricing.html/the homepage advertise.
+
+**Not fixed — this is a business decision, not a code bug.** Don't know which side is "right":
+maybe `config.js`'s price IDs are stale and need updating to match the ₹5,999/mo Growth figure,
+maybe pricing.html's copy is aspirational and Stripe has the real numbers, maybe `starter`
+should be removed from `config.js` entirely now that it's not sold. Flagged to the user with
+the concrete numbers rather than guessed at or silently changed.
+
+---
+
 ## 2026-09-02 — Footer nav's dead placeholder links fixed (real mistake, see mistakesdone.md)
 
 The user caught something the earlier theme-swap fix missed: `blog.thekpihub.com`'s footer had
