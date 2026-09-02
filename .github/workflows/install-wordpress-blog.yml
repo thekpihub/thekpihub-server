@@ -315,12 +315,12 @@ jobs:
           "
           REMOTE_SCRIPT
 
-      - name: Inspect the footer template part (diagnostic)
+      - name: Find the footer pattern's source file
         run: |
           ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
             -o BatchMode=yes -o StrictHostKeyChecking=yes \
             "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
-            "cat '/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress/wp-content/themes/twentytwentyfive/parts/footer.html'"
+            "grep -rl 'footer' '/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress/wp-content/themes/twentytwentyfive/patterns/' 2>/dev/null; echo '---'; ls '/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress/wp-content/themes/twentytwentyfive/patterns/' 2>/dev/null"
 
       - name: Verify the homepage now renders real content
         run: |
