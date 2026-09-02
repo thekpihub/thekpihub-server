@@ -1,15 +1,23 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # KPI Hub — 48-Hour Intelligence Pipeline
-# Schedule: Every 2 days at 03:03 AM IST (21:33 UTC)
+# Schedule: Every 2 days at 15:03 IST (09:33 UTC)
 # Publishes Premium Content: Deep-dive analyses, trend reports, benchmark studies
 # Ported from thekpihub/thekpihub-website (root .github/workflows/ only runs
 # for the repo it lives in — this monorepo needs its own root-level copy).
+#
+# Deliberately NOT 03:03 AM IST (21:33 UTC) — that's daily-pipeline.yml's slot, and
+# both workflows run the exact same apps/website/pipeline.py. Sharing a cron time
+# meant on every odd day, two runs of the same script raced to publish the same
+# date-based article slugs at once. Idempotency-by-slug mostly caught it, but the
+# race window was real. Fixed 2026-09-02 by moving this to a different time of day
+# instead — daily-pipeline.yml still runs once every day, this still runs every
+# 2 days, they just no longer land in the same few minutes.
 # ─────────────────────────────────────────────────────────────────────────────
 name: 48-Hour Premium Pipeline
 
 on:
   schedule:
-    - cron: "33 21 1-31/2 * *"   # Every odd day at 03:03 AM IST
+    - cron: "33 9 1-31/2 * *"   # Every odd day at 15:03 IST — offset from daily-pipeline.yml
   workflow_dispatch:
     inputs:
       dry_run:
@@ -37,9 +45,15 @@ jobs:
       SERPAPI_KEY:        ${{ secrets.SERPAPI_KEY }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
-      WP_SITE_URL:        ${{ secrets.WP_SITE_URL }}
-      WP_USERNAME:        ${{ secrets.WP_USERNAME }}
-      WP_APP_PASSWORD:    ${{ secrets.WP_APP_PASSWORD }}
+      # No live WordPress REST API on this deployment — site files are gone, DB only
+      # (see servermemory.md, 2026-09-02). pipeline.py writes straight into wp_ tables.
+      WP_SITE_URL:        "https://thekpihub.com"
+      WP_DB_HOST:         ${{ secrets.WP_DB_HOST }}
+      WP_DB_HOST_IP:      ${{ secrets.WP_DB_HOST_IP }}
+      WP_DB_PORT:         ${{ secrets.WP_DB_PORT }}
+      WP_DB_NAME:         ${{ secrets.WP_DB_NAME }}
+      WP_DB_USER:         ${{ secrets.WP_DB_USER }}
+      WP_DB_PASSWORD:     ${{ secrets.WP_DB_PASSWORD }}
       CLAUDE_MODEL:       "claude-opus-5"
       DRY_RUN:            ${{ github.event.inputs.dry_run || 'false' }}
       PIPELINE_TYPE:      "premium"

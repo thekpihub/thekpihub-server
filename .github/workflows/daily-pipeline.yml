@@ -37,9 +37,15 @@ jobs:
       SERPAPI_KEY:        ${{ secrets.SERPAPI_KEY }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
-      WP_SITE_URL:        ${{ secrets.WP_SITE_URL }}
-      WP_USERNAME:        ${{ secrets.WP_USERNAME }}
-      WP_APP_PASSWORD:    ${{ secrets.WP_APP_PASSWORD }}
+      # No live WordPress REST API on this deployment — site files are gone, DB only
+      # (see servermemory.md, 2026-09-02). pipeline.py writes straight into wp_ tables.
+      WP_SITE_URL:        "https://thekpihub.com"
+      WP_DB_HOST:         ${{ secrets.WP_DB_HOST }}
+      WP_DB_HOST_IP:      ${{ secrets.WP_DB_HOST_IP }}
+      WP_DB_PORT:         ${{ secrets.WP_DB_PORT }}
+      WP_DB_NAME:         ${{ secrets.WP_DB_NAME }}
+      WP_DB_USER:         ${{ secrets.WP_DB_USER }}
+      WP_DB_PASSWORD:     ${{ secrets.WP_DB_PASSWORD }}
       CLAUDE_MODEL:       "claude-sonnet-5"
       DRY_RUN:            ${{ github.event.inputs.dry_run || 'false' }}
 
