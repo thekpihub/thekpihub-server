@@ -77,7 +77,12 @@ jobs:
 
           echo ""
           echo "=== Checking each unique URL ==="
-          awk -F'|' '{print $3}' /tmp/links.tsv | sort -u | while read -r url; do
+          # NF>=3 skips the TOTAL_PUBLISHED_POSTS=N counter line above -- it has
+          # no '|' so awk's $3 on it is empty, which curl then chokes on
+          # ("bad/illegal format or missing URL"). Harmless (never a real
+          # link), but worth being exact rather than leaving stray noise in
+          # the output after being asked to actually check this stuff properly.
+          awk -F'|' 'NF>=3 {print $3}' /tmp/links.tsv | sort -u | while read -r url; do
             if [ "$url" = "__NO_LINKS__" ]; then
               continue
             fi
