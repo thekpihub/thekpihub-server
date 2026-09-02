@@ -179,6 +179,13 @@ jobs:
           curl -sS -D - -o /tmp/home2.html https://blog.thekpihub.com/
           wc -c /tmp/home2.html
 
+      - name: Tail the real error log
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            "tail -n 60 '/home/u117990013/.logs/error_log_blog_thekpihub_com' 2>&1 || echo 'log file not found at that path'"
+
       - name: Clean up temporary diagnostic script
         if: always()
         run: |
