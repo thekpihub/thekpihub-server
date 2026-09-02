@@ -228,6 +228,33 @@ jobs:
           "
           REMOTE_SCRIPT
 
+      - name: Flush rewrite rules (fixes pretty-permalink 404s)
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          cd "/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress"
+          echo "--- permalink_structure before ---"
+          php -r "define('WP_USE_THEMES', false); require 'wp-load.php'; echo get_option('permalink_structure') . PHP_EOL;"
+          echo "--- .htaccess before ---"
+          cat .htaccess 2>/dev/null || echo "(no .htaccess file)"
+          echo "--- flushing rewrite rules ---"
+          php -r "
+            define('WP_USE_THEMES', false);
+            require 'wp-load.php';
+            require_once ABSPATH . 'wp-admin/includes/misc.php';
+            \$ok = save_mod_rewrite_rules();
+            echo 'save_mod_rewrite_rules() returned: ' . var_export(\$ok, true) . PHP_EOL;
+            flush_rewrite_rules(false);
+            echo 'FLUSH_OK' . PHP_EOL;
+          "
+          echo "--- .htaccess after ---"
+          cat .htaccess 2>/dev/null || echo "(no .htaccess file)"
+          REMOTE_SCRIPT
+
       - name: Verify the homepage now renders real content
         run: |
           echo "--- homepage after theme switch ---"
@@ -236,6 +263,9 @@ jobs:
           wc -c /tmp/home3.html
           echo "--- first 40 lines of body ---"
           head -n 40 /tmp/home3.html
+          echo ""
+          echo "--- pretty-permalink post URL after rewrite flush ---"
+          curl -sS -o /dev/null -w 'HTTP %{http_code}\n' https://blog.thekpihub.com/tool_intelligence-2026-09-02/
 
       - name: Tail the real error log
         run: |
