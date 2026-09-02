@@ -73,9 +73,10 @@ jobs:
           echo "Extracting..."
           unzip -q -o wordpress.zip
           rm -f default.php wordpress.zip
-          shopt -s dotglob
-          mv wordpress/* .
-          rmdir wordpress
+          # rsync, not mv -- safely re-runnable (mv fails with "Directory not
+          # empty" against wp-admin/wp-content/wp-includes on a second run).
+          rsync -a wordpress/ .
+          rm -rf wordpress
 
           echo "Fetching fresh secret keys..."
           SALT="$(curl -sSL https://api.wordpress.org/secret-key/1.1/salt/)"
