@@ -315,6 +315,13 @@ jobs:
           "
           REMOTE_SCRIPT
 
+      - name: Inspect the footer template part (diagnostic)
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            "cat '/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress/wp-content/themes/twentytwentyfive/parts/footer.html'"
+
       - name: Verify the homepage now renders real content
         run: |
           echo "--- homepage after theme switch ---"
