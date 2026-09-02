@@ -36,6 +36,7 @@ jobs:
       WP_DB_USER: ${{ secrets.WP_DB_USER }}
       WP_DB_PASSWORD: ${{ secrets.WP_DB_PASSWORD }}
       WP_DB_HOST: ${{ secrets.WP_DB_HOST }}
+      WP_ADMIN_NEW_PASSWORD: ${{ secrets.WP_ADMIN_NEW_PASSWORD }}
     steps:
       - name: Configure verified SSH
         run: |
@@ -201,6 +202,30 @@ jobs:
             echo 'template=' . get_option('template') . ', stylesheet=' . get_option('stylesheet') . PHP_EOL;
           "
           echo "THEME_SWITCH_OK"
+          REMOTE_SCRIPT
+
+      - name: Reset admin password (user ID 1, sharmahimanshu1178.hs92@gmail.com)
+        run: |
+          test -n "$WP_ADMIN_NEW_PASSWORD"
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- "$WP_ADMIN_NEW_PASSWORD" \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          NEWPASS="$1"
+          cd "/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress"
+          # wp_set_password() hashes via whatever scheme this WP version uses
+          # (bcrypt via password_hash on modern core) -- correct regardless of
+          # version, unlike hand-rolling a hash. Also clears any password-reset
+          # keys/session tokens for that user, same as a normal admin reset.
+          php -r "
+            define('WP_USE_THEMES', false);
+            require 'wp-load.php';
+            wp_set_password('${NEWPASS}', 1);
+            \$u = get_userdata(1);
+            echo 'PASSWORD_RESET_OK for user_login=' . \$u->user_login . PHP_EOL;
+          "
           REMOTE_SCRIPT
 
       - name: Verify the homepage now renders real content
