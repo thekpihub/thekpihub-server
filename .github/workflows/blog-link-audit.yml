@@ -1,0 +1,87 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# One-off / rarely-run maintenance tool, NOT part of regular CI.
+#
+# Extracts every <a href> link from each published post on blog.thekpihub.com
+# (queried straight from the WordPress DB, not scraped) and checks each
+# unique URL's live HTTP status. Read-only against the site -- only reports.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Blog link audit (blog.thekpihub.com)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Extract + check links in published posts
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    env:
+      HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+      HOSTINGER_PORT: ${{ secrets.HOSTINGER_PORT }}
+      HOSTINGER_USERNAME: ${{ secrets.HOSTINGER_USERNAME }}
+      HOSTINGER_SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      HOSTINGER_SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+    steps:
+      - name: Configure verified SSH
+        run: |
+          test -n "$HOSTINGER_HOST"
+          test -n "$HOSTINGER_PORT"
+          test -n "$HOSTINGER_USERNAME"
+          test -n "$HOSTINGER_SSH_KEY"
+          test -n "$HOSTINGER_SSH_KNOWN_HOSTS"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$HOSTINGER_SSH_KEY" > ~/.ssh/hostinger_deploy_key
+          printf '%s\n' "$HOSTINGER_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/hostinger_deploy_key
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Extract links from every published post
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          cd "/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress"
+
+          php -r "
+            define('WP_USE_THEMES', false);
+            require 'wp-load.php';
+            \$posts = get_posts([
+              'post_status' => 'publish',
+              'post_type'   => 'post',
+              'numberposts' => -1,
+              'orderby'     => 'ID',
+              'order'       => 'ASC',
+            ]);
+            echo 'TOTAL_PUBLISHED_POSTS=' . count(\$posts) . PHP_EOL;
+            foreach (\$posts as \$p) {
+              preg_match_all('/href=[\"\x27]([^\"\x27>]+)[\"\x27]/i', \$p->post_content, \$m);
+              \$urls = array_unique(\$m[1]);
+              foreach (\$urls as \$url) {
+                echo \$p->ID . '|' . \$p->post_title . '|' . \$url . PHP_EOL;
+              }
+              if (empty(\$urls)) {
+                echo \$p->ID . '|' . \$p->post_title . '|__NO_LINKS__' . PHP_EOL;
+              }
+            }
+          " > /tmp/links.tsv
+
+          echo "=== Raw link table (post_id|title|url) ==="
+          cat /tmp/links.tsv
+
+          echo ""
+          echo "=== Checking each unique URL ==="
+          awk -F'|' '{print $3}' /tmp/links.tsv | sort -u | while read -r url; do
+            if [ "$url" = "__NO_LINKS__" ]; then
+              continue
+            fi
+            code=$(curl -sS -o /dev/null -w '%{http_code}' -L --max-time 12 "$url" 2>&1 || echo "ERR")
+            printf '%-6s %s\n' "$code" "$url"
+          done
+          REMOTE_SCRIPT
