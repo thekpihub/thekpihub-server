@@ -6,6 +6,35 @@ or pushed, from 2026-09-02 onward, for as long as this repo exists.** Newest ent
 
 ---
 
+## 2026-09-02 — Overstated why Ditto Wingman mattered to the live site (second instance, same class of error)
+
+**What happened:** Told the user Ditto Wingman's Cloudflare Worker was "load-bearing backend
+for apps/website's live tools," based on a commit message describing a change to files *inside
+the ditto-wingman repo's own bundled copy* of the weapon tools. Never checked what the actually
+deployed `apps/website/auditor.html` calls. When checked (prompted by the user asking to diff
+wing-commander vs ditto-wingman properly before swapping), it calls `/pages/api/ai-gateway.php`
+— a Hostinger-side PHP proxy straight to Anthropic — with zero reference to the Cloudflare
+Worker. The real, documented dependency (per `apps/website/CLAUDE.md`'s own architecture notes)
+is a *different* mechanism: `Wingman: https://agent.thekpihub.com (Railway backend)`, reached
+via the "Open WingCommander" button, not the weapons/ Worker wiring.
+
+**Why it happened:** Same root cause as the wing-commander deletion below — inferring a live
+dependency from a commit message/file description instead of checking the actually deployed
+code path. This is the second time this exact pattern produced a wrong claim, which is why the
+`/learnings` skill and this file's standing rule exist — recognizing the pattern once wasn't
+enough to stop it recurring; the fix has to be doing the direct check every time, not just
+knowing to.
+
+**Correction applied:** Told the user directly, in the same turn it was discovered, with the
+corrected mechanism and an honest flag that `agent.thekpihub.com`'s current DNS (CNAME to a
+Vercel target, not Railway) doesn't even match the CLAUDE.md doc's own "Railway backend" note
+— genuinely unresolved, not papered over. Did the full requested diff (wing-commander vs
+ditto-wingman vs design-sync) before any further action, which surfaced 4 real features
+(admin/BYOK/context/team routes) present in design-sync but absent from both wing-commander
+and ditto-wingman — added per user request in a separate PR (#10), as an addition not a swap.
+
+---
+
 ## 2026-09-02 — Deleted `thekpihub-wing-commander` on an unverified inference
 
 **What happened:** Concluded `thekpihub/thekpihub-wing-commander` was safe to delete because

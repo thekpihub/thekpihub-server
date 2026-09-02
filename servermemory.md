@@ -8,6 +8,41 @@ clone sits under.
 
 ---
 
+## 2026-09-02 — 3 deleted repos restored by user; wing-commander swap evaluated and rejected; 4 features ported instead
+
+User restored `thekpihub-wing-commander`, `thekpihub-wingcommander-design-sync`, and
+`automated-website-builder` via GitHub's recovery window (worked — see `mistakesdone.md` for
+the deletion incident that made this necessary). `automated-website-builder` left untouched
+per instruction.
+
+**Diff done (PR request, properly this time — see `mistakesdone.md`):** `wing-commander` vs
+`ditto-wingman` (currently in `apps/wingcommander-reference`) — application source
+(`backend/src`, `frontend/src`) is byte-identical. Only differences: CI/deploy config, a Node
+engine pin, and the `weapons/*.html` Worker URL (wing-commander still has the placeholder).
+**Decision: kept ditto-wingman, did not swap** — no functional gain, would've reintroduced a
+broken placeholder and required re-verifying the Railway build config from scratch.
+
+`wing-commander` vs `design-sync` (also diffed): NOT identical as first assumed —
+`design-sync` has 4 backend routes (`admin.ts`, `byok.ts`, `context.ts`, `team.ts`) that
+neither `wing-commander` nor `ditto-wingman` carried forward. User requested all 4 — added in
+PR #10 (branch `feat/wingcommander-byok-admin-team-context`), commit `bf11a90`:
+- `admin.ts` — master-admin BYOK approval panel (`MASTER_ADMIN_ID` env var) + stats
+- `byok.ts` — per-user bring-your-own-key storage (AES-256-GCM, `BYOK_ENCRYPTION_KEY`)
+- `context.ts` — bridges live KPI data from `THEKPIHUB_API_URL` into assistant context
+- `team.ts` — multi-agent debate/vote/orchestrate mode
+- `AdminPage.tsx` ported too (UI for admin.ts), `wing-*` Tailwind colors renamed to `ditto-*`
+  to match this repo's existing palette (would've rendered uncolored otherwise)
+- `docs/byok-supabase-migration.sql` added **for reference only, NOT run**. These routes will
+  error at runtime (missing table/column) until someone runs that migration against production
+  Supabase (`eeuwkislidznpgdbvvbo`) — not done automatically, needs a deliberate decision.
+- No `auth.ts` changes needed — verified all 4 routes only use already-present exports.
+- New required env vars added to `.env.example`: `MASTER_ADMIN_ID`, `BYOK_ENCRYPTION_KEY`,
+  `THEKPIHUB_API_URL`, `CONTEXT_BRIDGE_SECRET` — none of these are set anywhere yet.
+- Verification: no local Node/npm (still true, see below) — relying on CI's `validate` job
+  (real `tsc`/build) as the compile check; confirm it passed before treating this as done.
+
+---
+
 ## 2026-09-02 — This file + `mistakesdone.md` + the enforcement hook created
 
 Commit `c23767a` added this file, `mistakesdone.md`, and `.claude/settings.json` (a PostToolUse

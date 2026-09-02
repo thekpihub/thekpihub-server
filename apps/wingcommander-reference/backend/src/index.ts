@@ -8,6 +8,10 @@ import executeRouter from "./routes/execute.js";
 import ragRouter from "./routes/rag.js";
 import imageRouter from "./routes/image.js";
 import authRouter from "./routes/auth.js";
+import contextRouter from "./routes/context.js";
+import teamRouter from "./routes/team.js";
+import adminRouter from "./routes/admin.js";
+import byokRouter from "./routes/byok.js";
 
 const app = express();
 const PORT = process.env.PORT ?? 4000;
@@ -35,6 +39,10 @@ app.use("/api/chat", chatRouter);
 app.use("/api/execute", executeRouter);
 app.use("/api/rag", ragRouter);
 app.use("/api/image", imageRouter);
+app.use("/api", contextRouter);
+app.use("/api", teamRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api", byokRouter);
 
 // Health check
 app.get("/api/health", (_req, res) => {
