@@ -39,18 +39,25 @@ Live at: https://thekpihub.com
 - SSH: u117990013@thekpihub.com
 - **A red GitHub Actions run means the deploy did NOT happen.** This line previously read
   "GitHub Actions red = harmless (deploys via Hostinger webhook)". That is false and was
-  dangerous: there is no webhook deploy any more. Every push to `main` runs
-  `.github/workflows/deploy-hostinger.yml`, which rebuilds the site in the runner and ships it
-  with `rsync -avz --delete` over SSH. If it is red, production is stale. Corrected 2026-08-19
-  after watching three runs deploy this way.
-- **Hostinger intermittently blocks GitHub runner IPs.** Symptom is `Connection timed out` on SSH —
-  TCP-level, not auth; the credentials are fine. The job retries 3x, but a sticky block needs a
-  re-run on a fresh runner: `gh run rerun <id> --failed`.
-- **`rsync` runs `--delete` WITHOUT `--delete-excluded`.** So everything in `.deploy-exclude` is
-  *protected* from deletion on the server, which is how `config.js` and `.htaccess` survive.
-  The corollary bites: excluding a path does NOT remove a copy already deployed. To retire a live
-  file, move it into an already-excluded directory (`tools/`, `docs/`) and let `--delete` reap the
-  old path.
+  dangerous: there is no webhook deploy any more. If it is red, production is stale.
+- **Corrected 2026-09-02 — the deploy mechanism was rewritten since the note above was
+  written, and the description below it (kept for a while after, `rsync --delete`) was stale.**
+  The actual current workflow is `.github/workflows/deploy-website-hostinger.yml`
+  ("Website - Hostinger governed deploy"). It builds an **allow-listed** payload via
+  `scripts/stage-hostinger-site.sh` (only files explicitly allowed get staged — not the old
+  deny-list-via-`.deploy-exclude` model) and ships it with a plain `rsync -avz` overlay —
+  **no `--delete` flag at all**. Confirmed directly while installing WordPress under
+  `blog.thekpihub.com` (a folder that's never been in this repo): nothing in `.deploy-exclude`
+  was needed to protect it, because the deploy can only ever add/update files it explicitly
+  staged, never delete anything on the server. `.deploy-exclude` still exists and still lists
+  `wp-admin/`, `wp-content/`, etc., but it's now effectively belt-and-suspenders rather than
+  the only thing standing between a deploy and deleting the WordPress blog.
+- **Hostinger intermittently blocks/times out GitHub runner connections to the server.**
+  Symptom is `Connection timed out` on SSH — TCP-level, not auth; the credentials are fine.
+  Also seen 2026-09-02 on the *database* side (MySQL, not SSH) from a different workflow, same
+  symptom pattern — see `servermemory.md`. Not root-caused, but reproducible enough to not be
+  a fluke. The job retries 3x, but a sticky block needs a re-run on a fresh runner:
+  `gh run rerun <id> --failed`.
 
 ## Sprint 4 — CLOSED (May 23 2026)
 - api-key-modal.js: secure API key modal (replaces browser prompt)
