@@ -44,6 +44,24 @@ WP_AUTHOR_ID    = int(os.environ.get('WP_AUTHOR_ID', '1'))  # sharmahimanshu1178
 
 client = Anthropic(api_key=ANTHROPIC_API_KEY)
 
+
+def claude_text(resp) -> str:
+    """
+    Return the first text block's content from a Claude response.
+
+    resp.content[0] is not always a TextBlock — extended thinking makes Claude
+    sometimes return a ThinkingBlock first, and indexing straight to [0].text blew
+    up article generation on 2026-09-02 with 'ThinkingBlock' object has no
+    attribute 'text'. Scan for the first block that actually has one.
+    """
+    for block in resp.content:
+        text = getattr(block, 'text', None)
+        if text is not None:
+            return text
+    raise RuntimeError(f'No text block in Claude response (block types: '
+                       f'{[type(b).__name__ for b in resp.content]})')
+
+
 RSS_FEEDS = [
     'https://feeds.feedburner.com/TechCrunch',
     'https://www.producthunt.com/feed',
@@ -126,7 +144,7 @@ RULES:
         max_tokens=2000,
         messages=[{'role': 'user', 'content': prompt}]
     )
-    content = resp.content[0].text
+    content = claude_text(resp)
     log.info(f'ENGINE 2: Generated {len(content)} chars for {article_type["slug"]}')
     return {
         'title': title,

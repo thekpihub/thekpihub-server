@@ -186,6 +186,24 @@ def claude_call(**kwargs):
                       label=f"claude({kwargs.get('model', MODEL)[:20]})")
 
 
+def claude_text(resp) -> str:
+    """
+    Return the first text block's content from a Claude response.
+
+    `resp.content[0]` is not always a TextBlock — extended thinking makes Claude
+    sometimes return a ThinkingBlock first, and indexing straight to [0].text blew
+    up 3 of 7 articles on 2026-09-02 with 'ThinkingBlock' object has no attribute
+    'text'. Scan for the first block that actually has one instead of assuming
+    position 0.
+    """
+    for block in resp.content:
+        text = getattr(block, "text", None)
+        if text is not None:
+            return text
+    raise RuntimeError(f"No text block in Claude response (block types: "
+                       f"{[type(b).__name__ for b in resp.content]})")
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # ENGINE 1 — RESEARCH HARVESTER  (03:03–03:30 AM IST)
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -322,7 +340,7 @@ Keep it under 800 words. Every line actionable. No filler.
                        messages=[{"role": "user", "content": prompt}])
     if resp is None:
         raise RuntimeError("ENGINE 2A: Claude synthesis returned None after retries")
-    report = resp.content[0].text
+    report = claude_text(resp)
     log.info("✅ ENGINE 2A done — %d chars synthesized", len(report))
     return report
 
@@ -478,7 +496,7 @@ Write the full article now, starting with <!-- META: -->"""
     if resp is None:
         raise RuntimeError(f"Claude returned None for article: {category['id']}")
 
-    raw = resp.content[0].text.strip()
+    raw = claude_text(resp).strip()
 
     # Extract <!-- META: ... -->
     meta = ""
@@ -563,7 +581,10 @@ def verify_article_claims(article: dict) -> dict:
     )
     resp = claude_call(model=MODEL, max_tokens=30,
                        messages=[{"role": "user", "content": check_prompt}])
-    query = resp.content[0].text.strip() if resp else article["title"][:50]
+    try:
+        query = claude_text(resp).strip() if resp else article["title"][:50]
+    except RuntimeError:
+        query = article["title"][:50]
 
     results = serpapi_search(query)
     article["verified"]       = len(results) > 0

@@ -75,17 +75,21 @@ content. A join across `wp_term_relationships`/`wp_term_taxonomy`/`wp_terms` con
 category + up to 5 tags were created and linked correctly for each post (24 relationship rows
 across the 4 posts). **The MySQL write path works.**
 
-**Separate, pre-existing bug surfaced by this run — not caused by this session's changes,
-not yet fixed:** 3 of the 7 articles failed at Engine 2B (article generation, in
+**Separate, pre-existing bug surfaced by this run — not caused by this session's changes —
+fixed same day.** 3 of the 7 articles failed at Engine 2B (article generation, in
 `generate_article()`), before ever reaching the new DB code: `'ThinkingBlock' object has no
-attribute 'text'`. `resp.content[0].text` assumes `content[0]` is always a `TextBlock`, but the
-Claude response is sometimes returning a `ThinkingBlock` first instead. Affected this run:
-`market_flash`, `kpi_spotlight`, `founders_brief`. Needs a fix that finds the first text block
-in `resp.content` rather than assuming index 0, in both `apps/website/pipeline.py` (used in
-`generate_article()`, `synthesize_daily_report()`, and `verify_article_claims()` — all three
-call `claude_call(...)` and then do `resp.content[0].text`) and check
-`services/pipeline/pipeline.py`'s `engine2_synthesize()` too. Flagged to the user, not yet
-actioned.
+attribute 'text'`. `resp.content[0].text` assumed `content[0]` is always a `TextBlock`, but the
+Claude response sometimes returns a `ThinkingBlock` first instead. Affected that run:
+`market_flash`, `kpi_spotlight`, `founders_brief`. Fix: added a `claude_text(resp)` helper (in
+both `apps/website/pipeline.py`, right after `claude_call()`, and `services/pipeline/pipeline.py`,
+right after the Anthropic client init) that scans `resp.content` for the first block with a
+`.text` attribute instead of indexing `[0]`, raising a clear `RuntimeError` if none exists.
+Replaced all 4 raw `resp.content[0].text` call sites: `synthesize_daily_report()`,
+`generate_article()`, and `verify_article_claims()` (the last wrapped in try/except since it
+already had a graceful fallback-to-title-on-failure) in `apps/website/pipeline.py`, and
+`engine2_synthesize()` in `services/pipeline/pipeline.py`. Not yet re-tested live — the 4-post
+successful run above predates this fix, so the next real pipeline run is what will confirm all
+7 articles generate cleanly now.
 
 ---
 
