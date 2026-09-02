@@ -75,6 +75,51 @@ content. A join across `wp_term_relationships`/`wp_term_taxonomy`/`wp_terms` con
 category + up to 5 tags were created and linked correctly for each post (24 relationship rows
 across the 4 posts). **The MySQL write path works.**
 
+## 2026-09-02 — Admin login fixed, link audit run, brand CSS applied to blog.thekpihub.com
+
+Three more asks on the same live WordPress install, all done and verified this session.
+
+**Admin login — done, verified by actually logging in.** Added a password-reset step to
+`install-wordpress-blog.yml` using `wp_set_password()` over the same SSH+PHP-CLI path (chosen
+over the email-based `wp-login.php?action=lostpassword` flow since outbound mail from this
+fresh install was untested — this is deterministic). New password came from a `WP_ADMIN_NEW_PASSWORD`
+GitHub secret, not hardcoded. Hit the same intermittent SSH timeout seen earlier in this session
+(exit 255 on the very first SSH step, so nothing after it ran) — retried once, succeeded. Then
+**actually logged in via a real browser session** at `wp-login.php` with
+`sharmahimanshu1178.hs92@gmail.com` — worked first try, landed on the standard admin-email
+confirmation screen, then a one-time "Database Update Required" screen (expected: the DB's
+`db_version` predates the freshly-downloaded WP core; ran it, standard/safe/official WP
+routine), then a normal wp-admin Dashboard: "4 Published posts. WordPress 7.1 running Twenty
+Twenty-Five theme."
+
+**Link audit — done.** New `.github/workflows/blog-link-audit.yml` (one-off, read-only, same
+SSH pattern) queries `post_content` for every `post_status='publish'` post directly via
+`get_posts()` (not scraped), regexes out every `href`, dedupes, and curls each one for a live
+status code. Result on the 4 published posts: **2 of the 3 unique links are broken (404)** —
+`https://thekpihub.com/go/hubspot` and `https://thekpihub.com/go/semrush`, both from the
+`CTA_BLOCKS` constant in `apps/website/pipeline.py`. `https://thekpihub.com/#waitlist` (200) is
+fine. Confirmed via `grep` that `/go/hubspot` and `/go/semrush` exist **only** as strings inside
+`pipeline.py` — there is no redirect script, `.htaccess` rule, or folder anywhere in the repo
+that would serve those paths. This is a pre-existing gap in the pipeline's affiliate-CTA content
+(not something this session caused), flagged rather than papered over with a fabricated
+redirect target — setting up real HubSpot/SEMrush affiliate links needs the user's actual
+affiliate program URLs.
+
+**Brand CSS — done, applied and verified visually.** New
+`.github/workflows/blog-brand-css.yml` + `.github/workflows/assets/blog-brand.css`. Tokens
+pulled directly from `apps/website/colors_and_type.css` (the main site's real, current source
+of truth) rather than the stale summary in `apps/website/CLAUDE.md`'s Design System section,
+which lists the wrong fonts entirely (says Cormorant Garamond/Syne/DM Sans; the actual live
+site uses Source Serif 4 / Beiruti / Manrope / JetBrains Mono — that doc section needs fixing
+separately). Navy `#06071A` background, gold `#E9A123` primary accent, teal `#00C9A7`
+secondary, matching fonts loaded via the same Google Fonts URL pattern the main site uses.
+Applied via `wp_update_custom_css_post()` — WordPress's standard Additional CSS mechanism,
+theme-independent, fully reversible from wp-admin without touching any theme file. Verified by
+loading the actual page in a browser: dark background, gold serif site title, serif headings,
+readable body copy all rendering correctly.
+
+---
+
 ## 2026-09-02 — WordPress reinstalled at blog.thekpihub.com, wired to the existing DB — LIVE
 
 Executed the recommendation from the entry below, on explicit user request. Site is real,
