@@ -8,6 +8,83 @@ clone sits under.
 
 ---
 
+## 2026-09-02 — WordPress publishing switched from REST API to direct MySQL writes
+
+Resolves the outstanding item from the entry below: the WP REST API plan is dead because
+there's no live WordPress on this Hostinger account at all — confirmed via Chrome browser
+automation (first working session with it) that every one of the account's 4 "Websites" lacks
+`wp-admin`/`wp-content`/`wp-includes` on disk, while the `u117990013_Thekpihub` database (4 MB)
+is real, current, and DB-attributed to `thekpihub.com` in hPanel. Full writeup: `C:\Projects\CLAUDE.md`'s
+handoff section. User's decision: abandon `WP_SITE_URL`/`WP_USERNAME`/`WP_APP_PASSWORD` (never
+actually reachable), publish by writing straight into `wp_posts`/`wp_postmeta`/
+`wp_term_relationships`/etc. instead.
+
+**Done this session:**
+- Enabled Remote MySQL access in hPanel for `u117990013_Thekpihub` (access host `%`, i.e. Any
+  Host — needed since GitHub Actions runners have no static IP) and reset the DB user
+  (`u117990013_Hsharmagxi`) password, confirmed via hPanel's own success toast.
+- Set `WP_DB_HOST`, `WP_DB_HOST_IP`, `WP_DB_PORT`, `WP_DB_NAME`, `WP_DB_USER`, `WP_DB_PASSWORD`
+  as repo-level GitHub secrets (same level as the other 5 pipeline secrets). Verification
+  caveat: no `mysql`/`python`/`node`/`php` client exists in the working environment to attempt
+  a real authenticated connection, so this wasn't live-tested the way the earlier 5 secrets
+  were — only TCP reachability (`Test-NetConnection`) and the exact password string (verified
+  via the field's reveal icon before submitting) were confirmed directly.
+- Verified the actual `wp_posts`/`wp_terms`/`wp_term_taxonomy`/`wp_term_relationships`/
+  `wp_postmeta` schemas via phpMyAdmin's Structure tab before writing any SQL — all vanilla,
+  unmodified WordPress core schema, nothing custom.
+- Rewrote `publish_to_wordpress()` (and its category/tag/idempotency helpers) in
+  `apps/website/pipeline.py` — the richer, project-canonical pipeline per this repo's own
+  `apps/website/CLAUDE.md` ("Pipeline: pipeline.py") — to INSERT/UPDATE those tables directly
+  with PyMySQL instead of POSTing to `wp-json/wp/v2/posts`. Preserves prior behavior:
+  idempotency by slug, category/tag get-or-create, `future`-vs-`publish` status based on
+  whether the scheduled time is still ahead, SEO excerpt meta. Connection is opened per article
+  and explicitly closed in a `finally` (PyMySQL's `with conn:` commits/rolls back on exit but
+  does **not** close the socket — would've leaked up to 7 open connections per run otherwise).
+- Applied the same direct-DB-write swap to `services/pipeline/pipeline.py` (the simpler, older
+  v3.1 pipeline — also actively scheduled, `pipeline.yml` runs it 4x/day), keeping its existing
+  local-JSON-artifact fallback as the final resort if the DB write itself fails, matching that
+  file's own "graceful fallback" design already documented in its module docstring.
+- Updated `WP_DB_*` into the `env:` blocks of `daily-pipeline.yml`, `premium-pipeline.yml`, and
+  `pipeline.yml` (replacing the old `WP_SITE_URL`/`WP_USERNAME`/`WP_APP_PASSWORD` secret refs —
+  the latter two were never actually set as GitHub secrets, so those workflow runs always fell
+  through to REST failure anyway). `WP_SITE_URL` is now a literal `"https://thekpihub.com"` in
+  each workflow rather than an unset secret — it's not actually secret data, just used to build
+  each post's `guid`.
+- Added `PyMySQL` to both `requirements.txt` files.
+
+**Not done / flagged, not fixed:** discovered while reading the workflows that
+`daily-pipeline.yml` and `premium-pipeline.yml` both run `apps/website/pipeline.py` at the same
+`21:33 UTC` cron time on odd calendar days (the premium one every 2 days), racing to publish the
+same date-based slugs. The per-slug idempotency check should mostly prevent duplicate posts, but
+there's still a real race window, and it's a separate, pre-existing scheduling problem from
+before this session — out of scope for "wire the MySQL client in," flagged to the user rather
+than fixed unprompted. Also unverified: an actual end-to-end connection + insert has not been
+run yet (no MySQL/Python/Node/PHP client in this working environment) — the first real
+GitHub Actions run of these workflows will be the first live test of the whole path.
+
+---
+
+## 2026-09-02 — Pipeline secrets: 5/8 set; WordPress creds still outstanding (session paused here)
+
+No repo commit this entry — logging session state per user's explicit "save everything before
+VS Code restart" request, so a fresh session can resume without re-deriving it.
+
+**GitHub secrets set and individually verified working before setting** (per standing
+verify-first rule): `ANTHROPIC_API_KEY`, `SERPAPI_KEY`, `TELEGRAM_BOT_TOKEN`,
+`TELEGRAM_CHAT_ID`, `ALPHA_VANTAGE_KEY`. Note the first `ANTHROPIC_API_KEY` sourced from the
+user's "Keys - Stick Notes.txt" file tested dead (401) — a *second* key the user pasted
+separately (real Anthropic curl example) tested live (200) and is the one actually set.
+
+**Still outstanding**: `WP_SITE_URL`, `WP_USERNAME`, `WP_APP_PASSWORD` — see
+`C:\Projects\CLAUDE.md`'s "SESSION HANDOFF" section (top of file) for the full current state:
+WordPress isn't at thekpihub.com itself, lives on a Hostinger temp domain that resets every
+automated connection attempt, and the user was mid-lookup in phpMyAdmin's `wp_options` table to
+find the real configured site URL when this session paused. Browser tools (`/chrome`) were
+requested but confirmed not active this session — re-check on the next session start, don't
+assume still off.
+
+---
+
 ## 2026-09-02 — BYOK migration applied to production Supabase + encryption key generated
 
 Per explicit user request, ran `apps/wingcommander-reference/docs/byok-supabase-migration.sql`
