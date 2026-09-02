@@ -315,8 +315,15 @@ jobs:
           "
           REMOTE_SCRIPT
 
-      - name: Show the footer pattern source
+      - uses: actions/checkout@v4
+
+      - name: Replace the footer pattern (fixes the theme's own url:"#" placeholders)
         run: |
+          scp -i ~/.ssh/hostinger_deploy_key -P "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            .github/workflows/assets/blog-footer.php \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST:/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress/wp-content/themes/twentytwentyfive/patterns/footer.php"
+          echo "--- footer.php after replacement ---"
           ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
             -o BatchMode=yes -o StrictHostKeyChecking=yes \
             "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
