@@ -120,6 +120,11 @@ jobs:
           php phpcheck.php || echo "php CLI exec failed"
           rm -f phpcheck.php
           echo ""
+          echo "--- actual WordPress bootstrap (wp-load.php), errors forced on ---"
+          php -d display_errors=1 -d error_reporting=E_ALL -r \
+            "define('WP_USE_THEMES', false); require 'wp-load.php'; echo 'WP_BOOTSTRAP_OK';" \
+            2>&1 || echo "wp-load.php bootstrap failed, see above"
+          echo ""
           echo "--- searching common error log locations ---"
           for f in error_log ../error_log ../logs/error_log \
                    /home/u117990013/logs/thekpihub.com/error_log \
