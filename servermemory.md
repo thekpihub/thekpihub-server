@@ -75,6 +75,73 @@ content. A join across `wp_term_relationships`/`wp_term_taxonomy`/`wp_terms` con
 category + up to 5 tags were created and linked correctly for each post (24 relationship rows
 across the 4 posts). **The MySQL write path works.**
 
+## 2026-09-02 — WordPress reinstalled at blog.thekpihub.com, wired to the existing DB — LIVE
+
+Executed the recommendation from the entry below, on explicit user request. Site is real,
+rendering pipeline-generated content, confirmed by loading it in a browser (not just curl):
+**https://blog.thekpihub.com/** shows "SaaS Benchmark Update, September 02, 2026: NRR Falls to
+101%, CAC Climbs 14%" — one of the 4 posts (`wp_posts` IDs 48-51) the pipeline wrote into the
+DB earlier today.
+
+**What was built:**
+- Subdomain `blog.thekpihub.com` created in hPanel (Websites → thekpihub.com → Domains →
+  Subdomains). Docroot is `public_html/blog-wordpress` — Hostinger's subdomain tool always
+  nests under the parent domain's `public_html` on this plan, no way to place it as a sibling.
+  Confirmed this is NOT at risk from `apps/website`'s deploy workflow: that pipeline turned out
+  to be an **allow-list** staged payload with no `--delete` flag at all (see
+  `scripts/stage-hostinger-site.sh`) — safer than the old CLAUDE.md notes describe (those
+  describe a stale `rsync --delete` setup that predates a rewrite; worth correcting there).
+  `blog-wordpress/` was never at risk either way, since it's not part of the repo.
+- `.github/workflows/install-wordpress-blog.yml` — a `workflow_dispatch`-only, one-off
+  provisioning workflow (kept in the repo as a record / for any future reinstall, not deleted).
+  Reuses the `hostinger-production` environment's SSH secrets (already proven by
+  `deploy-website-hostinger.yml`). SSHes in, downloads WordPress core directly on the *remote*
+  server (the 37 MB core zip is well over the browser upload tool's 10 MB cap, so this avoided
+  that entirely), and writes `wp-config.php` pointed at the **existing** `u117990013_Thekpihub`
+  database — table prefix `wp_`, matching what's already there. No new database, no migration.
+
+**Root cause of an initial blank-page problem, found and fixed, not guessed at:**
+First load returned HTTP 200 with a genuinely empty body. Ruled out causes methodically via a
+sequence of SSH diagnostics appended to the same workflow (each committed/pushed/dispatched in
+turn — real back-and-forth, not a single lucky guess):
+1. PHP CLI (8.2.33) bootstrap via `wp-load.php` succeeded cleanly (`WP_BOOTSTRAP_OK`) — ruled
+   out DB connectivity and wp-config.php correctness.
+2. The real web request runs a *different* PHP version than CLI — `X-Powered-By: PHP/8.3.33`
+   vs CLI's 8.2.33 (CloudLinux PHP Selector — SSH/cron and the web vhost are configured
+   separately on this shared hosting). Found the actual web-facing error log path
+   (`~/.logs/error_log_blog_thekpihub_com`) via a temporary web-accessible diagnostic script
+   (`ini_get('error_log')`) rather than guessing common paths — the earlier guesses had all
+   found nothing, which was itself a clue that they were wrong paths, not that logging was off.
+3. That log was clean (only two benign LiteSpeed-cron-reschedule notices) — no PHP fatal ever
+   fired. The actual cause: `wp_options.template`/`stylesheet` = `hello-elementor`, a theme
+   that was never installed (the fresh WP core download only ships
+   `twentytwentyfive/four/three`). `wp-includes/template-loader.php` can't locate any template
+   file for a missing theme and **silently outputs nothing** rather than erroring — hence 200 +
+   empty body + a clean log. Confirmed directly: simulating the real front-end render via CLI
+   (`php wp-blog-header.php`, exercising the exact code path a real request uses, unlike the
+   earlier `WP_USE_THEMES=false` bootstrap test) produced exactly 159 bytes — one harmless CLI
+   warning, then nothing.
+4. Fix: `update_option('template', 'twentytwentyfive')` / same for `stylesheet`, via the same
+   SSH+PHP-CLI path. Verified immediately after: homepage jumped from 0 bytes to 101,542 bytes
+   of real HTML, `<title>The KPI Hub</title>`, then confirmed visually in an actual browser tab.
+
+**Known, not yet addressed:** the DB also lists 7 "active" plugins (`elementor`,
+`hostinger`, `image-optimization`, `litespeed-cache`, `manage`, `pojo-accessibility`,
+`wp-webhooks`) that aren't installed either. WordPress tolerates this gracefully (validates
+each plugin file exists before including it, silently skips missing ones since WP 5.2 — this
+did NOT contribute to the blank-page bug), so it's not broken, just noisy / worth cleaning up
+`wp_options.active_plugins` at some point so wp-admin's plugins screen doesn't show phantom
+entries. The ~46 pre-existing older posts (dated back to 2025-11-24, from whatever WordPress
+install this DB was originally migrated from) will display unstyled under the new default
+theme rather than however Elementor originally rendered them — Elementor generally saves full
+rendered HTML into `post_content`, so they should still be structurally readable, but this
+hasn't been checked post-by-post. Admin login password is unknown (only a bcrypt hash exists in
+`wp_users`, can't be reversed) — `wp-login.php?action=lostpassword` should work since
+`admin_email` is a real inbox the user owns (`sharmahimanshu1178.hs92@gmail.com`), but outbound
+mail delivery from this install hasn't been tested.
+
+---
+
 ## 2026-09-02 — pipeline.yml: once/day + artifact-capture fix; MySQL connectivity NOT transient; WP backup history checked
 
 **Both done, on explicit user request:**
