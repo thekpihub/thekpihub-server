@@ -8,6 +8,22 @@ clone sits under.
 
 ---
 
+## 2026-09-02 — This file + `mistakesdone.md` + the enforcement hook created
+
+Commit `c23767a` added this file, `mistakesdone.md`, and `.claude/settings.json` (a PostToolUse
+hook on `git commit`/`git push` that reminds to keep both updated — checked into the repo so it
+travels with it, per explicit user instruction after the `thekpihub-wing-commander` incident).
+
+**Verification note:** the hook did not fire on its own introducing commit — expected, per the
+standard caveat: the settings watcher only watches directories that already had a settings file
+when the session started, and `.claude/settings.json` was brand new. Pipe-test and JSON/schema
+validation both passed before commit, so the hook itself is written correctly; it needs one
+`/hooks` reload (or a session restart) to arm. **If you're reading this in a later session and
+the reminder isn't appearing after commits, that reload may not have happened yet — check
+`/hooks` shows it listed, and if not, that's the fix, not a rewrite of the hook.**
+
+---
+
 ## 2026-09-02 — Baseline: consolidation session summary
 
 This repo (`thekpihub/thekpihub-server`, renamed from `kpihub-assembled`) is the canonical

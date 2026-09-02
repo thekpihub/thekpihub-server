@@ -7,7 +7,7 @@
           {
             "type": "command",
             "if": "Bash(git commit:*)",
-            "command": "echo \"$(date) hook fired\" >> /tmp/claude-hook-check.txt; echo '{\"systemMessage\":\"MANDATORY (repo rule): update servermemory.md and mistakesdone.md at repo root with this commit findings and any mistake plus correction, before ending the turn.\"}'"
+            "command": "echo '{\"systemMessage\":\"MANDATORY (repo rule): update servermemory.md and mistakesdone.md at repo root with this commit findings and any mistake plus correction, before ending the turn.\"}'"
           },
           {
             "type": "command",
