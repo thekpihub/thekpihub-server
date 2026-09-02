@@ -421,13 +421,13 @@ CTA_BLOCKS = {
 <div style="background:#0A1628;padding:20px;border-radius:8px;border-left:4px solid #E9A123;margin:30px 0;">
 <strong style="color:#E9A123">🔗 Recommended Tool</strong><br>
 <p style="color:#94A3B8;margin:10px 0;">HubSpot's CRM gives you the KPI dashboards to track every metric in this article. 30% recurring commission — your first referral pays you every month, forever.</p>
-<a href="https://thekpihub.com/go/hubspot" style="color:#E9A123;font-weight:bold;">Start Free with HubSpot →</a>
+<a href="https://www.hubspot.com/" style="color:#E9A123;font-weight:bold;">Start Free with HubSpot →</a>
 </div>""",
     "affiliate_semrush": """
 <div style="background:#0A1628;padding:20px;border-radius:8px;border-left:4px solid #E9A123;margin:30px 0;">
 <strong style="color:#E9A123">📊 Track These Metrics</strong><br>
 <p style="color:#94A3B8;margin:10px 0;">SEMrush gives you the competitive intelligence data behind these benchmarks. See exactly where you stand vs. competitors in real time.</p>
-<a href="https://thekpihub.com/go/semrush" style="color:#E9A123;font-weight:bold;">Try SEMrush Free →</a>
+<a href="https://www.semrush.com/" style="color:#E9A123;font-weight:bold;">Try SEMrush Free →</a>
 </div>""",
     "email_signup": """
 <div style="background:#0A1628;padding:20px;border-radius:8px;border-left:4px solid #E9A123;margin:30px 0;">

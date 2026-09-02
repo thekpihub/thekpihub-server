@@ -251,8 +251,68 @@ jobs:
             flush_rewrite_rules(false);
             echo 'FLUSH_OK' . PHP_EOL;
           "
+          # save_mod_rewrite_rules() detects the web server via
+          # \$_SERVER['SERVER_SOFTWARE'], which doesn't exist under CLI, so it
+          # silently skips writing .htaccess and returns false here (confirmed
+          # 2026-09-02: option was already correct, .htaccess was just never
+          # written). Write the standard WordPress rewrite block ourselves --
+          # well-known, stable boilerplate, same as what got_mod_rewrite()
+          # writes when a real web request triggers it.
+          if [ ! -s .htaccess ] || ! grep -q "BEGIN WordPress" .htaccess; then
+            echo "--- .htaccess missing WordPress block, writing it directly ---"
+            {
+              echo "# BEGIN WordPress"
+              echo "<IfModule mod_rewrite.c>"
+              echo "RewriteEngine On"
+              echo "RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]"
+              echo "RewriteBase /"
+              echo "RewriteRule ^index\\.php\$ - [L]"
+              echo "RewriteCond %{REQUEST_FILENAME} !-f"
+              echo "RewriteCond %{REQUEST_FILENAME} !-d"
+              echo "RewriteRule . /index.php [L]"
+              echo "</IfModule>"
+              echo "# END WordPress"
+            } >> .htaccess
+          fi
           echo "--- .htaccess after ---"
           cat .htaccess 2>/dev/null || echo "(no .htaccess file)"
+          REMOTE_SCRIPT
+
+      - name: Fix broken CTA links in already-published posts
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          cd "/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress"
+          # /go/hubspot and /go/semrush 404 -- no redirect for them exists
+          # anywhere in the codebase. Per user decision 2026-09-02: link
+          # directly to the real company homepages instead of a fake/broken
+          # affiliate indirection. pipeline.py fixed for future posts;
+          # this fixes the posts already published with the old URLs baked
+          # into post_content.
+          php -r "
+            define('WP_USE_THEMES', false);
+            require 'wp-load.php';
+            \$posts = get_posts(['post_status' => 'publish', 'post_type' => 'post', 'numberposts' => -1]);
+            \$fixed = 0;
+            foreach (\$posts as \$p) {
+              \$new = str_replace(
+                ['https://thekpihub.com/go/hubspot', 'https://thekpihub.com/go/semrush'],
+                ['https://www.hubspot.com/', 'https://www.semrush.com/'],
+                \$p->post_content,
+                \$count
+              );
+              if (\$count > 0) {
+                wp_update_post(['ID' => \$p->ID, 'post_content' => \$new]);
+                echo 'Fixed ' . \$count . ' link(s) in post #' . \$p->ID . ': ' . \$p->post_title . PHP_EOL;
+                \$fixed++;
+              }
+            }
+            echo 'CTA_FIX_OK, posts updated: ' . \$fixed . PHP_EOL;
+          "
           REMOTE_SCRIPT
 
       - name: Verify the homepage now renders real content
