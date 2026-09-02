@@ -1,8 +1,12 @@
 name: KPI Hub Content Pipeline
 
+# Was 4x/day (1,7,13,19 UTC) -- changed to once/day on explicit user request, 2026-09-02.
+# 13:00 UTC / 18:30 IST, picked to sit clear of daily-pipeline.yml (21:33 UTC) and
+# premium-pipeline.yml (09:33 UTC) -- see servermemory.md for the full history of why
+# those two ended up staggered in the first place (they used to collide).
 on:
   schedule:
-    - cron: '0 1,7,13,19 * * *'
+    - cron: '0 13 * * *'
   workflow_dispatch:
 
 jobs:
@@ -41,5 +45,14 @@ jobs:
         if: always()
         with:
           name: pipeline-log-${{ github.run_number }}
-          path: services/pipeline/pipeline.log
-          retention-days: 7
+          # articles/ added 2026-09-02: when the WP DB write fails, engine4_publish()
+          # falls back to saving each article as local JSON instead of crashing -- but
+          # that fallback previously only lived on the runner's disk, which is destroyed
+          # when the job ends. A DB connectivity hiccup on this same day (run 33629397860)
+          # silently lost 3 fully-generated, verified articles this way. Uploading the
+          # folder as a build artifact means a future hiccup is recoverable, not lost.
+          path: |
+            services/pipeline/pipeline.log
+            services/pipeline/articles/
+          if-no-files-found: ignore
+          retention-days: 14
