@@ -138,4 +138,24 @@ jobs:
           grep -c "define" wp-config.php
           echo "--- wp-content permissions ---"
           ls -la | head -20
+          echo "--- installed themes ---"
+          ls -la wp-content/themes/
+          echo "--- active theme per DB ---"
+          php -d display_errors=1 -r \
+            "define('WP_USE_THEMES', false); require 'wp-load.php'; \
+             echo 'template=' . get_option('template') . ', stylesheet=' . get_option('stylesheet') . PHP_EOL;"
+          echo "--- active plugins per DB ---"
+          php -d display_errors=1 -r \
+            "define('WP_USE_THEMES', false); require 'wp-load.php'; \
+             print_r(get_option('active_plugins'));"
+          echo "--- PHP 8.3 (web) vs CLI simulation: render homepage template ---"
+          php83="$(command -v php8.3 || true)"
+          if [ -n "$php83" ]; then
+            "$php83" -d display_errors=1 -d error_reporting=E_ALL wp-blog-header.php > /tmp/render.html 2>&1 || true
+            echo "--- rendered via php8.3, first 100 lines ---"
+            head -n 100 /tmp/render.html
+          else
+            echo "no php8.3 binary found in PATH, listing available php binaries:"
+            ls -la /usr/bin/php* /opt/*/bin/php* 2>/dev/null || true
+          fi
           REMOTE_SCRIPT
