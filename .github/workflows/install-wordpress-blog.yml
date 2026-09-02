@@ -100,3 +100,36 @@ jobs:
 
           echo "INSTALL_OK"
           REMOTE_SCRIPT
+
+      - name: Diagnose blank-page response
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          cd "/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress"
+          echo "--- php -v ---"
+          php -v || echo "no php cli"
+          echo "--- php.ini error_log directive ---"
+          php -i 2>/dev/null | grep -i "^error_log" || true
+          echo "--- direct php execution test ---"
+          echo '<?php echo "PHP OK: " . phpversion();' > phpcheck.php
+          php phpcheck.php || echo "php CLI exec failed"
+          rm -f phpcheck.php
+          echo ""
+          echo "--- searching common error log locations ---"
+          for f in error_log ../error_log ../logs/error_log \
+                   /home/u117990013/logs/thekpihub.com/error_log \
+                   /home/u117990013/domains/thekpihub.com/logs/error_log; do
+            if [ -f "$f" ]; then
+              echo "== $f (last 30 lines) =="
+              tail -n 30 "$f"
+            fi
+          done
+          echo "--- wp-config.php sanity (no secrets) ---"
+          grep -c "define" wp-config.php
+          echo "--- wp-content permissions ---"
+          ls -la | head -20
+          REMOTE_SCRIPT
