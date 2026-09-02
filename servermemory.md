@@ -8,6 +8,26 @@ clone sits under.
 
 ---
 
+## 2026-09-02 — BYOK migration applied to production Supabase + encryption key generated
+
+Per explicit user request, ran `apps/wingcommander-reference/docs/byok-supabase-migration.sql`
+against production Supabase (`eeuwkislidznpgdbvvbo`) via the Management API's
+`/database/query` endpoint. **Found and fixed a real bug before running**: the file used
+`CREATE POLICY IF NOT EXISTS`, which is not valid PostgreSQL syntax (only `DROP POLICY`
+supports `IF EXISTS`) — would have errored mid-migration. Fixed to DROP-then-CREATE, ran the
+corrected version, and verified each piece landed individually afterward: `profiles.byok_approved*`
+columns present, `byok_approval_requests`/`user_api_keys` tables present, RLS enabled on both,
+`users_own_request` policy present on `byok_approval_requests`. Committed the corrected SQL
+back to the repo so the reference doc matches what was actually run.
+
+Generated `BYOK_ENCRYPTION_KEY` (64-char hex, `openssl rand -hex 32`) — saved to
+`C:\Projects\Credentials\.env` as `WINGCOMMANDER_BYOK_ENCRYPTION_KEY`. **Not yet set as a
+Railway env var** on the `ditto-wingman-backend` service — still needed before `byok.ts`'s
+encrypt/decrypt functions will actually work; same for `MASTER_ADMIN_ID`, `THEKPIHUB_API_URL`,
+`CONTEXT_BRIDGE_SECRET` (none of the 4 new required env vars are set on Railway yet).
+
+---
+
 ## 2026-09-02 — 3 deleted repos restored by user; wing-commander swap evaluated and rejected; 4 features ported instead
 
 User restored `thekpihub-wing-commander`, `thekpihub-wingcommander-design-sync`, and
