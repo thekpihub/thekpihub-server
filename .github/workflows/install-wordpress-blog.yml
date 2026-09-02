@@ -179,6 +179,39 @@ jobs:
           curl -sS -D - -o /tmp/home2.html https://blog.thekpihub.com/
           wc -c /tmp/home2.html
 
+      - name: Switch active theme to a theme that actually exists
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          cd "/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress"
+          # DB's active theme (hello-elementor) isn't installed -- only the
+          # bundled themes core ships with are. Root cause of the blank page:
+          # template-loader.php can't find any template file for a missing
+          # theme, so it silently outputs nothing (no fatal, no log entry).
+          # New pipeline content is plain HTML, renders fine under any theme.
+          php -r "
+            define('WP_USE_THEMES', false);
+            require 'wp-load.php';
+            update_option('template', 'twentytwentyfive');
+            update_option('stylesheet', 'twentytwentyfive');
+            echo 'template=' . get_option('template') . ', stylesheet=' . get_option('stylesheet') . PHP_EOL;
+          "
+          echo "THEME_SWITCH_OK"
+          REMOTE_SCRIPT
+
+      - name: Verify the homepage now renders real content
+        run: |
+          echo "--- homepage after theme switch ---"
+          curl -sS -D - -o /tmp/home3.html https://blog.thekpihub.com/
+          echo "--- body size ---"
+          wc -c /tmp/home3.html
+          echo "--- first 40 lines of body ---"
+          head -n 40 /tmp/home3.html
+
       - name: Tail the real error log
         run: |
           ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
