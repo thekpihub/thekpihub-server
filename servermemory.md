@@ -75,6 +75,42 @@ content. A join across `wp_term_relationships`/`wp_term_taxonomy`/`wp_terms` con
 category + up to 5 tags were created and linked correctly for each post (24 relationship rows
 across the 4 posts). **The MySQL write path works.**
 
+## 2026-09-02 — CTA links fixed, pretty-permalink 404s fixed (both independently re-verified)
+
+Two more fixes on the same install, both confirmed working via a fresh, independent check
+afterward (not just trusting the fix script's own success message).
+
+**Broken CTA links — fixed.** User's decision on the 3 options offered: link straight to the
+real company homepages, dropping the `/go/` indirection (no real affiliate infrastructure
+existed anywhere in the codebase — checked via `grep` before asking, not assumed).
+`apps/website/pipeline.py`'s `CTA_BLOCKS` now points to `https://www.hubspot.com/` and
+`https://www.semrush.com/` directly (fixes future posts; `services/pipeline/pipeline.py` has no
+such CTAs, nothing to fix there). Also patched the 2 already-published posts (#48, #51) that had
+the old broken URLs baked into `post_content`, via `wp_update_post()` over the same SSH path.
+Re-ran `blog-link-audit.yml` fresh afterward: all 3 unique links across the 4 published posts
+now return `200`.
+
+**Pretty-permalink 404s — root-caused and fixed.** The user asked to check
+`https://blog.thekpihub.com/tool_intelligence-2026-09-02/` specifically — it 404'd, but
+`?p=48` correctly 301-redirected to that exact URL, proving the post existed and
+`permalink_structure` (`/%postname%/`) was already correct. Root cause: `.htaccess` genuinely
+didn't exist. `save_mod_rewrite_rules()` (called via the SSH+PHP-CLI path used throughout this
+session) detects the web server via `$_SERVER['SERVER_SOFTWARE']`, which isn't set under CLI,
+so it silently returned `false` and skipped writing anything — confirmed directly (`var_export`
+of its return value). Fix: write the standard WordPress rewrite block to `.htaccess` directly
+when missing (same well-known boilerplate WP itself generates from a real web request, not
+guessed at). Verified independently afterward, outside the workflow: all 4 posts' pretty
+permalink URLs (including the exact one asked about) now return `200`.
+
+**Recurring pattern, now well-established across ~6 dispatches this session:** the very first
+SSH step in `install-wordpress-blog.yml` intermittently fails with `Connection timed out` (exit
+255), and everything after it in the same job doesn't run since the step fails outright. A
+same-workflow retry has succeeded every single time so far. Treat a red run on this workflow as
+"retry once" before treating it as a real problem, not evidence the fix itself is wrong. See
+`apps/website/CLAUDE.md`'s deploy-mechanism note for the matching pattern seen there too.
+
+---
+
 ## 2026-09-02 — Admin login fixed, link audit run, brand CSS applied to blog.thekpihub.com
 
 Three more asks on the same live WordPress install, all done and verified this session.
