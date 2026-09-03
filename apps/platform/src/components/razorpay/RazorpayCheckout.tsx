@@ -132,7 +132,11 @@ export function RazorpayCheckout({
   const verifyPayment = async (response: RazorpaySuccessResponse) => {
     try {
       // Step 3: Verify payment signature with backend
-      const verifyResponse = await fetch("/api/razorpay/verify-payment", {
+      // Demo-only endpoint: /api/razorpay/verify-payment now requires an
+      // authenticated session + a plan and grants it directly, which this
+      // unauthenticated sandbox demo has neither of. See
+      // api/razorpay/verify-payment-demo/route.ts.
+      const verifyResponse = await fetch("/api/razorpay/verify-payment-demo", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

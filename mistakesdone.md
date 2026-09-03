@@ -6,6 +6,43 @@ or pushed, from 2026-09-02 onward, for as long as this repo exists.** Newest ent
 
 ---
 
+## 2026-09-04 — Wrote a new SSRF vulnerability while fixing PayPal's missing capture step
+
+While wiring the real Razorpay/PayPal billing flow (PR #12), I added `PayPalProcessor.
+captureOrder(orderId)` -- a genuinely needed fix, since no code anywhere previously called
+PayPal's capture endpoint at all. But I interpolated `orderId` (which flows straight from a
+client-supplied JSON body at `POST /api/paypal/capture`) directly into the request URL with no
+validation: `` `${this.baseUrl}/v2/checkout/orders/${orderId}/capture` ``. That's a live
+SSRF/injection surface -- a crafted `orderId` value shapes where the server's own outbound
+request goes. I did not catch this myself; GitHub's CodeQL check on the PR did (`1 new alert
+including 1 critical severity security vulnerability`), and I fixed it in a follow-up commit
+on the same PR (`b869f26`) with a strict allowlist (`^[A-Za-z0-9-]{10,64}$`) at both the
+processor and the API route boundary, before merge.
+
+**Why it happened:** I was focused on making the missing capture call exist at all (the
+higher-level, more obviously "gap" I'd already reported to the user) and treated `orderId` as
+an internal-ish identifier rather than what it actually is -- untrusted input from the request
+body of a public API route, no different in kind from any other user-supplied string that ends
+up in a URL. I didn't apply the same "any string reaching a fetch URL needs validation" reflex
+I'd have applied to, say, a redirect target.
+
+**Correction that should have happened instead:** any time a new fetch/request URL is built
+with string interpolation, check where each interpolated value originates *before* writing the
+code, not after a scanner flags it -- a value from a request body is untrusted by default,
+regardless of how internal-looking its name is (`orderId` reads like plumbing, not like "user
+input," but it's exactly that once you trace it back to the API route two calls up). This
+applies generally, not just to this PR: `PayPalProcessor.ts` and `RazorpayProcessor.ts` both
+build several other fetch URLs from processor-controlled config (`this.baseUrl`, `keyId`) which
+is fine, but any future addition of client/webhook-controlled values into a URL path needs the
+same scrutiny applied here after the fact.
+
+**Standing takeaway:** CodeQL's required PR check did its job and caught this before it shipped
+-- worth treating a CodeQL failure on a fresh PR as "read the actual alert," never as noise to
+push past, which I did do here. But the goal is to not need it: apply the input-validation
+check during writing, not rely on the scanner as the first line of defense.
+
+---
+
 ## 2026-09-02 — Applied Twenty Twenty-Five to fix a blank page, never audited its own default demo content
 
 **What happened:** Earlier the same day, `blog.thekpihub.com` was returning a blank homepage
