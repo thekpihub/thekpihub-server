@@ -45,6 +45,22 @@ payment-verification session — user confirmed it meant `thekpihub-wingcommande
 whose 4 extra backend routes were already ported into `apps/wingcommander-reference` via PR #10
 (see the 2026-09-02 entry below). Nothing further needed; was just an unresolved loose end.
 
+**Update — both PRs merged (2026-09-04):** PR #13 (`d8d2fed`) and PR #14 (`190558f`) both
+squash-merged to `main`, user-approved after CI went green. **CI note worth remembering:**
+both PRs' `validate` job failed twice first on a genuinely external, repo-wide issue — npm's
+legacy "quick" audit endpoint (`registry.npmjs.org/-/npm/v1/security/audits/quick`, which
+`ci.yml`'s blocking `apps/website`/`apps/platform` gates both call via
+`npm audit --audit-level=moderate`) is being retired by npm and was returning inconsistent
+400/503 errors. Confirmed genuinely external and not caused by either PR's content: `npm ci`
+itself succeeded cleanly both times (proving both lockfiles, including the hand-edited one in
+PR #13, were valid), and PR #14 — which never touched `apps/platform` — failed in that exact
+same shared `apps/platform` CI step too. Resolved itself on a second retry
+(`gh run rerun --failed`) without any workflow change. **If this recurs** on a future PR, it's
+the same underlying npm deprecation, not a regression — retry once or twice before assuming
+something is actually broken; if it stays down, `ci.yml`'s `npm audit --audit-level=moderate`
+calls (lines ~37/44) are the ones that would need a fix (e.g. tolerate endpoint errors
+separately from actual vulnerability findings), not something to patch reactively mid-outage.
+
 **Still outstanding after this session** (all need real values/actions only the user has):
 Vercel env vars for `apps/platform`'s billing (`RAZORPAY_*`, `PAYPAL_*`,
 `SUPABASE_SERVICE_ROLE_KEY`), registering the Razorpay/PayPal webhook URLs in their own
