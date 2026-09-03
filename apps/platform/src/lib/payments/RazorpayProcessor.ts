@@ -29,11 +29,18 @@ interface RazorpayOrder {
 export class RazorpayProcessor implements PaymentProcessor {
   private keyId: string;
   private keySecret: string;
+  // Separate from keySecret on purpose: Razorpay signs webhook deliveries
+  // with the webhook secret you set when registering the webhook URL in
+  // the dashboard, NOT with the API key secret used to create orders.
+  // Reusing keySecret here (as this class previously did) makes every real
+  // webhook call fail signature verification -- fixed 2026-09-04.
+  private webhookSecret: string;
   private baseUrl = "https://api.razorpay.com/v1";
 
-  constructor(keyId?: string, keySecret?: string) {
+  constructor(keyId?: string, keySecret?: string, webhookSecret?: string) {
     this.keyId = keyId || process.env.RAZORPAY_KEY_ID || "";
     this.keySecret = keySecret || process.env.RAZORPAY_KEY_SECRET || "";
+    this.webhookSecret = webhookSecret || process.env.RAZORPAY_WEBHOOK_SECRET || "";
 
     if (!this.keyId || !this.keySecret) {
       throw new Error("Razorpay credentials (RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET) not configured");
@@ -85,8 +92,17 @@ export class RazorpayProcessor implements PaymentProcessor {
       return { isValid: false };
     }
 
-    // Verify signature
-    if (!this.validateSignature(data.signature, data.rawBody, this.keySecret)) {
+    if (!this.webhookSecret) {
+      throw new Error(
+        "RAZORPAY_WEBHOOK_SECRET not configured -- set it to the secret shown when " +
+          "registering this webhook URL in the Razorpay dashboard (Settings > Webhooks). " +
+          "It is NOT the same value as RAZORPAY_KEY_SECRET."
+      );
+    }
+
+    // Verify signature against the webhook secret (see constructor note --
+    // this is deliberately not this.keySecret).
+    if (!this.validateSignature(data.signature, data.rawBody, this.webhookSecret)) {
       return { isValid: false };
     }
 

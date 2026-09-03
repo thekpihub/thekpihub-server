@@ -26,22 +26,32 @@ export function getFallbackProcessorForRegion(region: RegionCode): PaymentProces
 /**
  * Pricing configuration by plan and currency
  * Used to calculate checkout amounts
+ *
+ * Enterprise is intentionally absent: it's Custom/contact-sales pricing
+ * (see pricing.html, the homepage, and apps/platform's own /dashboard/billing
+ * page), not a fixed self-serve price. The old placeholder numbers here
+ * (previously 14999 for both currencies) were never real and were never
+ * wired to a checkout button -- corrected 2026-09-03 per the user rather
+ * than left as a number nothing actually validated. getPriceInSmallestUnit()
+ * only accepts "growth" now; the checkout route rejects "enterprise"
+ * explicitly instead of silently charging a placeholder amount.
+ *
+ * Growth INR corrected 2026-09-03 to match the published price (₹5,999/mo,
+ * see pricing.html / the homepage) -- it previously held 4999 paisa
+ * (₹49.99/mo), an order-of-magnitude-off placeholder that was never the
+ * intended price. USD growth (5999 cents = $59.99) is unreviewed -- flagged,
+ * not touched, since only the INR figure was confirmed.
  */
 export const PRICING_CONFIG = {
   INR: {
-    growth: 4999, // INR in paisa (smallest unit)
-    enterprise: 14999,
+    growth: 599900, // ₹5,999.00 in paisa (smallest unit)
   },
   USD: {
-    growth: 5999, // USD in cents (smallest unit)
-    enterprise: 14999,
+    growth: 5999, // USD in cents (smallest unit) -- NOT reviewed, carried over as-is
   },
 } as const;
 
-export function getPriceInSmallestUnit(
-  plan: "growth" | "enterprise",
-  currency: "INR" | "USD"
-): number {
+export function getPriceInSmallestUnit(plan: "growth", currency: "INR" | "USD"): number {
   return PRICING_CONFIG[currency][plan];
 }
 

@@ -51,6 +51,17 @@ export async function POST(request: Request) {
     throw error;
   }
 
+  // Enterprise is Custom/contact-sales pricing (see pricing.html and
+  // /dashboard/billing), not a fixed self-serve price -- there is no correct
+  // amount to charge here. Reject explicitly rather than silently falling
+  // through to whatever PRICING_CONFIG happened to contain.
+  if (body.plan === "enterprise") {
+    return NextResponse.json(
+      { error: "Enterprise is custom pricing. Contact sales instead of checkout." },
+      { status: 400 }
+    );
+  }
+
   // Determine region and processor
   const region = detectUserRegion(body.region);
   const processorType =
