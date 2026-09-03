@@ -8,6 +8,52 @@ clone sits under.
 
 ---
 
+## 2026-09-04 — Session resume: closed 2 stale PRs, reimplemented Vercel Analytics, retired upgrade.html's Stripe flow
+
+Resumed after context summarization. Reviewed the two idle open PRs first (both pre-dated the
+2026-09-02/04 work and were now `CONFLICTING`/`DIRTY`):
+- **PR #6** (`chore: remove automated-website-builder tool`, opened 2026-09-01) — closed as
+  stale. It would delete `tools/automated-website-builder/`, which `C:\Projects\CLAUDE.md`'s
+  canonical layout doc still lists as part of this repo (verified current as of this entry);
+  no instruction since to remove it. Commented with the reasoning before closing; not merged.
+- **PR #5** (`Install and configure Vercel Web Analytics`, bot-authored draft, opened
+  2026-09-01) — closed as stale (conflicting), then **reimplemented fresh on current `main`**
+  as PR #13 (branch `feat/vercel-web-analytics`): `@vercel/analytics` `^2.0.1` added to
+  `apps/platform/package.json` + `package-lock.json`, `<Analytics />` mounted in
+  `src/app/layout.tsx`. No local Node/npm available (still true) — the lockfile entry was
+  copied verbatim from real npm registry metadata (the original bot PR's own diff), not
+  hand-fabricated. CI's first `validate` run failed, but in the **`apps/website`** npm step
+  (unrelated file, `npm audit`'s legacy "quick" endpoint returned a transient 400 — that
+  endpoint is being retired per npm's own notice in the log) — re-ran via
+  `gh run rerun --failed`; not yet confirmed green as of this entry.
+
+**Resolved the `upgrade.html` open caveat** (tracked as an explicit unresolved problem in
+`apps/website/CLAUDE.md` since 2026-09-02): user decision — redirect rather than gate-and-fix,
+now that `apps/platform`'s real Razorpay/PayPal billing exists. PR #14 (branch
+`fix/retire-upgrade-html-stripe`): `apps/website/upgrade.html` replaced entirely with a static
+redirect (meta-refresh + JS, fallback link, noscript message) to
+`https://thekpihub-platform.vercel.app/dashboard/billing` — verified that URL live (200, real
+title) and `/dashboard/billing` exists (307 → its own auth gate) before wiring the redirect.
+All Stripe/Supabase/plan-fetch JS removed from the page. 17 other files link to `upgrade.html`
+by URL — deliberately left alone since the redirect keeps them working; only worth a
+find-and-replace if the redirect page itself is ever removed. Also updated
+`apps/website/CLAUDE.md`'s Billing section and former "Caveat" section to match the new state
+instead of describing the old open problem. CI not yet confirmed as of this entry.
+
+**Also resolved:** the "design sink"/"design sync" reference from the 2026-09-02
+payment-verification session — user confirmed it meant `thekpihub-wingcommander-design-sync`,
+whose 4 extra backend routes were already ported into `apps/wingcommander-reference` via PR #10
+(see the 2026-09-02 entry below). Nothing further needed; was just an unresolved loose end.
+
+**Still outstanding after this session** (all need real values/actions only the user has):
+Vercel env vars for `apps/platform`'s billing (`RAZORPAY_*`, `PAYPAL_*`,
+`SUPABASE_SERVICE_ROLE_KEY`), registering the Razorpay/PayPal webhook URLs in their own
+dashboards, and everything in the RE-AUDIT FINDINGS remediation list in `C:\Projects\CLAUDE.md`
+(Supabase DB password rotation, Anthropic key rotation, Hostinger SSH key check, etc.) — none
+actioned this session, none asked for.
+
+---
+
 ## 2026-09-04 — Real Growth/Enterprise billing wired (Razorpay + PayPal), PR #12
 
 User's actual pricing rail was never Stripe -- corrected on 2026-09-02: "stripe account is not
