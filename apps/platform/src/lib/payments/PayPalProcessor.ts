@@ -247,6 +247,16 @@ export class PayPalProcessor implements PaymentProcessor {
    * from POST /api/paypal/capture after PayPal redirects the buyer back.
    */
   async captureOrder(orderId: string): Promise<PayPalCaptureResult> {
+    // orderId reaches here from a client-supplied request body
+    // (POST /api/paypal/capture) and is interpolated straight into the
+    // request URL below -- without this check it's an SSRF vector (e.g.
+    // an orderId like "x/../../evil.com" or containing "@attacker.com").
+    // Real PayPal order IDs are alphanumeric with hyphens, so a strict
+    // allowlist pattern is safe and not overly restrictive.
+    if (!/^[A-Za-z0-9-]{10,64}$/.test(orderId)) {
+      throw new Error("Invalid PayPal order id");
+    }
+
     const accessToken = await this.getAccessToken();
 
     const response = await fetch(`${this.baseUrl}/v2/checkout/orders/${orderId}/capture`, {

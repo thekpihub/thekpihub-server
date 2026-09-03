@@ -42,8 +42,12 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const { orderId } = body;
-    if (!orderId || typeof orderId !== "string") {
-      return NextResponse.json({ error: "Missing orderId" }, { status: 400 });
+    // Same allowlist PayPalProcessor.captureOrder enforces -- checked here
+    // too so a malformed orderId gets a clean 400 instead of surfacing as
+    // a thrown-error 500, and so this boundary doesn't rely solely on the
+    // processor to reject an SSRF-shaped value.
+    if (!orderId || typeof orderId !== "string" || !/^[A-Za-z0-9-]{10,64}$/.test(orderId)) {
+      return NextResponse.json({ error: "Missing or invalid orderId" }, { status: 400 });
     }
 
     const processor = new PayPalProcessor();
