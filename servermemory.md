@@ -8,6 +8,79 @@ clone sits under.
 
 ---
 
+## 2026-09-04 — Real Growth/Enterprise billing wired (Razorpay + PayPal), PR #12
+
+User's actual pricing rail was never Stripe -- corrected on 2026-09-02: "stripe account is not
+for indian businesses thats why we created Razerpay and paypall insted of stripe." This session
+wired that existing-but-disconnected `apps/platform` Razorpay/PayPal system into a real,
+working `/dashboard/billing` subscribe flow, after finding and fixing real bugs in it (branch
+`feat/wire-real-payments`, PR #12 -- https://github.com/thekpihub/thekpihub-server/pull/12).
+
+**Pricing corrected:** Growth = ₹5,999/mo INR (was an unreviewed ₹49.99/mo placeholder in
+`config.ts`). Enterprise removed from self-serve `PRICING_CONFIG` entirely -- it's
+Custom/contact-sales per `pricing.html`/the homepage, not a fixed price; `/api/billing/checkout`
+now rejects `plan=enterprise` explicitly (400) instead of silently charging whatever the config
+happened to contain.
+
+**Real bugs found and fixed, not just wired around:**
+1. **Razorpay webhook signature bug** -- `RazorpayProcessor.handleWebhook` validated against
+   `RAZORPAY_KEY_SECRET` (the order-creation API secret) instead of a separate webhook secret.
+   Real Razorpay webhooks are signed with the secret shown when registering the webhook URL in
+   the dashboard -- every real webhook call would have failed verification. Added
+   `RAZORPAY_WEBHOOK_SECRET` as a distinct field/env var.
+2. **Razorpay `verify-payment` never touched the DB** -- only returned a verification status.
+   Now requires an authenticated session + a `plan` in the body, and grants the plan directly on
+   valid signature (the webhook remains as an idempotent backup). Split off a `plan`-less,
+   unauthenticated `verify-payment-demo` endpoint so the existing `/razorpay-demo` sandbox page
+   (never auth-gated, doesn't send `plan`) keeps working under the real route's new
+   requirements.
+3. **PayPal capture step was entirely missing** -- orders got created and buyer-approved but
+   nothing ever called PayPal's `/v2/checkout/orders/{id}/capture`, so no charge occurred. Added
+   `PayPalProcessor.captureOrder()` + `POST /api/paypal/capture`.
+4. **PayPal webhook signature verification was a stub** -- only regex-checked the signature's
+   hex shape and accepted anything matching, i.e. any caller could forge a webhook call and
+   grant themselves a plan. Now calls PayPal's real
+   `/v1/notifications/verify-webhook-signature` endpoint (needs `PAYPAL_WEBHOOK_ID` + the
+   `paypal-auth-algo`/`-cert-url`/`-transmission-*` headers, threaded through via a new
+   `WebhookEventData.headers` field).
+5. **PayPal plan info was lost** between order creation and webhook/capture --
+   `createCheckout` only ever stored `custom_id: userId`, and the webhook's
+   `PAYMENT.CAPTURE.COMPLETED` handler read a `payload.additional_data.plan` path nothing ever
+   wrote to. Now `custom_id` encodes `"userId:plan"`, decoded on both the capture response and
+   both webhook event branches.
+6. **`return_url` used a `{ORDER_ID}` template placeholder PayPal doesn't support** (dead
+   syntax that would've been sent to PayPal literally) -- PayPal actually appends its own
+   `token` query param on redirect; the new billing page reads that instead.
+7. **CodeQL caught a real SSRF** in the new `captureOrder()`: the client-supplied `orderId`
+   (from `POST /api/paypal/capture`'s body) was interpolated unvalidated into the PayPal fetch
+   URL. Fixed with a strict allowlist (`^[A-Za-z0-9-]{10,64}$`) at both the processor and the
+   API route boundary, in a follow-up commit on the same PR after the first push failed
+   CodeQL's required check.
+- Also deleted the unused, unreferenced generic `/api/billing/webhook` route (dead duplicate of
+  the two dedicated `webhook/razorpay`/`webhook/paypal` routes -- grepped the whole app for any
+  reference to it first; none existed).
+
+**New frontend:** `/dashboard/billing` page (Growth card: separate "Pay with Razorpay"/"Pay
+with PayPal" buttons -- explicit processor choice per button, not silent region
+auto-detection, since `detectUserRegion()`/PayPal's `getCurrencyFromAmount()` are unreliable/
+hardcoded-to-USD; Enterprise card: `mailto:info@thekpihub.com`, no checkout call). Added
+"Billing" to the dashboard sidebar nav.
+
+**Still not live -- needs real values from the user, not set by this PR:** Vercel env vars for
+`apps/platform`: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`,
+`NEXT_PUBLIC_RAZORPAY_KEY_ID`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_WEBHOOK_ID`,
+`PAYPAL_MODE=live`, `SUPABASE_SERVICE_ROLE_KEY`. Razorpay and PayPal webhooks also need
+registering in their own dashboards, pointing at `/api/billing/webhook/razorpay` and
+`/api/billing/webhook/paypal` respectively.
+
+**Not yet decided/actioned:** what to do with `apps/website/upgrade.html`'s live Stripe flow
+(wrong rail, wrong price IDs per the 2026-09-02 entry below) now that a real system exists to
+replace it with -- retire or redirect it. Also still unresolved: what the user meant by "design
+sink"/"design sync" from the 2026-09-02 payment-verification request -- never got a direct
+clarifying answer.
+
+---
+
 ## 2026-09-02 — WordPress publishing switched from REST API to direct MySQL writes
 
 Resolves the outstanding item from the entry below: the WP REST API plan is dead because
