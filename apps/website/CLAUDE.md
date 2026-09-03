@@ -9,13 +9,14 @@ Live at: https://thekpihub.com
 - Hosting: Hostinger (static files + PHP, git webhook deploy)
 - Frontend: Vanilla HTML/CSS + inline React 18 via unpkg CDN
 - Auth: Supabase (https://eeuwkislidznpgdbvvbo.supabase.co)
-- Billing: **two separate rails — do not conflate them**
-  - **Razorpay Payment Link — the only live revenue path.** The ₹2,999 KPI Audit.
+- Billing: **`upgrade.html`'s Stripe flow was retired 2026-09-04 — see the caveat below.**
+  - **Razorpay Payment Link — the only live one-time revenue path.** The ₹2,999 KPI Audit.
     Hardcoded as `PAYMENT_LINK_URL` in `get-audit.html`; does not touch `config.js`.
-  - **Stripe embedded checkout — subscriptions only, and they are unlaunched.**
-    `upgrade.html` loads Stripe.js, reads `CONFIG.stripe.prices[plan]`, and posts to
-    `/stripe-session` on the Cloud Run backend. Real code, and the live `config.js`
-    has the publishable key plus all three price IDs populated. See the caveat below.
+  - **Subscriptions (Growth/Enterprise) now live in `apps/platform`**, not this site — real
+    Razorpay + PayPal checkout at `/dashboard/billing` on the platform's own Vercel deployment
+    (`https://thekpihub-platform.vercel.app`), wired in PR #12. `config.js`'s Stripe keys are
+    now dead weight (nothing on this site calls them any more) — not yet removed from
+    `config.js`/`config.example.js`, just unused.
 - AI: Anthropic API (browser-side via api-key-modal.js)
 - Blog: WordPress on thekpihub.com
 - Pipeline: pipeline.py (GitHub Actions cron 3:03 AM IST)
@@ -88,17 +89,17 @@ shipped three different schemes at the same time.
 The earlier ₹999 / ₹2,499 / ₹7,999 monthly scheme recorded here was never published and
 conflicted with the live site. Removed 2026-08-19.
 
-### Caveat — `/upgrade.html` can still sell what the pricing pages say is not for sale
+### `/upgrade.html` — retired 2026-09-04, now redirects (was: could sell what pricing pages said wasn't for sale)
 
-`/upgrade.html` returns **200** (unlisted and `noindex`, but not access-controlled) and wires a
-real Stripe embedded checkout for three plans: `starter`, `growth`, `enterprise`. Two problems:
-
-- **`starter` no longer exists.** The seat-based Starter tier was removed from all public pricing
-  on 2026-08-19. The Stripe price ID is still live in `config.js` and still selectable here.
-- **`growth` is advertised as not purchasable until Q3 2026**, yet anyone with this URL can
-  attempt to pay for it now, at whatever amount is set in the Stripe dashboard — which nothing in
-  this repo pins to the published ₹5,999/mo.
-
-Nobody has decided what should happen here, so nothing was changed. The options are to gate the
-page behind auth, take the plans off it until launch, or launch them properly. **Do not treat the
-₹5,999/mo figure as verified against Stripe** — it is verified only against the site's own copy.
+Previously `/upgrade.html` returned **200** (unlisted, `noindex`, but not access-controlled) and
+wired a real Stripe embedded checkout for three plans — `starter` (removed from public pricing
+on 2026-08-19 but still selectable here), `growth` (advertised as not purchasable until Q3 2026,
+yet payable at whatever price Stripe's dashboard held, unpinned to the published ₹5,999/mo), and
+`enterprise` (marketed as Custom/contact-only, yet had a fixed Stripe price). User decision
+2026-09-04: redirect rather than gate-and-fix, since a real replacement now exists. The page is
+now a static redirect (meta-refresh + JS) to `apps/platform`'s `/dashboard/billing`, which has
+its own auth gate and real Razorpay/PayPal checkout (PR #12). All Stripe/Supabase/plan-fetch
+logic was removed from the page. 17 other files in this repo still link to `upgrade.html` by URL
+(nav CTAs, docs, sitemap) — left as-is since the redirect keeps every one of those links working
+without a 17-file find-and-replace; update them directly to the platform URL only if/when the
+redirect itself is removed.
