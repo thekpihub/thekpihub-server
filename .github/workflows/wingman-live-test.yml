@@ -51,13 +51,29 @@ jobs:
           # Step 1: generate a magiclink (no email is actually sent when
           # called via the admin API with a service key - it just returns
           # the link/OTP for us to use directly).
-          link_resp=$(curl -sf -X POST "$SUPABASE_URL/auth/v1/admin/generate_link" \
+          link_code=$(curl -s -o link_resp.json -w "%{http_code}" -X POST "$SUPABASE_URL/auth/v1/admin/generate_link" \
             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Content-Type: application/json" \
             -d "{\"type\":\"magiclink\",\"email\":\"$TEST_EMAIL\"}")
+          echo "generate_link HTTP status: $link_code"
+          if [ "$link_code" != "200" ]; then
+            echo "generate_link error body (safe to print, no token on error):"
+            cat link_resp.json
+            exit 1
+          fi
+          link_resp=$(cat link_resp.json)
+          rm -f link_resp.json
 
-          otp=$(echo "$link_resp" | node -e "process.stdout.write(JSON.parse(require('fs').readFileSync(0,'utf8')).properties.email_otp || '')")
+          echo "generate_link response top-level keys (values never printed):"
+          echo "$link_resp" | node -e "console.log(Object.keys(JSON.parse(require('fs').readFileSync(0,'utf8'))))"
+          echo "generate_link response .properties keys (if any):"
+          echo "$link_resp" | node -e "const r=JSON.parse(require('fs').readFileSync(0,'utf8')); console.log(r.properties ? Object.keys(r.properties) : '(no .properties field)')"
+
+          otp=$(echo "$link_resp" | node -e "
+            const r = JSON.parse(require('fs').readFileSync(0,'utf8'));
+            process.stdout.write((r.properties && r.properties.email_otp) || r.email_otp || '')
+          ")
           if [ -z "$otp" ]; then
             echo "Could not extract email_otp from generate_link response"
             exit 1
@@ -65,12 +81,21 @@ jobs:
           echo "Got OTP (not printed)."
 
           # Step 2: verify the OTP to get a real session.
-          verify_resp=$(curl -sf -X POST "$SUPABASE_URL/auth/v1/verify" \
+          verify_code=$(curl -s -o verify_resp.json -w "%{http_code}" -X POST "$SUPABASE_URL/auth/v1/verify" \
             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Content-Type: application/json" \
             -d "{\"type\":\"magiclink\",\"token\":\"$otp\",\"email\":\"$TEST_EMAIL\"}")
+          echo "verify HTTP status: $verify_code"
+          if [ "$verify_code" != "200" ]; then
+            echo "verify error body (safe to print, no token on error):"
+            cat verify_resp.json
+            exit 1
+          fi
+          echo "verify response top-level keys (values never printed):"
+          node -e "console.log(Object.keys(JSON.parse(require('fs').readFileSync('verify_resp.json','utf8'))))"
 
-          access_token=$(echo "$verify_resp" | node -e "process.stdout.write(JSON.parse(require('fs').readFileSync(0,'utf8')).access_token || '')")
+          access_token=$(node -e "process.stdout.write(JSON.parse(require('fs').readFileSync('verify_resp.json','utf8')).access_token || '')" verify_resp.json)
+          rm -f verify_resp.json
           if [ -z "$access_token" ]; then
             echo "Could not extract access_token from verify response"
             exit 1
