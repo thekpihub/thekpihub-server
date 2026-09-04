@@ -1102,3 +1102,65 @@ actually meant to be reached from — a question this session doesn't have a con
 to confirm the real target and provide the real secret values before this gets wired in.
 `apps/website/CLAUDE.md`'s "Wingman: ... (Railway backend)" line should also be corrected once
 the real target is confirmed — it's currently unverified/likely stale.
+
+---
+
+## 2026-09-04 (cont. 4) — chased the WingCommander target down: backend is solid, frontend is not actually deployed anywhere correct
+
+Per user request, ran this to ground before touching any config. Verified directly, not
+inferred — Railway MCP `list-domains`/`get-service-config` for both `jubilant-growth` services,
+the Vercel REST API (`VERCEL_ACCESS_TOKEN` from `Credentials/.env`) for the `ditto-wingman-frontend`
+Vercel project and for `agent.thekpihub.com`'s DNS config, `gh repo view` for repo existence, and
+`apps/wingcommander-reference/backend/README.md` + its `vercel.json` for the documented design.
+
+**Backend — solid, this part of `WINGCOMMANDER_API_URL` is a confident answer.**
+`ditto-wingman-backend` (Railway, project `jubilant-growth`) deploys from
+`thekpihub/thekpihub-server` (`rootDirectory=apps/wingcommander-reference`,
+`dockerfilePath=backend/Dockerfile`) — the canonical repo, correctly wired. Its own README
+(`apps/wingcommander-reference/backend/README.md`) documents it as "the API behind
+`agent.thekpihub.com`", confirms `/api/auth/token` implements exactly the handoff
+`open-wingman.php` calls (shared-secret compare against `HANDOFF_SECRET`), and lists its
+already-configured Railway env vars: `ANTHROPIC_API_KEY`, `FRONTEND_URL`, `HANDOFF_SECRET`,
+`JWT_SECRET`, `PORT`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_URL` — all set (values not read;
+Railway's MCP redacts them for this OAuth connection regardless of sensitivity). Only domain:
+the Railway-generated `ditto-wingman-backend-production-85f6.up.railway.app` — no custom domain
+attached. **`WINGCOMMANDER_API_URL` should be
+`https://ditto-wingman-backend-production-85f6.up.railway.app`.**
+
+**Frontend — genuinely not deployed anywhere correct right now. This is a real gap, not just a
+missing `.htaccess` line.** The repo's own `apps/wingcommander-reference/vercel.json` (build
+`frontend/dist`, rewrite `/api/*` → the exact Railway backend URL above) makes the *design
+intent* unambiguous: a Vercel project sourced from this monorepo path, assigned the domain
+`agent.thekpihub.com`. None of that is actually true today:
+- The Railway `ditto-wingman-frontend` service **does** source from the canonical repo
+  (`thekpihub-server`, same `rootDirectory`), but has **zero domain** (not even a
+  Railway-generated one), **zero environment variables set**, and its `deploy.startCommand` is
+  `npm run dev --workspace=ditto-wingman-frontend` — a dev server, not a production build. Not
+  actually live in any usable sense.
+- A separate, older Vercel project also named `ditto-wingman-frontend`
+  (`prj_naVb2E2bauRXw3ll34epbeFVW15R`, in the `hs-debugs` Vercel team) exists, but its git link
+  is `thekpihub/ditto-wingman` — the **old standalone repo, not the canonical monorepo** (that
+  repo still exists, `gh repo view` shows last pushed 2026-09-01, not deleted). This project is
+  marked `"live": false` and its only domain is the Vercel-default
+  `ditto-wingman-frontend-plum.vercel.app` — never had `agent.thekpihub.com` attached.
+- **`agent.thekpihub.com` itself is owned by a different Vercel account this session cannot
+  access** — re-verified fresh, independent of the earlier session's finding: `GET
+  /v5/domains/agent.thekpihub.com` against both the personal scope and the only team on this
+  `VERCEL_ACCESS_TOKEN` (`hs-debugs`, `team_tu9mNsxlpoUVyUnkIMGWhk1C`, the account's only team)
+  both return `403 forbidden — "You don't have access to agent.thekpihub.com"`. Its DNS
+  (`/v6/domains/.../config`) shows a CNAME to `0d0e83a09286ab2f.vercel-dns-017.com` — some other
+  Vercel project entirely; it does return HTTP 200, so something real is being served there,
+  just nothing this session can inspect, control, or confirm is actually WingCommander.
+- `wingcommander.thekpihub.com` (the code's fallback default for `WINGCOMMANDER_URL`) has
+  **zero DNS configuration at all** (`configuredBy: null`, `misconfigured: true`, no
+  CNAME/A record) — matches the earlier `curl` → `000` result exactly.
+
+**Net conclusion:** `WINGCOMMANDER_API_URL` has one clear, confident, already-live answer.
+`WINGCOMMANDER_URL` does not — there is currently no correctly-configured, reachable
+WingCommander frontend anywhere, sourced from the canonical repo or otherwise, that this
+session can point Hostinger at. Fixing `open-wingman.php` for real needs a frontend deployment
+decision first (reclaim `agent.thekpihub.com` from whatever currently holds it, or stand up a
+new Vercel project from `apps/wingcommander-reference` on the currently-unused
+`wingcommander.thekpihub.com` instead, or finish the half-configured Railway frontend service
+and point a subdomain at that) — presented to the user as open options, not decided
+unilaterally. Nothing was changed on Railway, Vercel, or Hostinger in this investigation — read-only throughout.
