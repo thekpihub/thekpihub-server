@@ -30,18 +30,47 @@ jobs:
         with:
           python-version: '3.12'
 
+      # `npm audit`'s legacy "quick" endpoint (registry.npmjs.org/-/npm/v1/security/audits/quick)
+      # is being retired by npm and intermittently returns 400/503 transport errors unrelated to
+      # any actual vulnerability (seen repeatedly 2026-09-03/04, see servermemory.md). Both exit
+      # nonzero the same way `npm audit` does, so a blind `npm audit || exit 1` can't tell a real
+      # finding from an npm-side outage. Capture the output once and only fail on real findings.
       - name: Website install, audit, build
         working-directory: apps/website
         run: |
           npm ci
-          npm audit --audit-level=moderate
+          set +e
+          audit_out=$(npm audit --audit-level=moderate 2>&1)
+          audit_rc=$?
+          set -e
+          printf '%s\n' "$audit_out"
+          if [ $audit_rc -ne 0 ]; then
+            if printf '%s' "$audit_out" | grep -qi "audit endpoint returned an error"; then
+              echo "::warning::npm's legacy audit endpoint is being retired and returned a transport error, not a real vulnerability finding -- not blocking on this."
+            else
+              echo "::error::npm audit reported real findings -- failing the build."
+              exit $audit_rc
+            fi
+          fi
           npm run build
 
       - name: Platform install, audit, typecheck, build
         working-directory: apps/platform
         run: |
           npm ci
-          npm audit --audit-level=moderate
+          set +e
+          audit_out=$(npm audit --audit-level=moderate 2>&1)
+          audit_rc=$?
+          set -e
+          printf '%s\n' "$audit_out"
+          if [ $audit_rc -ne 0 ]; then
+            if printf '%s' "$audit_out" | grep -qi "audit endpoint returned an error"; then
+              echo "::warning::npm's legacy audit endpoint is being retired and returned a transport error, not a real vulnerability finding -- not blocking on this."
+            else
+              echo "::error::npm audit reported real findings -- failing the build."
+              exit $audit_rc
+            fi
+          fi
           npm run typecheck
           npm run build
 

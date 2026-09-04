@@ -1,0 +1,72 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Deploys apps/platform to Vercel via the CLI + a token, instead of relying on
+# Vercel's native GitHub App integration.
+#
+# Why this exists: the Vercel team backing this project (hs-debugs) is on the
+# Hobby plan, which refuses to auto-deploy a PRIVATE repository owned by a
+# GitHub Organization via its native Git integration -- Pro-only. This
+# workflow sidesteps that entirely: it's our own CI pushing already-built
+# code to Vercel with a token, which isn't gated by that restriction at all
+# (Vercel never reads the repo directly). This is Vercel's own documented
+# workaround for this situation. Added 2026-09-04 so thekpihub-server can be
+# made private without breaking the platform deploy -- see servermemory.md.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Deploy - Vercel (platform)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/platform/**'
+      - '.github/workflows/deploy-vercel-platform.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-deploy-platform
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build + deploy apps/platform to Vercel (production)
+    runs-on: ubuntu-latest
+    environment: Production – platform
+    defaults:
+      run:
+        working-directory: apps/platform
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PLATFORM_PROJECT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify required secrets
+        run: |
+          test -n "$VERCEL_TOKEN"
+          test -n "$VERCEL_ORG_ID"
+          test -n "$VERCEL_PROJECT_ID"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel project settings (production)
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build (production)
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: Deploy prebuilt artifact (production)
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed: $url"
+
+      - name: Summary
+        run: echo "### Deployed to ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
