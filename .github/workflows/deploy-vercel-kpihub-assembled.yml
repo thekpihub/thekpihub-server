@@ -1,0 +1,80 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Deploys the second, redundant `kpihub-assembled` Vercel project via the CLI +
+# a token, mirroring deploy-vercel-platform.yml exactly.
+#
+# Why this exists: `kpihub-assembled` is a second Vercel project on this same
+# repo, alongside `platform` -- both configured with rootDirectory=apps/platform
+# and framework=nextjs (confirmed via the Vercel API 2026-09-04), i.e. genuinely
+# redundant, not a different app. Its native Git integration deploy is broken
+# for the same reason `platform`'s was (Hobby plan + private org repo -- see
+# deploy-vercel-platform.yml), and unlike `platform` it had no CLI workflow to
+# route around that, so it was silently going stale on every push. User's
+# 2026-09-04 decision (over deleting the project instead): keep it current with
+# its own CLI deploy workflow rather than delete it. `kpihub-assembled` is not
+# what actually serves thekpihub.com in production (that's the Hostinger
+# deploy, deploy-website-hostinger.yml) -- its `thekpihub.com`/`www.thekpihub.com`
+# domains are attached in Vercel's dashboard but DNS points at Hostinger
+# nameservers, so this workflow has no effect on the live site.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Deploy - Vercel (kpihub-assembled)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/platform/**'
+      - '.github/workflows/deploy-vercel-kpihub-assembled.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-deploy-kpihub-assembled
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build + deploy kpihub-assembled to Vercel (production)
+    runs-on: ubuntu-latest
+    environment: Production – platform
+    # Same reasoning as deploy-vercel-platform.yml: NOT scoped via
+    # defaults.run.working-directory -- the Vercel project's own Root
+    # Directory setting (apps/platform) applies on top of wherever the CLI
+    # runs, so this runs from the repo root and lets Vercel's pulled project
+    # settings apply the subdirectory.
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_KPIHUB_ASSEMBLED_PROJECT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify required secrets
+        run: |
+          test -n "$VERCEL_TOKEN"
+          test -n "$VERCEL_ORG_ID"
+          test -n "$VERCEL_PROJECT_ID"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel project settings (production)
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      # Same "why not vercel build" reasoning as deploy-vercel-platform.yml:
+      # `vercel build` + `deploy --prebuilt` is broken outside Vercel's own
+      # infra for a project with a Root Directory setting
+      # (github.com/vercel/vercel#15204). Upload source, build remotely.
+      - name: Deploy (production, built remotely on Vercel)
+        id: deploy
+        run: |
+          url=$(vercel deploy --prod --yes --token="$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed: $url"
+
+      - name: Summary
+        run: echo "### Deployed to ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
