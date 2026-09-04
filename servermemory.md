@@ -8,6 +8,53 @@ clone sits under.
 
 ---
 
+## 2026-09-04 — Vercel CLI deploy workflow for apps/platform: CONFIRMED working end-to-end after 3 real bugs
+
+Built so `thekpihub/thekpihub-server` can be made private without breaking Vercel deploys.
+Vercel's native GitHub App integration can't auto-deploy a private repo owned by a GitHub
+Organization on the Hobby plan — confirmed via API the `hs-debugs` team is genuinely on Hobby.
+Fix: `.github/workflows/deploy-vercel-platform.yml`, deploying `apps/platform` via the Vercel
+CLI + a token instead of the native Git integration (CLI deploys aren't subject to that
+restriction). Secrets added: `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PLATFORM_PROJECT_ID`, and
+`VERCEL_KPIHUB_ASSEMBLED_PROJECT_ID` (unused so far — no workflow targets the second, likely-
+redundant `kpihub-assembled` Vercel project yet).
+
+**Three real bugs hit and fixed in sequence, not one clean setup:**
+1. **`VERCEL_TOKEN` had literal quote characters baked into its value.** `Credentials/.env`
+   stores it as `VERCEL_ACCESS_TOKEN="..."` (quoted); the first extraction command
+   (`cut -d= -f2-`) captured the quotes along with the token, and Vercel's CLI explicitly
+   rejects any token containing `"`. Fixed by adding `sed 's/^"//; s/"$//'` to strip them.
+2. **`vercel build` (Vercel's own documented CI pattern, paired with `deploy --prebuilt`) is
+   broken for any project with a Root Directory setting when run outside Vercel's own build
+   infrastructure** — it hardcodes infrastructure-specific subprocess paths, failing with
+   `Error: spawn sh ENOENT`. Confirmed via a live web search against
+   [vercel/vercel#15204](https://github.com/vercel/vercel/issues/15204) rather than guessed.
+   Fixed by dropping the local build step entirely: plain `vercel deploy --prod --yes`, letting
+   Vercel build remotely on their own infrastructure instead (functionally what the native Git
+   integration already did).
+3. **Running `vercel pull`/`vercel deploy` from inside `apps/platform`** (the job had
+   `defaults.run.working-directory: apps/platform`) **doubled the path** — the CLI applies the
+   Vercel project's own configured Root Directory (`apps/platform`) *on top of* wherever it's
+   invoked from, producing a literal `apps/platform/apps/platform` that doesn't exist. Fixed by
+   removing the job-wide working-directory and running from the repo root, letting the CLI
+   resolve the subdirectory itself via the pulled project settings.
+
+**Confirmed working end-to-end (run `33831450991`):** deployed to
+`https://platform-chxn11ol1-hs-debugs.vercel.app`, promoted to the production alias
+`https://thekpihub-platform.vercel.app` — verified via curl, 200, correct
+`<title>The KPI Hub Platform</title>`.
+
+**Not yet done:** the actual point of this — disconnecting Vercel's native Git integration for
+the `platform` project (so it stops trying, and failing, to deploy once the repo goes private)
+and making `thekpihub/thekpihub-server` private itself. Both still need explicit user
+go-ahead, asked for after this entry. `kpihub-assembled` (the second, redundant Vercel project)
+has no CLI deploy workflow yet and would simply stop deploying if the repo goes private with
+only its native integration in place — needs a decision (build it a workflow too, or just
+delete that project since `apps/website/CLAUDE.md`/`C:\Projects\CLAUDE.md` already call it a
+cleanup candidate).
+
+---
+
 ## 2026-09-04 — Migration SSH key from deleted thekpihub-platform CONFIRMED still on production server
 
 Re-verified two RE-AUDIT FINDINGS items from `C:\Projects\CLAUDE.md` at the user's request.
