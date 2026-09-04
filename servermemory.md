@@ -885,3 +885,41 @@ either auth surface yet; this reads as dev/test accounts, not customer usage. Th
 consolidating the two auth surfaces now is close to zero-risk, since there's no live user
 activity a redirect could disrupt. Recommended user consolidate now while it's cheap, but this
 is still their call to make, not decided unilaterally.
+
+---
+
+## 2026-09-04 (cont. 2) — the wp-cron fix I built doesn't actually fix the stuck posts
+
+Deeper investigation of the 7 stuck `future` posts than the first pass. Two corrections to
+what was reported and acted on above:
+
+1. **The SSH/crontab approach in the first version of `wp-cron-fix.yml` doesn't work on this
+   host.** Hostinger's shared-hosting SSH shell has no `crontab` binary at all
+   (`crontab: command not found`, confirmed via a live run) — replaced with a GitHub Actions
+   `schedule:` trigger that curls `wp-cron.php` directly over HTTPS every 15 minutes instead
+   (no SSH needed). That part is deployed and merged into `main`.
+
+2. **Pinging wp-cron.php, however reliably, cannot and will never publish these 7 specific
+   posts (or any future ones the pipeline schedules the same way).** Checked
+   `wp_options.cron` directly: it has **zero `publish_future_post` entries** for any of them.
+   Root cause: `pipeline.py` inserts posts with `post_status='future'` via a raw
+   `INSERT INTO wp_posts` over PyMySQL — this completely bypasses WordPress's PHP-layer
+   `wp_insert_post()` / `wp_transition_post_status()`, which is what normally registers the
+   `publish_future_post` cron hook for a scheduled post. WordPress has no record these posts
+   are scheduled at all; ticking wp-cron just finds nothing to do. This is a standing defect
+   in how the pipeline schedules posts, not a traffic/frequency problem — every future run that
+   uses `post_status='future'` will hit the same thing.
+
+**Did NOT do, deliberately:** did not manually flip the 7 posts' `post_status` to `publish` via
+SQL — the user specifically chose "fix it" (root cause) over "just publish the 7 stuck posts
+now" when asked, and a raw-SQL status flip is exactly the kind of write the read-only
+investigation this was scoped as didn't cover. Stopped and reported this corrected diagnosis
+back to the user rather than deciding unilaterally between a one-time data fix and a
+pipeline.py code change (real options: register the cron event via SQL to match what
+`wp_insert_post()` would have written, publish immediately instead of using WP's future-post
+mechanism at all, or run a periodic "sweep overdue future posts" step from the GitHub Actions
+side instead of relying on WordPress's cron for this).
+
+The wp-cron.php-ticking schedule (`wp-cron-fix.yml`, still merged and running every 15 min) is
+still a legitimate improvement for whatever *other* cron-dependent WordPress upkeep this
+install has (transient cleanup, etc.) even though it doesn't touch this specific problem.
