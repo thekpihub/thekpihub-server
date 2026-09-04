@@ -1610,3 +1610,78 @@ or may have been coincidental with it simply finishing on its own — impossible
 since it didn't clear immediately after either fix). **Open item closed. All 3 WingCommander
 domain aliases (`wingcommander`, `wingman`, `dittowingman`.thekpihub.com) are now live, verified,
 and pointed at the same real, working `wingcommander-frontend` project.**
+
+---
+
+## 2026-09-05 — worked through the full open-items list in recommended sequence
+
+Per user request ("start resolving all the listed issues in a recommended sequence"), went
+through every item on the Known Open Items list. Status of each, in the order tackled:
+
+**1. Pause the orphaned Rocket.new project — attempted, found moot.** `POST
+/v1/projects/{id}/pause` (the correct endpoint — an earlier attempt in this session used the
+project *name* instead of its ID and got `invalid_project_id`) returned `invalid_deployment:
+"Active production deployment does not exist"`. Its one deployment already failed
+(`readyState: ERROR`), so there's nothing to pause — functionally equivalent to paused already.
+No further action needed here; the earlier "ask the user to pause it manually" item is closed.
+
+**2. WordPress stuck `future`-post bug — already resolved, discovered via direct verification
+rather than assumed.** `gh log`/`gh run list` showed PR #18 ("fix(pipeline): sweep and publish
+overdue future-status WordPress posts") merged 2026-09-04 14:46 IST, adding a
+`sweep-overdue-posts` job to `wp-cron-fix.yml` that runs `apps/website/tools/sweep_overdue_posts.py`
+every 15 minutes — directly flips any overdue `future`-status post to `publish` via SQL, the
+"periodic sweep" option from the 3 previously-presented choices. Confirmed via `gh run list`:
+succeeding on schedule every 15 minutes through 2026-09-05. **This was done in a
+session/PR this skill's records didn't have visibility into — always verify via `gh run
+list`/`git log` before assuming a listed open item is still open, don't just trust a prior
+digest.**
+
+**3. `pipeline.yml`'s redundant schedule — retired.** Removed the `schedule: cron: '0 13 * * *'`
+trigger, kept `workflow_dispatch:` for manual runs. Root cause was already fully diagnosed
+earlier (2026-09-04): `services/pipeline/pipeline.py`'s `wp_db_publish()` hardcodes
+`post_status='draft'` and never sets category/tags, so 100% of its output has always been
+orphaned wp-admin clutter, confirmed via a direct `wp_posts` query with zero actual
+duplicate-content risk against the other two pipelines. Committed straight to `main`
+(`528a9dd`), matching this repo's established pattern for low-risk workflow-schedule changes.
+
+**4. Repo visibility — closed by user decision.** Asked directly: user confirmed private is
+fine as-is. No action needed; the earlier "made public" note was either superseded or the
+switch to private was intentional — not investigated further since it no longer matters either
+way.
+
+**5. Auth-system consolidation — re-investigated, found a real blocker the earlier
+recommendation missed, decision reversed.** Before touching anything, checked whether
+`apps/platform`'s Next.js dashboard actually has an equivalent of what `apps/website`'s
+dashboard provides. **It does not:** `apps/platform/src/app/dashboard/` only has
+`billing`/`intelligence-hub`/`recommendation-engine` — no WingCommander, no Team, no KPIs, no
+Reports. A straight login/dashboard redirect (the originally recommended fix, made purely from a
+usage-risk angle — near-zero real users on either system) would have silently cut off the entire
+WingCommander feature this repo spent most of 2026-09-04 building, fixing, and testing end to
+end. Flagged this to the user before writing any code. **User decision: keep both systems
+separate for now** — revisit consolidation only once/if `apps/platform`'s dashboard actually
+covers what `apps/website`'s does. **Lesson for next time a "just redirect/consolidate X to Y"
+recommendation surfaces: check feature parity directly before recommending or executing it, not
+just usage/risk — a redirect can silently regress a feature nobody thought to compare.**
+
+**6. Credential rotation checklist — presented, not executed (correctly so).** Rotating API
+keys/passwords requires entering values into each service's own dashboard — outside what this
+assistant does directly, by design (never enters credentials into third-party fields). Gave the
+user a full checklist, prioritized: **High** — `SUPABASE_DB_PASSWORD` (Supabase dashboard →
+Database → reset), `GITHUB_ACCESS_TOKEN` (GitHub → Developer settings → PATs → regenerate),
+`HOSTINGER_ACCESS_TOKEN` (hPanel → API tokens → revoke+reissue), `RAILWAY_ACCESS_TOKEN` (Railway
+→ Account Settings → Tokens → regenerate). **Medium** — `WP_DB_PASSWORD` (hPanel → Databases,
+then update the matching GitHub secret), `autogenkey_RESEND_API_KEY` (Resend dashboard →
+API Keys), `WINGCOMMANDER_BYOK_ENCRYPTION_KEY` (self-generate a new value; only matters if it
+was ever used to encrypt real data). **Low** — `DELL_UC_SSH_KEY` (only matters if authorized on
+a real server's `authorized_keys`). **Not actually secret, no action needed** —
+`SUPABASE_THEKPIHUB_PUBLISHABLE_KEY` (meant to be public), all `*_URL`/`*_PROJECT_REF` values,
+`WP_DB_HOST*`/`WP_DB_USER`/`WP_DB_NAME`. Per the standing "don't rotate without being asked"
+instruction, recommended the 4 High-priority rotations without pushing urgency, and left pacing
+entirely to the user. **Not yet acted on as of this entry — check back before assuming any of
+these have been rotated.**
+
+**Net effect of this pass:** items 1, 2 (already done elsewhere), 3, and 4 are fully closed.
+Item 5 was correctly *not* executed once a real blocker surfaced. Item 6 is an action list
+handed to the user, status unconfirmed. Full personal-memory and skill updates to match: see
+[[wingcommander-domain-family]] and [[rocketnew-thekpihub-server-credential-exposure]] (memory
+files) and the `thekpihub` skill's "Known open items" section.
