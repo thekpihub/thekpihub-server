@@ -1685,3 +1685,45 @@ Item 5 was correctly *not* executed once a real blocker surfaced. Item 6 is an a
 handed to the user, status unconfirmed. Full personal-memory and skill updates to match: see
 [[wingcommander-domain-family]] and [[rocketnew-thekpihub-server-credential-exposure]] (memory
 files) and the `thekpihub` skill's "Known open items" section.
+
+---
+
+## 2026-09-05 (cont.) — rotated the Supabase DB password; the other 3 High-priority credentials
+need the user (no creation API exists for any of them)
+
+Per user request, checked whether the 4 High-priority credentials from the rotation checklist
+had already been rotated, before touching anything. **None had** — confirmed by testing each
+stored value directly against its live service: `GITHUB_ACCESS_TOKEN` and `RAILWAY_ACCESS_TOKEN`
+both still authenticate (`200`) with the exact values sitting in `Credentials/.env`;
+`HOSTINGER_ACCESS_TOKEN` and the Supabase Management API token had already been proven live
+earlier this same session via real calls.
+
+**`SUPABASE_DB_PASSWORD` — rotated.** First traced every possible consumer across the whole
+repo before touching production: `grep`'d for `DIRECT_URL`/`DATABASE_URL`/`postgres://` across
+every app and service. Two hits, both non-issues — `apps/legacy-app/prisma.config.ts` (confirmed
+reference-only, not deployed, and its own fallback is a local dev DB anyway) and
+`apps/platform/.env.example` (a template file). **Confirmed via the live Vercel project's own
+env var list** (`GET /v9/projects/platform`) that the real, deployed `apps/platform` only has
+`NEXT_PUBLIC_APP_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY`/`NEXT_PUBLIC_SUPABASE_URL` — no
+`DATABASE_URL`/`DIRECT_URL` configured at all, meaning production never actually uses a direct
+Postgres connection; the `.env.example` lines are unused boilerplate from an earlier scaffold.
+**Nothing live depends on this credential.** Rotated via the real Management API endpoint
+(found by pulling Supabase's own OpenAPI spec, `api.supabase.com/api/v1-json`, since it isn't
+easy to find in their rendered docs): `PATCH /v1/projects/{ref}/database/password`, body
+`{"password": "..."}` — confirmed `200 {"message":"Successfully updated password"}`. Updated
+`Credentials/.env`'s `SUPABASE_DB_PASSWORD` and `SUPABASE_THEKPIHUB_DIRECT_URL` (which embeds
+the same password in its connection string) to match, via `sed`, never printing the old or new
+value into the conversation.
+
+**The other 3 (`GITHUB_ACCESS_TOKEN`, `HOSTINGER_ACCESS_TOKEN`, `RAILWAY_ACCESS_TOKEN`) — real,
+structural constraint, not yet done.** None of these three services expose an API to *create* a
+new token — only their dashboards do (a deliberate security property: you can't bootstrap a
+replacement credential using the one being replaced). Checked this is genuinely the case for all
+three before reporting it, rather than assuming. **Handed the user a direct action item**: generate
+each new token in its own dashboard (GitHub → Settings → Developer settings → PATs; Hostinger →
+hPanel API section; Railway → Account Settings → Tokens), then hand the new value back so
+`Credentials/.env` can be updated and the old token revoked via API (revocation, unlike creation,
+generally *is* API-reachable for these services). Neither the GitHub PAT nor the Railway token
+appear to be embedded in any deployed workflow/service (both are used only by this assistant
+locally via `Credentials/.env`), so revoking the old ones once replaced should be low-risk —
+not independently verified with the same rigor as the Supabase check above, though.
