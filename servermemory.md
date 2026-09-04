@@ -1045,3 +1045,60 @@ side instead of relying on WordPress's cron for this).
 The wp-cron.php-ticking schedule (`wp-cron-fix.yml`, still merged and running every 15 min) is
 still a legitimate improvement for whatever *other* cron-dependent WordPress upkeep this
 install has (transient cleanup, etc.) even though it doesn't touch this specific problem.
+
+---
+
+## 2026-09-04 (cont. 3) — website-config-diagnostic.yml run: `open-wingman.php` ("Open
+WingCommander" button) is currently broken in production, root cause confirmed
+
+`website-config-diagnostic.yml` (commit `14b17e0`) was dispatched once (run `33864722587`,
+2026-09-04T10:45 UTC) right after being added, but the results were never written up — closing
+that out here, since this answers the `open-wingman.php` "dual targets" question that's been
+open since the 2026-09-02 mistaken-deletion incident (see RE-AUDIT FINDINGS #1 in
+`C:\Projects\CLAUDE.md`).
+
+**Direct findings from the run:**
+- `.htaccess` (`public_html/`, last modified 2026-08-27 18:24:59 UTC) contains **zero `SetEnv`
+  directives of any kind** — confirmed via a plain `grep` of the file itself, not a runtime
+  test. None of `HMAC_SECRET`, `WINGCOMMANDER_HANDOFF_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`,
+  `WINGCOMMANDER_API_URL`, `WINGCOMMANDER_URL`, or `SUPABASE_URL` are set there.
+- `private/kpihub_config.php` (last modified 2026-05-25 01:53:40 UTC — much older, predates
+  the `.htaccess` change) defines exactly two PHP constants via `define()`: `ALLOWED_ORIGIN`
+  and `HMAC_SECRET`. So `HMAC_SECRET` **is** live (open-wingman.php reads it as a constant via
+  `require_once`, not `getenv()` — unaffected by `.htaccess` having no `SetEnv` lines).
+- The other four values `open-wingman.php` needs — `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
+  `WINGCOMMANDER_API_URL`, `WINGCOMMANDER_HANDOFF_SECRET` — are all read via `getenv()`
+  (`open-wingman.php:56-59`) and are **not set anywhere found**: not in `.htaccess` (no
+  `SetEnv` lines exist) and not in `kpihub_config.php` (only defines constants, not env vars —
+  a `define()` does not populate `getenv()`). No other config surface (php-fpm pool config,
+  etc.) was in scope for this SSH-based check.
+
+**Conclusion, read against the code (`apps/website/open-wingman.php:61`):** every real POST to
+`open-wingman.php` — i.e. every click of the "Open WingCommander" button on `dashboard.html` —
+currently fails the `if (!$supabaseUrl || !$serviceRoleKey || !$wingUrl || !$wingSecret)` guard
+and returns HTTP 500 `"Server configuration incomplete"` before it ever reaches Supabase or
+WingCommander. **This is a live, currently-broken production feature**, not a hypothetical —
+it directly matches the still-unchecked `apps/website/CLAUDE.md` Phase-1 checklist item
+`- [ ] .htaccess SetEnv secrets added on Hostinger`, now confirmed true rather than assumed.
+
+**Answers the original "dual targets" question directly:** there's no live ambiguity between
+two configured targets — neither `WINGCOMMANDER_API_URL` nor `WINGCOMMANDER_URL` is configured
+at all right now. `WINGCOMMANDER_API_URL` (used for the `/api/auth/token` handoff call) has
+**no fallback in code** — if unset, the request 500s, full stop. `WINGCOMMANDER_URL` (used only
+for the final redirect URL) does have a code fallback, `https://wingcommander.thekpihub.com` —
+but that host is currently **unreachable** (`curl` → `000`, i.e. connection/DNS failure, not
+even an HTTP error). Separately, `https://agent.thekpihub.com` (the URL `apps/website/CLAUDE.md`
+documents as "Wingman: ... (Railway backend)") **does** return `200` — but per the standing
+`mistakesdone.md` correction, that domain's actual DNS is a CNAME into a Vercel target
+belonging to a different, inaccessible account, not the Railway backend the doc claims, so a
+200 there doesn't validate the doc's claim either.
+
+**Not fixed — deliberately, same reasoning as prior "needs real credential values" items:**
+setting `WINGCOMMANDER_API_URL`, `WINGCOMMANDER_HANDOFF_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`
+(and optionally `WINGCOMMANDER_URL`, `SUPABASE_URL`) via `.htaccess` `SetEnv` is a real
+production config change, and the *correct* target values depend on where WingCommander is
+actually meant to be reached from — a question this session doesn't have a confirmed answer to
+(see the `agent.thekpihub.com` vs `wingcommander.thekpihub.com` conflict above). Needs the user
+to confirm the real target and provide the real secret values before this gets wired in.
+`apps/website/CLAUDE.md`'s "Wingman: ... (Railway backend)" line should also be corrected once
+the real target is confirmed — it's currently unverified/likely stale.
