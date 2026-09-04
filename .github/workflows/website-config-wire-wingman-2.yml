@@ -1,0 +1,95 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# One-off, write, `workflow_dispatch`-only (2026-09-04) -- NOT part of regular CI.
+#
+# CORRECTION to website-config-wire-wingman.yml (see docs/diagnostics/, and
+# servermemory.md 2026-09-04): that run wired apps/website/open-wingman.php
+# (the repo-root file), which turns out to be dead code -- dashboard.html's
+# real "Open WingCommander" button never calls it (it's POST-only; the button
+# does a GET navigation). The file the button actually navigates to is
+# apps/website/pages/api/open-wingman.php, which reads DIFFERENT env var
+# names: WINGMAN_API_URL / WINGMAN_URL / HANDOFF_SECRET (no "COMMANDER" in
+# the name), not WINGCOMMANDER_API_URL / WINGCOMMANDER_URL /
+# WINGCOMMANDER_HANDOFF_SECRET. SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are
+# shared by both files under the same names, already correct.
+#
+# This adds the 3 additionally-needed names, idempotently (skips ones already
+# present), backing up .htaccess first -- same pattern as the first run.
+# Reuses the same already-stored secret values (SUPABASE_SERVICE_ROLE_KEY,
+# WINGCOMMANDER_HANDOFF_SECRET -- the latter holds the same shared value
+# that's set as Railway's HANDOFF_SECRET, confirmed matching by name only,
+# never by printing either value).
+# ─────────────────────────────────────────────────────────────────────────────
+name: (one-off) Wire WingCommander .htaccess SetEnv secrets (correction 2)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    env:
+      HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+      HOSTINGER_PORT: ${{ secrets.HOSTINGER_PORT }}
+      HOSTINGER_USERNAME: ${{ secrets.HOSTINGER_USERNAME }}
+      HOSTINGER_SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      HOSTINGER_SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+      WINGCOMMANDER_HANDOFF_SECRET: ${{ secrets.WINGCOMMANDER_HANDOFF_SECRET }}
+    steps:
+      - name: Configure verified SSH
+        run: |
+          test -n "$HOSTINGER_HOST"
+          test -n "$HOSTINGER_PORT"
+          test -n "$HOSTINGER_USERNAME"
+          test -n "$HOSTINGER_SSH_KEY"
+          test -n "$HOSTINGER_SSH_KNOWN_HOSTS"
+          test -n "$WINGCOMMANDER_HANDOFF_SECRET"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$HOSTINGER_SSH_KEY" > ~/.ssh/hostinger_deploy_key
+          printf '%s\n' "$HOSTINGER_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/hostinger_deploy_key
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Back up + write the correctly-named .htaccess SetEnv lines (idempotent)
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- "$WINGCOMMANDER_HANDOFF_SECRET" \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          cd "/home/u117990013/domains/thekpihub.com/public_html"
+
+          HANDOFF_SECRET_VALUE="$1"
+
+          backup=".htaccess.bak-$(date +%Y%m%d%H%M%S)"
+          cp .htaccess "$backup"
+          echo "Backed up .htaccess -> $backup"
+
+          add_setenv() {
+            local name="$1" value="$2"
+            if grep -qE "^[[:space:]]*SetEnv[[:space:]]+$name([[:space:]]|\$)" .htaccess; then
+              echo "SKIP (already present): $name"
+            else
+              printf 'SetEnv %s "%s"\n' "$name" "$value" >> .htaccess
+              echo "ADDED: $name"
+            fi
+          }
+
+          echo "# --- pages/api/open-wingman.php's actual var names, added $(date -u +%Y-%m-%dT%H:%M:%SZ) ---" >> .htaccess
+
+          add_setenv WINGMAN_API_URL "https://ditto-wingman-backend-production-85f6.up.railway.app"
+          add_setenv WINGMAN_URL "https://wingcommander.thekpihub.com"
+          add_setenv HANDOFF_SECRET "$HANDOFF_SECRET_VALUE"
+
+          echo
+          echo "=== SetEnv variable NAMES now present (never values) ==="
+          grep -oE '^[[:space:]]*SetEnv[[:space:]]+[A-Z0-9_]+' .htaccess | awk '{print $2}' | sort -u
+          REMOTE_SCRIPT
+
+      - name: Summary
+        run: echo "Wired the correct WingCommander .htaccess SetEnv names for pages/api/open-wingman.php." >> "$GITHUB_STEP_SUMMARY"
