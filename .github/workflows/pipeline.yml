@@ -1,12 +1,14 @@
 name: KPI Hub Content Pipeline
 
-# Was 4x/day (1,7,13,19 UTC) -- changed to once/day on explicit user request, 2026-09-02.
-# 13:00 UTC / 18:30 IST, picked to sit clear of daily-pipeline.yml (21:33 UTC) and
-# premium-pipeline.yml (09:33 UTC) -- see servermemory.md for the full history of why
-# those two ended up staggered in the first place (they used to collide).
+# Schedule retired 2026-09-05 (was once/day, 13:00 UTC / 18:30 IST -- see servermemory.md
+# for that history). Root cause: this runs services/pipeline/pipeline.py, a separate codebase
+# from apps/website/pipeline.py (which daily-pipeline.yml/premium-pipeline.yml run). Its
+# wp_db_publish() hardcodes post_status='draft' and never sets category/tags, so every post
+# it has ever produced is orphaned wp-admin clutter nobody sees or publishes -- confirmed via
+# a direct wp_posts query 2026-09-04 (100% draft, zero overlap/duplicate risk with the other
+# two pipelines). Kept as workflow_dispatch-only rather than deleted, in case the underlying
+# 5-engine pipeline is ever revived for a real purpose.
 on:
-  schedule:
-    - cron: '0 13 * * *'
   workflow_dispatch:
 
 jobs:
