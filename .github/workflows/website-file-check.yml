@@ -43,4 +43,12 @@ jobs:
           grep -c "HMAC" open-wingman.php || echo "0"
           echo "=== 'Corrected 2026-09-04' marker present? ==="
           grep -c "Corrected 2026-09-04" open-wingman.php || echo "0"
+          echo "=== config.js / .htaccess sanity (sizes + line counts only, no content) ==="
+          wc -c -l config.js .htaccess
+          echo "=== .htaccess SetEnv names present ==="
+          grep -oE '^[[:space:]]*SetEnv[[:space:]]+[A-Z0-9_]+' .htaccess | awk '{print $2}' | sort -u
+          echo "=== config.js basic sanity (brace balance + known marker) ==="
+          open=$(grep -o '{' config.js | wc -l); close=$(grep -o '}' config.js | wc -l)
+          echo "braces: $open open / $close close"
+          grep -c "Object.freeze" config.js || echo "0"
           REMOTE_SCRIPT
