@@ -8,6 +8,43 @@ clone sits under.
 
 ---
 
+## 2026-09-04 — Future-post scheduling root cause FIXED (PR #18), live-verified: all 7 stuck posts now published
+
+Resolved the open decision from the previous entry ("the wp-cron fix I built doesn't actually
+fix the stuck posts"). User chose "best recommended" from 3 options; went with a periodic
+direct-SQL sweep over the other two (replicating WP's internal PHP-serialized cron format, or
+dropping `future` status and publishing immediately) — reasoning: `pipeline.py` already bypasses
+WordPress's insert layer entirely, so replicating its internal cron serialization just to have
+WP's own cron machinery notice the post adds real fragility for no benefit, and dropping
+scheduled-ahead publishing loses a real feature. The sweep does the same *kind* of direct-SQL
+write `pipeline.py` already relies on, just for the "is it due yet?" check WP's cron would
+otherwise make.
+
+**Built:** `apps/website/tools/sweep_overdue_posts.py` — standalone script (only dep: PyMySQL,
+same `_wp_db()` host/host_ip fallback pattern as `pipeline.py`). Finds any `post_status='future'`
+row whose `post_date_gmt` has passed and flips it to `publish`, refreshing
+`post_modified`/`post_modified_gmt` — mirrors exactly what wp-cron's own `publish_future_post`
+handler does, without depending on WordPress's cron machinery at all. Wired as a second job in
+`wp-cron-fix.yml` (renamed to "WordPress - scheduled post publishing"), on the same 15-minute
+schedule as the existing wp-cron.php ping (kept — still useful for other cron-dependent WP
+upkeep like transient cleanup).
+
+**Real bug caught before it shipped:** first draft of the workflow had
+`pip install PyMySQL>=1.1.1` unquoted in a `run:` block — bash parses the bare `>` as a
+redirect, which would have run `pip install PyMySQL` with stdout redirected into a file literally
+named `=1.1.1`, silently masking the version pin. Caught on review before commit, fixed to
+`pip install "PyMySQL>=1.1.1"`.
+
+**Merged (PR #18, `3240626`) and live-verified end-to-end, not just trusted from the Action log:**
+dispatched the workflow manually after merge — its own log showed `Published 7 overdue post(s)`
+listing post IDs #60–#66 (the same 7 stuck since 2026-09-03). Independently confirmed via curl
+against `blog.thekpihub.com`: all 7 pretty-permalink URLs now return `200` (not just a DB-status
+flip — genuinely served). CI: the two `Vercel – *` checks failed as expected (known cosmetic
+side-effect of the repo being private, see the 2026-09-04 "Repo made PRIVATE" entry below) — not
+a regression, both `validate` and `Build and stage website payload` passed clean.
+
+---
+
 ## 2026-09-04 — Repo made PRIVATE; Vercel CLI deploy re-confirmed working under the new state
 
 User decision, executed: `thekpihub/thekpihub-server` switched from public back to private via
