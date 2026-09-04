@@ -30,9 +30,12 @@ jobs:
     name: Build + deploy apps/platform to Vercel (production)
     runs-on: ubuntu-latest
     environment: Production – platform
-    defaults:
-      run:
-        working-directory: apps/platform
+    # Deliberately NOT scoped to apps/platform via `defaults.run.working-directory`:
+    # the Vercel project's own "Root Directory" setting (apps/platform, configured
+    # in its dashboard) gets applied on top of wherever the CLI is invoked --
+    # running from inside apps/platform already produced a doubled
+    # "apps/platform/apps/platform" path. Run vercel pull/deploy from the repo
+    # root and let Vercel's own project settings apply the subdirectory.
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
