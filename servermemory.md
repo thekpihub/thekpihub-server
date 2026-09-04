@@ -1597,3 +1597,16 @@ despite DNS being confirmed correct at every layer checked:
 `wingman.thekpihub.com` / `dittowingman.thekpihub.com` — DNS-correct, Vercel-verification
 pending (open item above). `agent.thekpihub.com` — still owned by a separate, inaccessible
 Vercel account (unchanged from earlier this session, not revisited).
+
+**RESOLVED, same session, shortly after the entry above.** Both `wingman.thekpihub.com` and
+`dittowingman.thekpihub.com` cleared verification on their own — no further action taken beyond
+what's already described above. Confirmed via `GET .../domains/{domain}` (`"verified":true` for
+both) and a direct `curl` (`200` on HTTPS for both, TLS cert now issued). Total elapsed time from
+first adding these domains to actually clearing: **~45 minutes** — consistent with the working
+theory that this was purely a Vercel-side verification-subsystem delay, since nothing about the
+DNS or Vercel project configuration ever changed between the first failed check and the
+eventually-successful one (the remove+re-add and competing-claim-removal steps may have helped,
+or may have been coincidental with it simply finishing on its own — impossible to say which,
+since it didn't clear immediately after either fix). **Open item closed. All 3 WingCommander
+domain aliases (`wingcommander`, `wingman`, `dittowingman`.thekpihub.com) are now live, verified,
+and pointed at the same real, working `wingcommander-frontend` project.**
