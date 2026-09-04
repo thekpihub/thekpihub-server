@@ -842,3 +842,46 @@ same reasoning as the 17 files left pointing at `upgrade.html`. Also swapped `bl
   session) and `pipeline.yml` (runs the separate `services/pipeline/pipeline.py` codebase, 18:30
   IST daily). No time collision, but two different codebases independently publishing into the
   same `wp_posts` table with no coordination — risk of duplicate/overlapping content over time.
+
+---
+
+## 2026-09-04 (cont.) — investigated the 2 remaining flagged items; found a new bug along the way
+
+**#1 (article-template.html), per user request:** archived rather than deleted — moved to
+`apps/website/archive/static-article-generator/` with a README explaining what it was, why it
+was never wired into production, why archived instead of deleted, and what reviving it would
+now take. PR #17 (not yet merged).
+
+**#3 (duplicate pipelines), per user request "check for actual duplicate posts first":** ran a
+temporary read-only diagnostic (`wp-posts-diagnostic.yml`, dispatched once, then deleted —
+findings here, not the workflow). Real data from `wp_posts`:
+- **No duplicate `post_title` values exist.** The two pipelines have not produced literal
+  duplicate content.
+- `services/pipeline/pipeline.py`'s output (3 posts so far, all from one 2026-09-02 17:06-17:08
+  run) is **100% `post_status='draft'`** with timestamp-suffixed slugs — matches its hardcoded
+  `wp_db_publish()` (always inserts as draft, never sets category/tags). These are never public;
+  they're pure wp-admin clutter, not live duplicate content. This lowers the urgency of
+  "duplicate content" as a risk, but the clutter/no-coordination point stands — recommend still
+  retiring `pipeline.yml`'s schedule (or wiring it to write drafts into a clearly-separate
+  space) since it produces nothing anyone will ever see or use.
+- **New bug found, unrelated to the original question:** 7 posts scheduled for 2026-09-03
+  06:00 IST (via `apps/website/pipeline.py`'s scheduling) are still stuck in `post_status='future'`
+  a full day past their publish time. Looks like WP-Cron isn't firing — `wp-cron.php` is
+  page-visit-triggered by default and this is a low-traffic blog, so scheduled posts can sit
+  unpublished indefinitely with nothing forcing the check. Not yet fixed — options are a real
+  system cron hitting `wp-cron.php` periodically, or `DISABLE_WP_CRON` + an external trigger
+  from the GitHub Actions pipeline itself right after scheduling.
+- 2 old `draft` posts (IDs 14, 16, `post_author=0`, dated 2026-03-14) predate both current
+  pipelines — consistent with the previously-noted ~46 pre-existing older posts.
+
+**#2 (two real auth systems), per user request "investigate usage first":** queried Supabase
+(`profiles` count + `auth.users` count/dates, aggregates only, no row-level PII pulled) via the
+Management API using the stored `SUPABASE_ACCESS_TOKEN` + `SUPABASE_THEKPIHUB_PROJECT_REF` —
+**`auth.users` has 4 total accounts** (earliest 2026-05-26, latest created 2026-08-14),
+**`public.profiles` has 1** (2026-08-14), and **the most recent sign-in of any account was
+2026-05-26** — over 3 months before this check. There is effectively no real user base on
+either auth surface yet; this reads as dev/test accounts, not customer usage. This makes the
+"which surface do real users use" question moot for now, and — importantly — means
+consolidating the two auth surfaces now is close to zero-risk, since there's no live user
+activity a redirect could disrupt. Recommended user consolidate now while it's cheap, but this
+is still their call to make, not decided unilaterally.
