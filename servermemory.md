@@ -800,3 +800,45 @@ Recovery status unknown as of this entry.
   (`buildCommand`/`outputDirectory` now correct), but no fresh deployment has actually been
   triggered/verified yet (API trigger blocked by permission classifier; needs a dashboard
   "Redeploy" click or a new push to `thekpihub/ditto-wingman` main).
+
+---
+
+## 2026-09-04 — Full repo status audit vs. live site; found & fixed the orphaned `blog.html`
+
+Ran a genuine comparison of the repo against real browser fetches of `thekpihub.com` (not just
+reading docs) at the user's request. Repo itself: clean tree, all CI green (`KPI Hub Assembled
+CI`, `Deploy - Vercel (platform)`, `CodeQL`), no open PRs at audit time. Dependabot: 55 open
+alerts (39 high/13 medium/3 low) but **zero in `apps/website` or `apps/platform`** — the two
+things actually serving traffic; concentrated in `apps/wingcommander-reference` (36, known
+non-blocking) and `apps/legacy-app` (14, reference-only). 3 medium alerts in
+`services/pipeline/requirements.txt` (`python-dotenv`, `requests`) — low real exploitability,
+not urgent.
+
+**Found and fixed (PR #16): `blog.html` was a dead placeholder, orphaned from the real
+WordPress blog.** Verified live: `thekpihub.com/blog.html` still showed a hardcoded "Articles
+will appear here after the first pipeline run. Check back at 03:03 AM IST." empty state, while
+`blog.thekpihub.com` (WordPress, live since 2026-09-02) had real current posts. `grep -r
+"blog.thekpihub.com"` across the whole repo returned **zero matches** before the fix — nothing
+anywhere linked to the real blog. Root cause: `blog.html`'s `<!-- ARTICLES_INJECT_HERE -->` was
+built for a static-file publishing model (`tools/article-template.html` → `articles/*.html`);
+the pipeline was later switched to publish straight into WordPress's DB
+(`publish_to_wordpress()`) and `articles/` has been empty (just `.gitkeep`) ever since, but
+nobody updated `blog.html`. Fix mirrors the `upgrade.html` retirement from earlier today: turned
+`blog.html` into a meta-refresh + JS redirect to `blog.thekpihub.com`, left the 4 other files
+that still link to `blog.html` (`index.html`, `landing/sections-c.js`,
+`tools/article-template.html`, `sitemap.xml`) unchanged since the redirect keeps them working —
+same reasoning as the 17 files left pointing at `upgrade.html`. Also swapped `blog.html`'s
+`sitemap.xml` entry for the real `blog.thekpihub.com` URL and marked the redirect page
+`noindex` (a redirect-only page shouldn't be indexed at priority 0.95/daily).
+
+**Flagged, not fixed (out of scope for PR #16):**
+- `tools/article-template.html` is now dead code — nothing generates `articles/*.html` anymore.
+- The marketing site (`apps/website`) has its own real, Supabase-backed `login.html` /
+  `register.html` / `dashboard.html` / `account/` pages, separate from `apps/platform`'s own
+  Next.js dashboard — both real, both hit the same Supabase project, no consolidation decision
+  made either way. Worth a deliberate call, not urgent.
+- Two independently-scheduled pipelines write to the same WordPress DB: `daily-pipeline.yml` +
+  `premium-pipeline.yml` (both run `apps/website/pipeline.py`, already de-collided earlier this
+  session) and `pipeline.yml` (runs the separate `services/pipeline/pipeline.py` codebase, 18:30
+  IST daily). No time collision, but two different codebases independently publishing into the
+  same `wp_posts` table with no coordination — risk of duplicate/overlapping content over time.
