@@ -1334,3 +1334,63 @@ feedback (not sent anywhere, just drafted) rather than treated as a real access 
 shared secrets consistent on both sides, `.htaccess` fully wired. The one thing not directly
 tested is a real browser click of "Open WingCommander" on `dashboard.html` with a real logged-in
 session — everything upstream of that is now in place for it to work.
+
+---
+
+## 2026-09-04 (cont. 7) — "test the WingCommander" surfaced that the button is broken above the
+layer just fixed; wired the *correct* file too, but a real architecture bug remains unfixed
+
+Traced the actual button click path in `apps/website/dashboard.html` (`launchWingCommander()`)
+rather than trusting the earlier analysis. Two more real, previously-undiscovered problems:
+
+**1. The file wired in the previous entry was the wrong one — corrected, done.**
+`dashboard.html`'s real button does a **GET** navigation, never a POST. The repo-root
+`apps/website/open-wingman.php` I wired earlier is **POST-only** (`405` on GET) and is **never
+actually called by the live site** — dead code. The file genuinely called is
+`apps/website/pages/api/open-wingman.php`, which reads **different env var names**:
+`WINGMAN_API_URL` / `WINGMAN_URL` / `HANDOFF_SECRET` (no "COMMANDER"), not the
+`WINGCOMMANDER_`-prefixed ones. Fixed via a second one-off workflow,
+`website-config-wire-wingman-2.yml` (run `33881150331`, success) — added those 3 names,
+reusing the same already-stored secret value for the shared handoff secret (confirmed matching
+by variable name only, values never printed). `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` are
+shared correctly by both files, no change needed there.
+
+**2. Real architecture bug, NOT fixed — needs a decision before the button can actually work.**
+Even with (1) fixed, tracing the full click path end to end:
+- `launchWingCommander()` first `fetch()`s
+  `https://kpihub-backend-821108037779.asia-south1.run.app/open-wingman` (a Google Cloud Run
+  service, `redirect: 'manual'`) as a pre-check, expecting either a 302 or a 2xx before it will
+  navigate anywhere. **Confirmed via direct `curl`: this returns a real `404` from a live,
+  running Express app** (`x-powered-by: Express`, custom `Cannot GET /` body — the Cloud Run
+  service itself is alive, it just has no `/open-wingman` route). Traced to
+  `apps/legacy-app/backend` (`cloudbuild.yaml` matches this exact service name/region) — grepped
+  its full route set, confirmed **no `open-wingman` route exists anywhere in that backend's
+  current source**. A 404 here is neither `res.ok` nor a redirect, so the JS falls into its
+  error branch and the button just shows "Could not launch WingCommander. Try again." — **it
+  never even reaches the PHP file.**
+- Even if that pre-check were bypassed or fixed: `pages/api/open-wingman.php` reads the token
+  from either an `Authorization: Bearer` header or an `sb-token` cookie
+  (`open-wingman.php:22-28`). A plain `window.location.href` navigation (what the JS falls back
+  to) **can carry neither** — custom headers aren't possible on a normal navigation, and
+  **grepped the whole `apps/website` tree: nothing anywhere ever sets an `sb-token` cookie.**
+  Traced this to its root cause: `apps/wingcommander-reference/docs/thekpihub-integration.md`
+  (the original design doc for this integration) is written for a **Next.js** host using
+  `req.cookies["sb-token"]`, assuming Supabase's SSR cookie-session helpers — `pages/api/open-wingman.php`
+  is a faithful PHP port of that Next.js route's *shape*, but `apps/website` is a vanilla static
+  site using the browser Supabase client (session in `localStorage`, no cookies at all). The
+  design was ported without adjusting for the different session model it actually runs in.
+- **The repo-root `open-wingman.php` (POST, JSON body, returns `{token, redirectUrl}`) is
+  architecturally the correct shape for this site** — the JS already holds
+  `session.access_token` from `sb.auth.getSession()`, so it could `fetch()`-POST it directly and
+  navigate to whatever `redirectUrl` comes back, matching exactly how the (also dead) Cloud Run
+  pre-check was already trying to work. It's currently unused only because `dashboard.html` was
+  never rewired to call it.
+
+**Not changed:** `dashboard.html`'s JS (a live production file) and the Cloud Run pre-check.
+Three real options exist (rewire the button to POST to the root `open-wingman.php` and follow
+its `redirectUrl` — recommended, matches the site's actual session model, no new infra needed;
+have `pages/api/open-wingman.php` accept the token via URL query param appended before
+navigating — simpler patch but puts a bearer JWT in browser history/referrer, a real tradeoff;
+or add real `sb-token` cookie-setting on login — bigger change, doesn't fit the current
+client-only Supabase setup well) — presented to the user rather than picked unilaterally, since
+this changes live production behavior, not just config.
