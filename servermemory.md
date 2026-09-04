@@ -8,6 +8,50 @@ clone sits under.
 
 ---
 
+## 2026-09-04 — RE-AUDIT FINDINGS re-verified fresh: almost all already closed; one premise corrected
+
+Went through `C:\Projects\CLAUDE.md`'s RE-AUDIT FINDINGS remediation list item by item, re-
+verifying each current live via direct queries rather than trusting the doc (per the
+`/learnings` standing rule — see that skill's own new entry for the ownership-check case below).
+
+**Already closed, confirmed directly (not just re-reading old notes) — repos genuinely gone,
+checked via fresh `gh repo view`:**
+- `hsharmagxi-debug/kpihub-vault` — deleted. Supabase DB password rotation was already
+  user-confirmed done (2026-09-04, earlier entry below).
+- `thekpihub/thekpihub_1554` — deleted. Anthropic key rotation was already user-confirmed done.
+- `hsharmagxi-debug/ditto-wingman` (the empty stub, "only repo confirmed safe to delete") —
+  already deleted, nothing left to do.
+- `thekpihub/thekpihub` (archived v1) and `hsharmagxi-debug/thekpihub` (its mirror) — both
+  deleted.
+- `hsharmagxi-debug/thekpihub-platform` — deleted. Its migration SSH key on the Hostinger
+  server was independently confirmed present (2026-09-04, direct fingerprint check, unrelated
+  to the repo's existence) and the user's decision was to keep it — closed, not re-flagging.
+- Wing Commander / `open-wingman.php` split-brain (item #1) — already resolved 2026-09-02 (kept
+  `ditto-wingman`, ported 4 extra routes via PR #10); `thekpihub/thekpihub-wing-commander` still
+  exists (kept, not deleted, matching that decision) — confirmed via fresh `gh repo view`.
+
+**Corrected premise (caught before acting, see `/learnings` skill's matching new entry):** item
+#2's "decommission the stale `thekpihub.vercel.app` deployment" assumed this account could act
+on it. Direct check: `GET /v9/projects/thekpihub` on the `hs-debugs` Vercel account (token in
+`Credentials/.env`) returns `"Project not found"`, and none of the account's 17 real projects
+list `thekpihub.vercel.app` as a domain. The site is genuinely live (`200`) — just served by a
+different, inaccessible Vercel account, same shape as the `agent.thekpihub.com` finding from
+2026-09-02. **Not actionable from here** — flagged to the user rather than attempted.
+
+**Genuinely still open, needs the user (nothing here is something this session can do alone):**
+1. **SendGrid / AppsFlyer / Google auth credentials** shown in `thekpihub-platform`'s old
+   `screenshots-reference/` folder — the repo being deleted doesn't invalidate keys that were
+   already real and exposed in its git history. No MCP/API access to those 3 services exists in
+   this session to check or rotate them — needs the user to confirm whether this was already
+   done, or do it now, in each service's own dashboard.
+2. **`kpihub-assembled` Vercel project** — confirmed still live via the API (own domains:
+   `thekpihub.com`, `www.thekpihub.com`, `kpihub-assembled.vercel.app` — not actually receiving
+   traffic since DNS is on Hostinger nameservers, but the project itself is real and redundant
+   with `platform`). Needs the user's call: build it a CLI deploy workflow like `platform` has,
+   or delete it — asked directly rather than decided unilaterally.
+
+---
+
 ## 2026-09-04 — Future-post scheduling root cause FIXED (PR #18), live-verified: all 7 stuck posts now published
 
 Resolved the open decision from the previous entry ("the wp-cron fix I built doesn't actually
