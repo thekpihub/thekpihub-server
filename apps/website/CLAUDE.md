@@ -20,7 +20,16 @@ Live at: https://thekpihub.com
 - AI: Anthropic API (browser-side via api-key-modal.js)
 - Blog: WordPress on thekpihub.com
 - Pipeline: pipeline.py (GitHub Actions cron 3:03 AM IST)
-- Wingman: https://agent.thekpihub.com (Railway backend)
+- Wingman: frontend at https://wingcommander.thekpihub.com (Vercel, `apps/wingcommander-reference`),
+  API at Railway (`ditto-wingman-backend-production-85f6.up.railway.app`, proxied via the
+  frontend's `/api/*` rewrite). **Corrected 2026-09-04** — this line previously said
+  `agent.thekpihub.com (Railway backend)`, which was wrong on both counts: `agent.thekpihub.com`
+  turned out to be owned by a different, inaccessible Vercel account (not anything deployed from
+  this repo), and the backend itself has always been Railway, not fronted directly. See
+  `servermemory.md` (2026-09-04) for the full investigation. `open-wingman.php`'s
+  `WINGCOMMANDER_API_URL`/`WINGCOMMANDER_URL`/`WINGCOMMANDER_HANDOFF_SECRET` .htaccess `SetEnv`
+  values still need to be set on Hostinger to actually wire this up end to end — not done yet,
+  blocked on secret-writing actions needing explicit approval.
 - Analytics: GA4 + Microsoft Clarity
 - DNS: Hostinger nameservers (ns1/ns2.dns-parking.com) — apex + www resolve to Hostinger CDN (hstgr.net). Verified 2026-06-28.
 

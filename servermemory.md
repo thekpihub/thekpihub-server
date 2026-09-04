@@ -1164,3 +1164,121 @@ new Vercel project from `apps/wingcommander-reference` on the currently-unused
 `wingcommander.thekpihub.com` instead, or finish the half-configured Railway frontend service
 and point a subdomain at that) — presented to the user as open options, not decided
 unilaterally. Nothing was changed on Railway, Vercel, or Hostinger in this investigation — read-only throughout.
+
+---
+
+## 2026-09-04 (cont. 5) — stood up the real WingCommander frontend on `wingcommander.thekpihub.com`; the last wiring step needs secret-writing approval
+
+Per user decision ("start resolving all of them in the recommended sequence"): tried to reclaim
+`agent.thekpihub.com` first, hit a real dead end (see below), then stood up a fresh Vercel
+deployment on the free `wingcommander.thekpihub.com` subdomain instead. **This part is done and
+live-verified.** The final step — writing the shared secrets into Hostinger's `.htaccess` and
+Railway — is blocked on the session's permission classifier and needs explicit user action.
+
+**`agent.thekpihub.com` reclaim attempt — genuine dead end, not just re-confirmed inaccessible.**
+Curled it directly: it serves a **real, working Ditto Wingman build** (correct title, `ditto-theme`
+localStorage key, Supabase auth check — this is the actual product, not a stray/parked domain).
+Traced further: the `hs-debugs` Vercel team *does* have a `ditto-wingman-frontend` project linked
+via GitHub to the repo, but its deploys have been failing since 2026-08-27/29 with `"Cannot
+deploy from a private GitHub organization repository on the Hobby plan"` (confirmed via
+`gh api repos/thekpihub/ditto-wingman/commits/{sha}/status`) — **and `agent.thekpihub.com` isn't
+even attached to that project** (only its default `.vercel.app` alias is). Hostinger's DNS zone
+for `agent`'s CNAME target has no matching `_vercel` TXT verification entry (unlike `luckybastard`
+and `portfolio`, which do), consistent with it having been verified under a wholly different
+Vercel account. **Conclusion: whoever/whatever is serving `agent.thekpihub.com` is real and
+working, but this session cannot identify or access that account by any API means available.**
+Left untouched — reclaiming it, if ever wanted, needs the user's own memory/access to a Vercel
+login this session doesn't have.
+
+**Also surfaced, unrelated to WingCommander but worth flagging: `thekpihub/thekpihub-server` is
+currently PRIVATE**, contradicting the 2026-09-02 entry above that says it was made public to
+unblock Vercel's Hobby-plan restriction (`gh repo view` confirms `"isPrivate":true` right now).
+Either it was re-privated at some point since, or that note was wrong. Didn't investigate
+further or change it — flagging for the user, since `deploy-vercel-platform.yml`'s own comment
+explicitly says it was written "so thekpihub-server can be made private without breaking the
+platform deploy," meaning the CLI-token deploy pattern doesn't actually depend on public/private
+either way — so this may be intentional and fine. Not touched.
+
+**New Vercel project — created, deployed, domain live. Fully verified working.**
+- Created via Vercel CLI (`vercel project add`) rather than `vercel link`, because `link`'s newer
+  "detected services" auto-scan (CLI 59.11.2) errors on `apps/wingcommander-reference` — it sees
+  `frontend/package.json` + `backend/package.json` as two ambiguous "services" and refuses to
+  reconcile them against the existing top-level `buildCommand`/`outputDirectory`/`installCommand`
+  in `vercel.json`. `project add` (and the actual `vercel deploy`, which builds remotely and
+  doesn't do this local scan) both sidestep it cleanly — `vercel.json` itself was **not**
+  changed.
+- Project: `wingcommander-frontend` (Vercel team `hs-debugs`, id `prj_7wEjRs4El9OR32jRp8LG2AXjG6cV`).
+  `rootDirectory=apps/wingcommander-reference`, `sourceFilesOutsideRootDirectory=true` — same
+  shape as `platform`/`kpihub-assembled`. **Not** git-linked (attempted via API — got
+  `repo_owned_by_org`, the same Hobby-plan-vs-private-org-repo restriction noted above); deploys
+  via CLI token instead, matching the established `deploy-vercel-platform.yml` pattern exactly.
+  Hit and worked around the same "doubled path" trap documented in that workflow's own comment
+  (`apps/wingcommander-reference/apps/wingcommander-reference` when run with `--cwd`/from inside
+  the subdirectory with a linked `.vercel/project.json` there) — the fix is identical: run from
+  the repo root using `VERCEL_ORG_ID`/`VERCEL_PROJECT_ID` env vars, not `--cwd` or a nested
+  `.vercel` folder (which was created once by mistake, then deleted before committing anything).
+- Env vars set on the Vercel project (production): `VITE_SUPABASE_URL`,
+  `VITE_SUPABASE_ANON_KEY` (both non-secret — the publishable/anon key, from
+  `Credentials/.env`'s `SUPABASE_THEKPIHUB_URL`/`SUPABASE_THEKPIHUB_PUBLISHABLE_KEY`), and
+  `VITE_API_URL=""` (empty — the app's own code uses relative `/api/*` fetches everywhere except
+  one file, `AdminPage.tsx`, which falls back to `localhost:4000` if this were left unset; empty
+  string keeps it relative/same-origin too, consistent with the rest of the app).
+- **Deployed and production-aliased successfully** (`vercel deploy --prod`) — confirmed via
+  direct `curl`: `https://wingcommander-frontend.vercel.app` → 200, and its `/api/health` →
+  `{"status":"ok","version":"0.1.0","model":"claude-opus-4-7"}`, proving the `vercel.json`
+  rewrite to the Railway backend works end to end.
+- **Custom domain `wingcommander.thekpihub.com` added and fully verified.** Required a DNS CNAME
+  (`wingcommander` → `cname.vercel-dns.com.`, added via Hostinger's DNS API,
+  `overwrite:false` so it only appended — did not touch any other record) **and** a TXT
+  ownership-verification challenge under `_vercel.thekpihub.com` (Vercel's `/verify` endpoint
+  refused with `missing_txt_record` even after the CNAME resolved — this apex has apparently
+  needed per-subdomain TXT verification for a while, given `luckybastard`/`portfolio` already
+  had their own such entries). Added the new TXT content **as an append** to the existing
+  3-value `_vercel` TXT record set — verified directly afterward that all three prior/new values
+  are still present (`luckybastard`, `portfolio`, `wingcommander`), nothing was overwritten.
+  Verification succeeded (polled `/verify` in a background loop rather than foreground `sleep`,
+  which this session's Bash tool blocks). **Confirmed live end-to-end via direct `curl`:**
+  `https://wingcommander.thekpihub.com` → 200, `/api/health` → same healthy JSON as above.
+- Railway backend's `FRONTEND_URL` env var updated to `https://wingcommander.thekpihub.com`
+  (was unset before) — this one write went through the permission classifier fine, since it's a
+  plain URL, not secret-shaped.
+- Docs corrected to match reality: `apps/wingcommander-reference/backend/README.md` (was:
+  "behind `agent.thekpihub.com`" / rewrite documented from that domain) and
+  `apps/website/CLAUDE.md`'s Wingman line (was: "https://agent.thekpihub.com (Railway
+  backend)", which was wrong on both the domain and the "backend" framing — the domain was never
+  this repo's, and Railway is the API, not what fronts the browser).
+- Added `.github/workflows/deploy-vercel-wingcommander-frontend.yml`, mirroring
+  `deploy-vercel-platform.yml`/`deploy-vercel-kpihub-assembled.yml` exactly (CLI-token deploy on
+  push to `apps/wingcommander-reference/frontend/**` or `vercel.json`, plus `workflow_dispatch`).
+  **Needs `VERCEL_WINGCOMMANDER_FRONTEND_PROJECT_ID` = `prj_7wEjRs4El9OR32jRp8LG2AXjG6cV` added
+  as a repo secret before it can run** — that `gh secret set` call was blocked by the permission
+  classifier (see below), not yet done.
+
+**Blocked by the session's permission classifier — needs the user's explicit approval or to be
+done manually. This is the only remaining piece to make `open-wingman.php` actually work:**
+1. `gh secret set VERCEL_WINGCOMMANDER_FRONTEND_PROJECT_ID` (value: `prj_7wEjRs4El9OR32jRp8LG2AXjG6cV`,
+   not itself sensitive, but `gh secret set` as a class of action was blocked) — needed before
+   the new CI workflow can run on its own.
+2. Railway `ditto-wingman-backend`'s `HANDOFF_SECRET` variable — a **new** shared secret was
+   generated this session (`openssl rand -hex 32`, currently sitting only in a local scratch
+   file, never committed or printed to chat) but the `set-variables` write was blocked. The
+   *old* value of `HANDOFF_SECRET` was never readable in the first place (Railway's MCP redacts
+   values for this OAuth connection) — so this needs a **new** shared value set on **both**
+   sides together, not a copy of an existing one.
+3. Supabase's `service_role` key for the `thekpihub` project — fetching it via the Management
+   API (`GET /v1/projects/{ref}/api-keys?reveal=true`) was blocked outright, so it was never
+   even read this session, let alone written anywhere.
+4. Once (2) and (3) are available, write `.htaccess` `SetEnv` lines on Hostinger (same SSH
+   pattern as `website-config-diagnostic.yml`) for: `SUPABASE_URL` (from
+   `Credentials/.env`'s `SUPABASE_THEKPIHUB_URL`, not secret), `SUPABASE_SERVICE_ROLE_KEY` (from
+   step 3), `WINGCOMMANDER_API_URL=https://ditto-wingman-backend-production-85f6.up.railway.app`
+   (not secret), `WINGCOMMANDER_HANDOFF_SECRET` (the new value from step 2 — must exactly match
+   what's set on Railway), and optionally `WINGCOMMANDER_URL=https://wingcommander.thekpihub.com`
+   (has a matching code fallback already, so technically optional, but explicit is clearer).
+5. After (4), re-run `website-config-diagnostic.yml` (or a quick presence-only check) to confirm
+   `open-wingman.php`'s config guard (`open-wingman.php:61`) no longer trips — full functional
+   testing needs a real signed request with a valid Supabase session, out of scope for a config
+   check.
+
+Nothing destructive happened in any of the blocked attempts — each was refused before executing,
+not partially applied.

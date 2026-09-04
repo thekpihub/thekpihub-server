@@ -1,6 +1,15 @@
 # Ditto Wingman — backend
 
-Express + TypeScript API behind `agent.thekpihub.com`. Deployed on Railway.
+Express + TypeScript API. Deployed on Railway.
+
+**Corrected 2026-09-04:** this doc previously said the frontend it serves lives at
+`agent.thekpihub.com`. That domain turned out to be owned by a different, inaccessible Vercel
+account (see `servermemory.md`, 2026-09-04) — not anything deployed from this repo. The real
+frontend is now `wingcommander-frontend` (Vercel team `hs-debugs`), live at
+`https://wingcommander.thekpihub.com`, sourced from this same repo
+(`apps/wingcommander-reference`, its `vercel.json` unchanged). `agent.thekpihub.com` was left
+alone — reclaiming it, if ever wanted, needs finding whoever/whatever Vercel account currently
+owns it.
 
 ## Routes
 
@@ -44,9 +53,10 @@ health /api/health
 domain ditto-wingman-backend-production-85f6.up.railway.app  (port 4000)
 ```
 
-`vercel.json` at the repo root rewrites `/api/*` from `agent.thekpihub.com` to that host. **If the
-Railway domain ever changes, update that rewrite** or every API call 404s at the edge while the
-frontend still loads — which looks like a working site with a dead app.
+`vercel.json` at the repo root rewrites `/api/*` from `wingcommander.thekpihub.com` (the
+frontend's real domain as of 2026-09-04 — see the correction at the top of this file) to that
+host. **If the Railway domain ever changes, update that rewrite** or every API call 404s at the
+edge while the frontend still loads — which looks like a working site with a dead app.
 
 ### Two deployment traps, both hit in production
 
