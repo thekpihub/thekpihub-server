@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 """
-publish_articles.py — KPI Hub static article publisher
+publish_articles.py — KPI Hub static article publisher (ARCHIVED, non-functional as-is)
+
+Archived 2026-09-04 — see README.md in this folder for why. Never wired into any
+GitHub Actions workflow; superseded by pipeline.py's direct-to-WordPress-DB publishing
+before this script was ever run in production. Paths below were fixed up for this
+folder's new location, but blog.html no longer has ARTICLES_INJECT_HERE markers to
+inject into (it's a redirect to blog.thekpihub.com as of 2026-09-04) and sitemap.xml's
+anchor comment text has since changed — reviving this would need more than a path fix.
 
 Reads articles from a JSON file (pipeline output), renders each one
-into /articles/<slug>.html using articles/template.html, then injects
+into /articles/<slug>.html using article-template.html, then injects
 article cards into blog.html between the ARTICLES_INJECT_HERE markers.
 
 Usage:
@@ -32,11 +39,12 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# This script lives in tools/, so the site root is one level up.
-SITE_ROOT   = Path(__file__).resolve().parent.parent
-# The template lives under tools/ (deploy-excluded) so it is never served as a
-# page in its own right — it is generator input, not content.
-TEMPLATE    = SITE_ROOT / "tools" / "article-template.html"
+# This script now lives in archive/static-article-generator/, two levels below the
+# site root (it used to live in tools/, one level below — fixed up when archived).
+SITE_ROOT   = Path(__file__).resolve().parent.parent.parent
+# The template lives alongside this script (both archived together) so it is never
+# served as a page in its own right — it is generator input, not content.
+TEMPLATE    = Path(__file__).resolve().parent / "article-template.html"
 ARTICLES_DIR = SITE_ROOT / "articles"
 BLOG_HTML   = SITE_ROOT / "blog.html"
 SITEMAP_XML = SITE_ROOT / "sitemap.xml"

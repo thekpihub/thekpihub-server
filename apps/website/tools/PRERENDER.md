@@ -109,15 +109,21 @@ Originals in `docs/attention-required-backup/_admin-delink-backup/`.
 
 ## The article template is generator input, not a page
 
-`tools/article-template.html` (formerly `articles/template.html`) carries
-`<meta name="robots" content="index, follow">` because that meta is *copied into every
-generated article*, where it belongs. The file itself must never be served: as a page it is
-raw `{{TITLE}}` / `{{SLUG}}` placeholder text, and at `/articles/template.html` it was live
-and indexable. Setting it to `noindex` would have been the wrong fix — it would de-index the
-whole future content library.
+**Archived 2026-09-04** — `article-template.html` and `publish_articles.py` (formerly
+`tools/article-template.html` and `tools/publish_articles.py`) now live in
+`archive/static-article-generator/`; see the README there for why. They were never wired
+into any GitHub Actions workflow — `pipeline.py` publishes straight to WordPress's DB
+instead, and this pair's static-file design never ran in production. Kept below for
+history.
 
-It now lives under `tools/`, which `.deploy-exclude` keeps off the server, for the same
-reason `tools/index.shell.html` does. `tools/publish_articles.py` reads it from there.
+`article-template.html` carries `<meta name="robots" content="index, follow">` because
+that meta is *copied into every generated article*, where it belongs. The file itself
+must never be served: as a page it is raw `{{TITLE}}` / `{{SLUG}}` placeholder text, and
+at `/articles/template.html` it was live and indexable. Setting it to `noindex` would
+have been the wrong fix — it would de-index the whole future content library.
+
+It used to live under `tools/`, which `.deploy-exclude` keeps off the server, for the
+same reason `tools/index.shell.html` does. `publish_articles.py` read it from there.
 
 ## Recompiling JSX
 
