@@ -1512,3 +1512,88 @@ same run.
 **WingCommander is now confirmed fully working in production**, not just "should work." No
 further testing needed on this thread unless something changes upstream (Railway backend
 config, `.htaccess`, or `dashboard.html` itself).
+
+---
+
+## 2026-09-04 (cont. 10) — published a user Runbook artifact, then discovered a real credential
+exposure via a second, unrelated Vercel/GitHub project — domains untangled, verification of two
+new aliases still stuck (open item)
+
+**1. Published "The KPI Hub Runbook"** — a Claude Artifact (not in this repo; lives at
+`https://claude.ai/code/artifact/ab6e9b1a-97ea-463b-b523-90eaa06cdcbb`, owned by the user's
+claude.ai account), built as a step-by-step guide to every free tool, paid plan, and dashboard
+feature on `thekpihub.com`, with worked examples and separate benefit breakdowns for Individual
+founder / Small team / Growing business-agency / Enterprise-PE-backed users. All content was
+read directly from the live `apps/website` source (input fields, meta descriptions, pricing
+copy) rather than guessed. Later reframed at the user's request into a post-purchase onboarding
+runbook — added a "Day 1 → Week 1 → Ongoing" checklist section up top; everything else carried
+over unchanged. Two publishes total, same URL both times.
+
+**2. Real, serious finding: a second, unrelated Vercel project holds a copy of every credential
+in `Credentials/.env`.** While pointing a Vercel domains-settings URL the user shared, found
+`hsharmagxi-debug/thekpihub-server` — a **brand-new** (created 2026-09-04 15:33 UTC), **private**
+GitHub repo under the user's **personal** account (not the `thekpihub` org), and a matching
+Vercel project of the same name, created 15:50 UTC. Confirmed via its README/`package.json`
+(`@rocketnew/llm-sdk`, `rocketCritical` in package.json) that it's a **Rocket.new-scaffolded
+Next.js 15 KPI dashboard rebuild** — a real, if early, product attempt, not malicious. **Its
+Vercel project env vars list all 27 names from `Credentials/.env`** (`HOSTINGER_ACCESS_TOKEN`,
+`GITHUB_ACCESS_TOKEN`, `RAILWAY_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `WP_DB_PASSWORD`,
+`DELL_UC_SSH_KEY`, `WINGCOMMANDER_BYOK_ENCRYPTION_KEY`, a Resend key, etc.) — values not read by
+this session. User confirmed (2026-09-04) this was created via **another AI agent running under
+Termux on their phone**, i.e. self-directed, not a compromise — but the credential-loading
+scope may not have been fully intended, and every credential in `Credentials/.env` should be
+considered at elevated exposure risk regardless. **Per this project's standing "don't rotate
+without being asked" instruction, no rotation was pushed for or performed — flagging only.**
+Its one deployment failed (`readyState: ERROR`). It had also picked up **the live production
+apex domains** (`thekpihub.com`, `www.thekpihub.com`) plus `wingman.thekpihub.com`, all
+unverified in Vercel (so none were actually serving traffic from it).
+
+**3. Domains untangled per explicit user direction ("don't touch the production domain, only
+attach subdomains if required"):**
+- `wingman.thekpihub.com` — detached from the orphaned Rocket.new project, added instead as an
+  extra domain alias on the **real, already-working** `wingcommander-frontend` Vercel project
+  (same one built/tested earlier this session — `prj_7wEjRs4El9OR32jRp8LG2AXjG6cV`).
+- `dittowingman.thekpihub.com` — newly added, same target, same reasoning (the product's actual
+  name is "Ditto Wingman" — confirmed via its own frontend meta tags earlier this session).
+- `thekpihub.com` / `www.thekpihub.com` — left attached-but-unverified on the Rocket.new
+  project initially (per "don't touch production"), then **later removed from that project
+  entirely** (see below) as a troubleshooting step — they were unverified/inert there the whole
+  time; production continues to be served by Hostinger exactly as before, unaffected throughout.
+- **Pending, needs the user directly:** the orphaned Rocket.new Vercel project should be
+  paused — its own CLI (`vercel project pause thekpihub-server -S hs-debugs`) refuses to
+  confirm non-interactively ("visitors will see an error page... must type the project name to
+  confirm"). Not urgent — no domain is attached to it now, so nothing is being served from it
+  regardless.
+
+**4. Open item: `wingman.thekpihub.com` / `dittowingman.thekpihub.com` verification stuck,
+cause not fully identified.** Unlike `wingcommander.thekpihub.com` earlier (verified in
+~90 seconds), these two have not verified after 30+ minutes and multiple remediation attempts,
+despite DNS being confirmed correct at every layer checked:
+- Public DNS (`dns.google` resolver) shows both the CNAME (→ `cname.vercel-dns.com.`) and the
+  correct `_vercel.thekpihub.com` TXT challenge values resolving correctly.
+- Vercel's own `/v6/domains/{domain}/config` endpoint independently confirms
+  `"configuredBy":"CNAME"`, `"misconfigured":false` for both.
+- The zone's SOA minimum (negative-cache) TTL is only 600s (10 min) — long since elapsed.
+- Real consequence, not cosmetic: no TLS cert has been issued for either, so `https://` fails
+  outright (`curl` exit 35, SSL handshake failure) — this is genuinely blocking, not just an
+  unchecked box.
+- Tried, in order: repeated `/verify` retries; full remove + re-add (fresh challenge tokens,
+  `wingman` old `b8ee29b...` → new `a3a5ab5...`, `dittowingman` old `e847803...` → new
+  `06db406...`, both old values left harmlessly in DNS) + re-verify; removing the *other*
+  project's competing unverified `thekpihub.com`/`www.thekpihub.com` claims (a same-apex
+  contention theory, since timing lined up with when the Rocket.new project appeared) + re-verify.
+  **None of these changed the result** — still `missing_txt_record` immediately after each fix,
+  for a TXT value independently confirmed present and correct via three separate checks.
+- Checked vercel-status.com — no reported incident for DNS/Domain services.
+- **Working theory: a Vercel-side verification-subsystem delay/bug specific to this apex, not a
+  DNS or configuration problem on our end.** A background poll (`/verify` every 20s) was left
+  running for the current (second-generation) challenge tokens and will pick it up whenever it
+  clears — check `wingman.thekpihub.com` and `dittowingman.thekpihub.com`'s `verified` field via
+  `GET /v9/projects/prj_7wEjRs4El9OR32jRp8LG2AXjG6cV/domains/{domain}` next session if this
+  wasn't already resolved. **Not blocking anything real** — WingCommander already works fully at
+  the already-verified `wingcommander.thekpihub.com`; these two are convenience aliases only.
+
+**Net WingCommander domain state:** `wingcommander.thekpihub.com` — live, verified, tested.
+`wingman.thekpihub.com` / `dittowingman.thekpihub.com` — DNS-correct, Vercel-verification
+pending (open item above). `agent.thekpihub.com` — still owned by a separate, inaccessible
+Vercel account (unchanged from earlier this session, not revisited).
