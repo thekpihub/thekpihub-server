@@ -1394,3 +1394,83 @@ navigating — simpler patch but puts a bearer JWT in browser history/referrer, 
 or add real `sb-token` cookie-setting on login — bigger change, doesn't fit the current
 client-only Supabase setup well) — presented to the user rather than picked unilaterally, since
 this changes live production behavior, not just config.
+
+---
+
+## 2026-09-04 (cont. 8) — button rewired, deployed, and verified live — with two more real bugs
+found and fixed along the way
+
+User chose the recommended fix (rewire to POST+fetch the root `open-wingman.php`). Implemented,
+deployed, and functionally verified end-to-end. Two more genuine, previously-undiscovered
+deploy-pipeline bugs surfaced and got fixed in the process — this file was clearly never
+actually reachable in production before today, on top of everything already found.
+
+**Code changes:**
+- `apps/website/open-wingman.php`: dropped the `X-HMAC-Signature` requirement (step 1) — it can
+  only be verified against `HMAC_SECRET`, a server-only PHP constant plain browser JS has no way
+  to compute, which is exactly why this file was never actually callable from the real site.
+  Real auth is unaffected: still requires a genuine, service-role-verified Supabase JWT and a
+  server-side plan lookup, matching `pages/api/open-wingman.php`'s already-accepted model (no
+  HMAC step there either).
+- `apps/website/dashboard.html`: `launchWingCommander()` rewritten to `fetch()`-POST the
+  Supabase access token to `/open-wingman.php` and navigate to the `redirectUrl` it returns.
+  Drops the dead Cloud Run pre-check entirely.
+- `apps/website/pages/api/open-wingman.php`: left in place, marked deprecated in a header
+  comment (not deleted) — no longer called by anything.
+
+**Deploy-pipeline bugs found and fixed (both real, both would have silently no-op'd forever):**
+1. **`open-wingman.php` (repo root) was never in `hostinger-publish-manifest.txt`** — the
+   deploy's explicit file allow-list. `dashboard.html` and `pages/api/open-wingman.php` (both
+   listed) deployed fine on the first push; the actual fixed endpoint did not. Added it,
+   alphabetically, between `og-image.svg` and `pages/api/ai-gateway.php`.
+2. **`scripts/test-stage-hostinger-site.sh` explicitly forbade this exact path** — a `forbidden[]`
+   entry dating to `db907b9` (2026-08-27, when the governed-deploy pipeline was first built,
+   predating any of today's investigation). Moved it from `forbidden[]` to `required[]`, matching
+   how its sibling files under `pages/api/` are already treated.
+3. **Realized mid-fix that `push` to `main` never actually deploys at all** — re-reading
+   `deploy-website-hostinger.yml` closely: the `remote-plan` (dry-run) and `deploy` (real rsync
+   overlay) jobs both gate on `github.event_name == 'workflow_dispatch'`; a plain push only runs
+   `prepare` (build + stage + policy tests + upload artifact). Three "successful" pushes in a row
+   built and validated the payload correctly but never touched the live server — confirmed
+   directly via a one-off SSH check (`open-wingman.php`'s live mtime was still 2026-08-18,
+   completely unrelated to any commit from today). This is by design (a deliberate
+   dry-run-then-approve safety gate, matching the "Confirmed via hPanel: no native Git
+   Repository integration" / manual-approval framing already documented in
+   `apps/website/CLAUDE.md`) — not a bug to fix, just something this session had wrongly assumed
+   worked like the other `push`-triggered Vercel/pipeline workflows. Dispatched properly with
+   `gh workflow run deploy-website-hostinger.yml -f mode=deploy`.
+
+**One more real wrinkle, resolved:** that manual dispatch's own `deploy` job reported `failure`
+— but only its *last* step, "Verify server-only files survived unchanged" (a safety check
+comparing `config.js`/`.htaccess` checksums before vs. after). The actual `rsync -avz` overlay
+step immediately before it completed cleanly and its own log clearly shows
+`open-wingman.php` transferred (`<f.st......`, i.e. real content+time change). The verification
+step's failure was a diff against an apparently-empty "before" checksum file, not a real
+`config.js`/`.htaccess` change — confirmed directly and safely (never printing contents): file
+sizes/line counts, all 8 `SetEnv` names present (both the `WINGCOMMANDER_`- and `WINGMAN_`-
+prefixed sets — belt and suspenders now that both files could theoretically run), and
+`config.js`'s brace count balanced (10 open/10 close) with all 10 expected `Object.freeze()`
+calls intact. This class of flakiness matches the already-documented "Hostinger intermittently
+blocks/times out GitHub runner connections" gotcha in `apps/website/CLAUDE.md` — not a new
+regression, and not something that needs fixing beyond noting it.
+
+**Live functional test — safe, non-impersonating, and it passed cleanly.** Rather than mint a
+real session for one of the 4 known (dormant, dev-era) Supabase accounts, sent a deliberately
+invalid token: `curl -X POST https://thekpihub.com/open-wingman.php -d
+'{"supabase_token":"not-a-real-token-just-testing-plumbing"}'`. Before all of today's fixes this
+would have been `401 Invalid request signature` (HMAC gate) or `500 Server configuration
+incomplete` (missing `.htaccess` vars); it now returns **`401 {"error":"Supabase session invalid
+or expired"}`** — proof the request clears the (removed) HMAC check, clears the config guard,
+and reaches a real `POST` to Supabase's `/auth/v1/user`, which correctly rejects the garbage
+token. This is the correct, expected failure mode for an invalid token and confirms the entire
+chain is wired end to end. **Not tested: a real logged-in user's click** — deliberately avoided
+minting a session for any of the existing dormant accounts without their knowledge; that's the
+one remaining real-world verification, for whenever an actual Growth/Enterprise user (or the
+user themselves, if they have a qualifying test account) clicks the button for real.
+
+**WingCommander end-to-end status, for real this time:** frontend live
+(`wingcommander.thekpihub.com`), backend live (Railway), `.htaccess` fully wired (both naming
+schemes), `open-wingman.php` deployed and functionally verified against a real Supabase call,
+`dashboard.html`'s button now calls the working endpoint. Archived both new one-off diagnostic
+workflows used this session (`website-config-wire-wingman-2.yml`, `website-file-check.yml`) to
+`docs/diagnostics/`, matching convention.
