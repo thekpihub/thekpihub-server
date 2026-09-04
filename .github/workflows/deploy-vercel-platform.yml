@@ -58,13 +58,20 @@ jobs:
       - name: Pull Vercel project settings (production)
         run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
 
-      - name: Build (production)
-        run: vercel build --prod --token="$VERCEL_TOKEN"
-
-      - name: Deploy prebuilt artifact (production)
+      # Deliberately NOT using `vercel build` + `deploy --prebuilt` (Vercel's
+      # documented CI pattern) -- it's broken for projects with a Root
+      # Directory setting (our case: apps/platform inside this monorepo) when
+      # run outside Vercel's own infra. `vercel build` hardcodes
+      # infrastructure-specific subprocess paths that don't exist in GitHub
+      # Actions, failing with "Error: spawn sh ENOENT". Confirmed via
+      # https://github.com/vercel/vercel/issues/15204 (2026-09-04). Instead,
+      # upload source and let Vercel build it remotely on their own
+      # infrastructure -- the same thing their native Git integration does,
+      # just triggered by us instead of a git push.
+      - name: Deploy (production, built remotely on Vercel)
         id: deploy
         run: |
-          url=$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN")
+          url=$(vercel deploy --prod --yes --token="$VERCEL_TOKEN")
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Deployed: $url"
 
