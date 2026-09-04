@@ -1,0 +1,54 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# TEMPORARY, one-off diagnostic. Read-only. Not part of regular CI.
+#
+# Checks ~/.ssh/authorized_keys on the Hostinger production server for any
+# key installed by the 2026-08-27 kpihub-migration-bootstrap.yml workflow
+# (from the deleted hsharmagxi-debug/thekpihub-platform repo), per the
+# RE-AUDIT FINDINGS action item in C:\Projects\CLAUDE.md. Deleted immediately
+# after use.
+# ─────────────────────────────────────────────────────────────────────────────
+name: TEMP - check authorized_keys
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Read-only authorized_keys check
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    env:
+      HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+      HOSTINGER_PORT: ${{ secrets.HOSTINGER_PORT }}
+      HOSTINGER_USERNAME: ${{ secrets.HOSTINGER_USERNAME }}
+      HOSTINGER_SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      HOSTINGER_SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+    steps:
+      - name: Configure verified SSH
+        run: |
+          test -n "$HOSTINGER_HOST"
+          test -n "$HOSTINGER_PORT"
+          test -n "$HOSTINGER_USERNAME"
+          test -n "$HOSTINGER_SSH_KEY"
+          test -n "$HOSTINGER_SSH_KNOWN_HOSTS"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$HOSTINGER_SSH_KEY" > ~/.ssh/hostinger_deploy_key
+          printf '%s\n' "$HOSTINGER_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/hostinger_deploy_key
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: List authorized_keys (fingerprints + comments only, no key material)
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            'echo "--- authorized_keys entry count ---"; \
+             wc -l < ~/.ssh/authorized_keys 2>/dev/null || echo "no authorized_keys file"; \
+             echo "--- fingerprints + comments (no raw key material) ---"; \
+             ssh-keygen -lf ~/.ssh/authorized_keys 2>/dev/null || echo "could not fingerprint"; \
+             echo "--- last-modified time ---"; \
+             stat -c "%y %n" ~/.ssh/authorized_keys 2>/dev/null || stat -f "%Sm %N" ~/.ssh/authorized_keys 2>/dev/null'
