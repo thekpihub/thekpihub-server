@@ -1,4 +1,4 @@
-name: WordPress - keep wp-cron.php ticking
+name: WordPress - scheduled post publishing
 
 # WordPress's default cron is pseudo-cron: it only runs when a visitor loads a page.
 # blog.thekpihub.com is low-traffic, so scheduled posts can sit stuck in the
@@ -6,8 +6,17 @@ name: WordPress - keep wp-cron.php ticking
 # 2026-09-04 — 7 posts scheduled for 2026-09-03 06:00 IST were still unpublished
 # a day later). Hostinger's shared-hosting SSH shell has no `crontab` command
 # (confirmed 2026-09-04 — a real system-cron approach isn't available here), so
-# this pings wp-cron.php over plain HTTPS on a schedule instead. No SSH, no
-# secrets, just a GET request WordPress already expects to receive periodically.
+# the first job here pings wp-cron.php over plain HTTPS on a schedule instead.
+#
+# That ping alone does NOT fix scheduled-post publishing, though (also found
+# 2026-09-04): pipeline.py inserts 'future' posts via a raw `INSERT INTO
+# wp_posts`, bypassing wp_insert_post()/wp_transition_post_status() — the
+# WordPress code that registers the publish_future_post cron hook. So
+# wp_options.cron has no record these posts are scheduled at all; ticking
+# wp-cron.php finds nothing to do. The second job below is the actual fix —
+# apps/website/tools/sweep_overdue_posts.py does the same kind of direct SQL
+# write pipeline.py already does, flipping any 'future' post whose scheduled
+# time has passed to 'publish'. See servermemory.md for the full writeup.
 
 on:
   workflow_dispatch:
@@ -18,7 +27,8 @@ permissions:
   contents: read
 
 jobs:
-  ping:
+  ping-wp-cron:
+    name: "Ping wp-cron.php"
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
@@ -27,3 +37,32 @@ jobs:
           curl -fsS --max-time 20 "https://blog.thekpihub.com/wp-cron.php" \
             && echo "wp-cron.php responded OK" \
             || echo "::warning::wp-cron.php request failed — will retry on the next 15-minute tick"
+
+  sweep-overdue-posts:
+    name: "Publish overdue scheduled posts"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: apps/website
+    env:
+      WP_DB_HOST:     ${{ secrets.WP_DB_HOST }}
+      WP_DB_HOST_IP:  ${{ secrets.WP_DB_HOST_IP }}
+      WP_DB_PORT:     ${{ secrets.WP_DB_PORT }}
+      WP_DB_NAME:     ${{ secrets.WP_DB_NAME }}
+      WP_DB_USER:     ${{ secrets.WP_DB_USER }}
+      WP_DB_PASSWORD: ${{ secrets.WP_DB_PASSWORD }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyMySQL
+        run: pip install --upgrade pip && pip install "PyMySQL>=1.1.1"
+
+      - name: Sweep overdue 'future' posts
+        run: python tools/sweep_overdue_posts.py
