@@ -42,8 +42,16 @@ to flag and it was never actually resolved before now. Also noticed in passing: 
 `Admin@GXIPC-Himanshu` key is listed **twice** (duplicate entry, same fingerprint) — minor
 hygiene item, not a security issue by itself.
 
-**Not removed.** Left the decision to the user rather than acting unprompted on production SSH
-access — asked whether to remove the migration key (and dedupe the duplicate entry) or leave it.
+**Decision (user, same session): keep it.** Explained the case for removing it (orphaned
+credential — its matching private key lived in a GitHub Actions secret in a repo that's since
+been deleted, so nobody can audit who might still hold a copy; grants full shell access to the
+account serving thekpihub.com; nothing currently uses it, the real deploy pipeline authenticates
+with a separate `GitHub Actions Hostinger Deployment` key) but the user's call was to **retain
+it deliberately as a backup access path** rather than remove it. Not an oversight or a deferred
+cleanup item — don't re-flag this key for removal in a future session unless the user raises it
+first. Full reasoning + key identity also saved to persistent cross-session memory: see
+`C:\Users\Dell\.claude\projects\C--Projects-thekpihub-server\memory\hostinger-backup-ssh-key.md`.
+The duplicate `Admin@GXIPC-Himanshu` entry was left alone too (never asked about separately).
 
 **Per explicit user instruction, the diagnostic workflow was NOT deleted** — moved from
 `.github/workflows/check-authorized-keys.yml` (where it was live/dispatchable) to
