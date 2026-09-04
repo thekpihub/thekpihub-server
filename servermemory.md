@@ -8,6 +8,41 @@ clone sits under.
 
 ---
 
+## 2026-09-04 — Repo made PRIVATE; Vercel CLI deploy re-confirmed working under the new state
+
+User decision, executed: `thekpihub/thekpihub-server` switched from public back to private via
+the GitHub API. Verified with a fresh read (not just the write response):
+`{"private":true,"visibility":"private"}`. This reverses the 2026-09-02 decision to make it
+public (which was made specifically to unblock Vercel's Hobby-plan restriction) — safe to
+reverse now that the CLI deploy workaround (previous entry) exists.
+
+**Re-tested the whole Vercel CLI deploy path from scratch AFTER going private** (not just
+trusting the pre-privacy test): dispatched `deploy-vercel-platform.yml` fresh (run
+`33836017343`) — succeeded, deployed to `https://platform-ee5u6xsp4-hs-debugs.vercel.app`,
+promoted to the production alias. Verified via curl: `thekpihub-platform.vercel.app` → 200,
+correct `<title>The KPI Hub Platform</title>`; `/dashboard/billing` → 307 (its own auth gate,
+same behavior as before privacy change — nothing regressed). GitHub Actions' own checkout step
+is unaffected by repo visibility either way (uses the workflow's own `GITHUB_TOKEN`, which has
+repo access regardless) — this was never actually a risk, only Vercel's *native* GitHub App
+integration was.
+
+**Known, accepted (not silently ignored) side effect: Vercel's native Git integration for
+`platform` will now fail on every future push** — it's gated by the same Hobby+private-org-repo
+restriction this whole workflow exists to route around. Not a regression: the CLI path (above)
+is now the actual working deploy mechanism for `platform`; the native integration failing
+alongside it is cosmetic noise (an extra failed check), not a functional gap. Left connected
+rather than disconnected — disconnecting it would also drop Vercel's automatic PR preview
+deployments and PR comment integration, which the user hasn't asked to give up.
+
+**Real, still-open gap: `kpihub-assembled`** (the second, redundant Vercel project on this same
+repo) has **no CLI deploy workflow** — unlike `platform`, its native-integration failure is a
+genuine functional gap: nothing will keep it updated going forward. Deliberately not resolved
+unilaterally (building it a workflow vs. just deleting the redundant project is the user's
+call, flagged both here and directly to them) — its last successful deployment stays live and
+unchanged, it just won't reflect any future commits.
+
+---
+
 ## 2026-09-04 — Vercel CLI deploy workflow for apps/platform: CONFIRMED working end-to-end after 3 real bugs
 
 Built so `thekpihub/thekpihub-server` can be made private without breaking Vercel deploys.
