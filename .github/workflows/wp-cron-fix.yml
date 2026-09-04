@@ -1,0 +1,58 @@
+name: WordPress - install real wp-cron trigger
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  install-cron:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: hostinger-production
+    env:
+      HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+      HOSTINGER_PORT: ${{ secrets.HOSTINGER_PORT }}
+      HOSTINGER_USERNAME: ${{ secrets.HOSTINGER_USERNAME }}
+      HOSTINGER_SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      HOSTINGER_SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+    steps:
+      - name: Install a real system cron to trigger wp-cron.php
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$HOSTINGER_HOST"
+          test -n "$HOSTINGER_PORT"
+          test -n "$HOSTINGER_USERNAME"
+          test -n "$HOSTINGER_SSH_KEY"
+          test -n "$HOSTINGER_SSH_KNOWN_HOSTS"
+
+          mkdir -p ~/.ssh
+          printf '%s\n' "$HOSTINGER_SSH_KEY" > ~/.ssh/hostinger_deploy_key
+          printf '%s\n' "$HOSTINGER_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/hostinger_deploy_key ~/.ssh/known_hosts
+
+          MARKER="# kpihub-wp-cron (managed by wp-cron-fix.yml — do not hand-edit, re-run the workflow instead)"
+          LINE="*/15 * * * * curl -fsS --max-time 20 https://blog.thekpihub.com/wp-cron.php >/dev/null 2>&1 $MARKER"
+
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" bash -s <<REMOTE
+          set -euo pipefail
+          MARKER='$MARKER'
+          LINE='$LINE'
+          existing="\$(crontab -l 2>/dev/null || true)"
+          if printf '%s\n' "\$existing" | grep -qF "\$MARKER"; then
+            echo "Cron entry already present — leaving crontab untouched."
+          else
+            { printf '%s\n' "\$existing"; printf '%s\n' "\$LINE"; } | grep -v '^\s*$' | crontab -
+            echo "Cron entry installed."
+          fi
+          echo "--- current crontab ---"
+          crontab -l
+          REMOTE
+
+      - name: Trigger wp-cron.php once now (catches up any already-overdue scheduled posts)
+        run: |
+          curl -fsS --max-time 20 "https://blog.thekpihub.com/wp-cron.php" && echo "wp-cron.php responded OK" || echo "wp-cron.php request failed (non-fatal, the installed system cron will keep retrying every 15 min)"
