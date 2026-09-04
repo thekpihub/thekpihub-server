@@ -26,7 +26,9 @@ Live at: https://thekpihub.com
 
 ## Design System
 - Colors: Navy #06071A, Gold #E9A123, Teal #00C9A7
-- Fonts: Cormorant Garamond, Syne, DM Sans
+- Fonts: Source Serif 4 (display), Beiruti (headings), Manrope (body), JetBrains Mono (code)
+  — corrected 2026-09-04; was stale (listed Cormorant Garamond/Syne/DM Sans, which this repo
+  never actually shipped). Single source of truth: `apps/website/colors_and_type.css`.
 
 ## Security Rules (CRITICAL)
 - NEVER put handoff_secret or supabase_service_role_key in config.js
