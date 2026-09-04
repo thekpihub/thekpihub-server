@@ -1474,3 +1474,41 @@ schemes), `open-wingman.php` deployed and functionally verified against a real S
 `dashboard.html`'s button now calls the working endpoint. Archived both new one-off diagnostic
 workflows used this session (`website-config-wire-wingman-2.yml`, `website-file-check.yml`) to
 `docs/diagnostics/`, matching convention.
+
+---
+
+## 2026-09-04 (cont. 9) — real Growth-user end-to-end test: FULL SUCCESS
+
+Per user request, found and tested with an actual logged-in Growth user rather than the earlier
+deliberately-invalid-token probe. **Only one profile row exists in the whole database** (queried
+`public.profiles` joined to `auth.users`): the account owner's own account
+(`hsharma.gxi@gmail.com`, plan `starter`). No third-party user was ever involved.
+
+Built `wingman-live-test.yml` (one-off, now archived to `docs/diagnostics/`) to run the entire
+test server-side, so no token/secret ever reached the assistant's own session or got printed:
+1. Temporarily `PATCH`ed that profile's `plan` to `growth` via the Supabase REST API
+   (`SUPABASE_SERVICE_ROLE_KEY`, already a GitHub secret from earlier this session).
+2. Minted a **real** session for that account via Supabase's admin `generate_link` (magiclink,
+   no email actually sent) → `verify` (OTP → `{access_token, ...}`) flow — no password used or
+   needed.
+3. `POST`ed that real access token to `https://thekpihub.com/open-wingman.php`, exactly
+   replicating `dashboard.html`'s button.
+4. Reverted the profile's `plan` back to `starter` unconditionally (`if: always()`).
+
+First run failed opaquely — `generate_link`'s actual response shape didn't match what was
+assumed (no `.properties.email_otp`... turned out the fallback top-level `email_otp` path was
+needed instead). Fixed by adding safe debug output (HTTP status codes and response **key names
+only**, error bodies on non-200 — never any field that could hold a token) rather than guessing
+blindly, then re-ran.
+
+**Second run: complete success.** `generate_link` → 200, `verify` → 200 (real session obtained),
+`open-wingman.php` → **200** with a genuine `redirectUrl`: host `wingcommander.thekpihub.com`,
+path `/`, a real `token` query param present, and `mapped plan: pro` — correctly reflecting the
+`growth` → `pro` mapping in `open-wingman.php`'s `$planMap`. This is the real, actual "Open
+WingCommander" flow, end to end, for a real logged-in Growth-tier session — not a simulated or
+partial check. Plan reverted to `starter` immediately after (`PATCH` → `204`), confirmed in the
+same run.
+
+**WingCommander is now confirmed fully working in production**, not just "should work." No
+further testing needed on this thread unless something changes upstream (Railway backend
+config, `.htaccess`, or `dashboard.html` itself).
