@@ -34,6 +34,7 @@ required=(
   stripe-webhook.php
   pages/api/ai-gateway.php
   pages/api/open-wingman.php
+  open-wingman.php
 )
 
 for path in "${required[@]}"; do
@@ -68,7 +69,6 @@ forbidden=(
   api
   landing/app.jsx
   landing/tailwind-input.css
-  open-wingman.php
 )
 
 for path in "${forbidden[@]}"; do
