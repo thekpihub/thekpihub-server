@@ -1,11 +1,23 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# TEMPORARY, one-off diagnostic. Read-only. Not part of regular CI.
+# ARCHIVED, INERT — moved out of .github/workflows/ on 2026-09-04 per user
+# request (kept for the record, not deleted). No longer dispatchable as a
+# GitHub Actions workflow from this location.
 #
-# Checks ~/.ssh/authorized_keys on the Hostinger production server for any
-# key installed by the 2026-08-27 kpihub-migration-bootstrap.yml workflow
-# (from the deleted hsharmagxi-debug/thekpihub-platform repo), per the
-# RE-AUDIT FINDINGS action item in C:\Projects\CLAUDE.md. Deleted immediately
-# after use.
+# Ran once, 2026-09-04 (run 33821623751): checked ~/.ssh/authorized_keys on
+# the Hostinger production server, read-only, for any key installed by the
+# 2026-08-27 kpihub-migration-bootstrap.yml workflow (from the deleted
+# hsharmagxi-debug/thekpihub-platform repo), per the RE-AUDIT FINDINGS
+# action item in C:\Projects\CLAUDE.md.
+#
+# RESULT: confirmed still present. authorized_keys had 5 entries / 4 unique
+# keys as of that run, file last-modified 2026-08-27 18:18:17 UTC:
+#   - SHA256:/74maGoMj/JXmLKP2YynqTuA27/Cn0zPNx81SqOYiDg  (RSA 3072, no comment)
+#   - SHA256:Jhq8DLJy/ECKhr6dCAEBqz3yNcYdTL+RP8CFTUimThs  "Admin@GXIPC-Himanshu" (ED25519, listed twice — duplicate entry)
+#   - SHA256:fKFfaRvVh7kcGp0BrL4P/d1WmQ4VgP59x/e1lBszZNk  "GitHub Actions Hostinger Deployment" (ED25519, the legitimate deploy key)
+#   - SHA256:+Y+jfdBpzHid4qBt3sasZ/7XQRXhN7I4mzTjlmYL8ls  "kpihub-assembled-hostinger-2026-08-27" (ED25519, THE MIGRATION KEY — timestamp matches its install exactly)
+#
+# Not removed as of this archiving — that decision was left to the user.
+# See servermemory.md for the session log this belongs to.
 # ─────────────────────────────────────────────────────────────────────────────
 name: TEMP - check authorized_keys
 
