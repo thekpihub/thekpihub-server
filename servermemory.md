@@ -8,6 +8,19 @@ clone sits under.
 
 ---
 
+## 2026-09-04 — Both remaining RE-AUDIT items resolved: creds confirmed rotated, kpihub-assembled getting a deploy workflow (PR #19)
+
+Closed out the two genuinely-open items from the previous entry's verification pass, per direct
+user answers (not assumed):
+
+1. **SendGrid/AppsFlyer/Google auth credentials** (exposed in the deleted `thekpihub-platform`
+   repo's `screenshots-reference/` git history) — **user confirmed already rotated.** Item
+   closed, nothing further to do.
+2. **`kpihub-assembled` Vercel project** — user's choice was to keep it and give it a deploy
+   workflow (not delete it). Building that now — see next entry.
+
+---
+
 ## 2026-09-04 — RE-AUDIT FINDINGS re-verified fresh: almost all already closed; one premise corrected
 
 Went through `C:\Projects\CLAUDE.md`'s RE-AUDIT FINDINGS remediation list item by item, re-
