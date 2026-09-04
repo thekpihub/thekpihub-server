@@ -1,0 +1,46 @@
+# One-off, read-only (2026-09-04) -- checks whether open-wingman.php on the
+# live server actually matches the latest commit, to rule out a cache/CDN
+# layer serving a stale copy after a successful deploy. Move to
+# docs/diagnostics/ once used.
+name: (one-off) Check live open-wingman.php content
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    env:
+      HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+      HOSTINGER_PORT: ${{ secrets.HOSTINGER_PORT }}
+      HOSTINGER_USERNAME: ${{ secrets.HOSTINGER_USERNAME }}
+      HOSTINGER_SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      HOSTINGER_SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+    steps:
+      - name: Configure verified SSH
+        run: |
+          test -n "$HOSTINGER_HOST"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$HOSTINGER_SSH_KEY" > ~/.ssh/hostinger_deploy_key
+          printf '%s\n' "$HOSTINGER_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/hostinger_deploy_key
+          chmod 644 ~/.ssh/known_hosts
+      - name: Check file content and mtime
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          cd "/home/u117990013/domains/thekpihub.com/public_html"
+          echo "=== last modified ==="
+          stat -c '%y' open-wingman.php
+          echo "=== md5 ==="
+          md5sum open-wingman.php
+          echo "=== HMAC references (should be none if new code deployed) ==="
+          grep -c "HMAC" open-wingman.php || echo "0"
+          echo "=== 'Corrected 2026-09-04' marker present? ==="
+          grep -c "Corrected 2026-09-04" open-wingman.php || echo "0"
+          REMOTE_SCRIPT
