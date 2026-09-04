@@ -8,6 +8,34 @@ clone sits under.
 
 ---
 
+## 2026-09-04 — kpihub-assembled Vercel deploy workflow (PR #19): merged, live-verified
+
+Closed out the second of the two open items from the previous entry.
+
+**Built:** `deploy-vercel-kpihub-assembled.yml` — `deploy-vercel-platform.yml`'s pattern
+verbatim, targeting `VERCEL_KPIHUB_ASSEMBLED_PROJECT_ID`. Confirmed via the Vercel API first
+that `kpihub-assembled` has `rootDirectory=apps/platform` and `framework=nextjs` — genuinely the
+same app config as `platform`, not a different one. Re-set the `VERCEL_KPIHUB_ASSEMBLED_
+PROJECT_ID` secret from a fresh API lookup (`prj_Jcn5hye2eCOkIGmCoWjd5Mz4zufm`) since it already
+existed from an earlier session but its value couldn't be read back to confirm.
+
+**Merged (PR #19) and live-verified end-to-end:** the merge itself auto-triggered a real deploy
+(the workflow's own `paths:` filter includes its own file) — worth noting for next time: a
+follow-up manual `workflow_dispatch` collided with it under the `cancel-in-progress: false`
+concurrency group and sat queued behind it with 0 jobs for a couple minutes, which looked like a
+hang until checked directly; cancelled the redundant manual run rather than waiting on it.
+The real (auto-triggered) run succeeded: deployed to
+`https://kpihub-assembled-j1hbm6g71-hs-debugs.vercel.app`, promoted to production. Verified via
+curl: `https://kpihub-assembled.vercel.app` → 200. `kpihub-assembled`'s `thekpihub.com`/
+`www.thekpihub.com` domains remain attached in Vercel's own dashboard but inert — DNS is on
+Hostinger nameservers, so this has zero effect on the live site.
+
+**Both items from the RE-AUDIT FINDINGS re-verification pass are now closed**: SendGrid/
+AppsFlyer/Google credential rotation (user-confirmed already done) and `kpihub-assembled`
+(now kept current via CI instead of silently going stale).
+
+---
+
 ## 2026-09-04 — Both remaining RE-AUDIT items resolved: creds confirmed rotated, kpihub-assembled getting a deploy workflow (PR #19)
 
 Closed out the two genuinely-open items from the previous entry's verification pass, per direct
