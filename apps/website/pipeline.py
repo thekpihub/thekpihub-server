@@ -51,6 +51,14 @@ TODAY_SLUG       = _now.strftime("%Y-%m-%d")
 PUBLISH_AT       = _now.replace(hour=6, minute=0, second=0, microsecond=0)
 PUBLISH_UTC      = PUBLISH_AT.astimezone(timezone.utc)
 
+# daily-pipeline.yml runs this script with no PIPELINE_TYPE (defaults to
+# "daily"); premium-pipeline.yml passes PIPELINE_TYPE=premium. Without a
+# distinct slug suffix, both workflows target the exact same date-based slug
+# and premium's run always finds daily's post already published, skipping
+# every article as a duplicate -- premium never actually publishes anything.
+PIPELINE_TYPE    = os.getenv("PIPELINE_TYPE", "daily")
+SLUG_SUFFIX      = "" if PIPELINE_TYPE == "daily" else f"-{PIPELINE_TYPE}"
+
 ANTHROPIC_KEY    = os.getenv("ANTHROPIC_API_KEY")
 SERPAPI_KEY      = os.getenv("SERPAPI_KEY")
 TELEGRAM_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -79,7 +87,10 @@ logging.basicConfig(
     format=f"%(asctime)s IST | run={RUN_ID} | %(levelname)s | %(message)s",
     datefmt="%H:%M:%S",
     handlers=[
-        logging.FileHandler("pipeline.log"),
+        # daily-pipeline.yml uploads pipeline.log; premium-pipeline.yml
+        # uploads pipeline_premium.log -- name must match PIPELINE_TYPE or
+        # premium's log artifact upload silently finds nothing.
+        logging.FileHandler("pipeline.log" if PIPELINE_TYPE == "daily" else f"pipeline_{PIPELINE_TYPE}.log"),
         logging.StreamHandler(sys.stdout),
     ],
 )
@@ -209,13 +220,13 @@ def claude_text(resp) -> str:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 SERPAPI_QUERIES = [
-    "SaaS KPI benchmarks 2026 latest",
+    f"SaaS KPI benchmarks {_now.year} latest",
     "SaaS market trends today",
     "SaaS funding news today",
     "India SaaS startup news today",
-    "AI SaaS intelligence tools 2026",
+    f"AI SaaS intelligence tools {_now.year}",
     "SaaS churn retention benchmarks",
-    "B2B SaaS pricing trends 2026",
+    f"B2B SaaS pricing trends {_now.year}",
     "G2 Capterra competitor analysis",
     "SaaS CAC payback period benchmarks",
     "enterprise software market news today",
@@ -479,7 +490,7 @@ And this synthesized daily market report:
 Requirements:
 1. First line: <!-- META: your SEO meta description (max 160 chars) -->
 2. Second line: <!-- TAGS: tag1, tag2, tag3, tag4, tag5 --> (5 SEO tags, comma-separated)
-3. Then: <h1>SEO-optimized title including "{TODAY.split(',')[0]}" or "2026" where natural</h1>
+3. Then: <h1>SEO-optimized title including "{TODAY.split(',')[0]}" or "{_now.year}" where natural</h1>
 4. Body: WordPress-ready HTML (h2, h3, p, ul, li, strong, em — no inline styles)
 5. Include 2-3 specific data points with numbers
 6. Include one India-specific angle if data supports it
@@ -530,7 +541,7 @@ Write the full article now, starting with <!-- META: -->"""
         "meta":        meta,
         "tags":        tags_list,
         "category_id": category["id"],
-        "slug":        f"{category['id']}-{TODAY_SLUG}",
+        "slug":        f"{category['id']}{SLUG_SUFFIX}-{TODAY_SLUG}",
     }
 
 
@@ -548,7 +559,7 @@ def generate_all_articles(report: str, research: dict) -> list:
                 "title": f"{cat['name']} — {TODAY}",
                 "content": "", "meta": "", "tags": [],
                 "category_id": cat["id"],
-                "slug": f"{cat['id']}-{TODAY_SLUG}",
+                "slug": f"{cat['id']}{SLUG_SUFFIX}-{TODAY_SLUG}",
                 "error": str(exc),
             })
         time.sleep(2)

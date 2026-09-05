@@ -1,0 +1,68 @@
+name: Diagnostic - Check wingman-handoff plugin install status
+
+# One-off, read-only diagnostic. Checks whether the wp-plugin/wingman-handoff
+# plugin (apps/website/wp-plugin/wingman-handoff/) is actually installed
+# and/or active on the live WordPress blog DB, since it's never part of the
+# static-site deploy (forbidden by scripts/test-stage-hostinger-site.sh) and
+# would have to have been installed manually. Per repo convention, move this
+# file to docs/diagnostics/ after use instead of deleting it.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PyMySQL
+        run: pip install pymysql
+
+      - name: Query wp_options for active_plugins
+        env:
+          WP_DB_HOST: ${{ secrets.WP_DB_HOST }}
+          WP_DB_HOST_IP: ${{ secrets.WP_DB_HOST_IP }}
+          WP_DB_PORT: ${{ secrets.WP_DB_PORT }}
+          WP_DB_NAME: ${{ secrets.WP_DB_NAME }}
+          WP_DB_USER: ${{ secrets.WP_DB_USER }}
+          WP_DB_PASSWORD: ${{ secrets.WP_DB_PASSWORD }}
+        run: |
+          python3 - <<'PYEOF'
+          import os
+          import pymysql
+
+          host = os.environ.get("WP_DB_HOST") or os.environ.get("WP_DB_HOST_IP")
+          conn = pymysql.connect(
+              host=host,
+              port=int(os.environ.get("WP_DB_PORT", "3306")),
+              user=os.environ["WP_DB_USER"],
+              password=os.environ["WP_DB_PASSWORD"],
+              database=os.environ["WP_DB_NAME"],
+              connect_timeout=15,
+          )
+          try:
+              with conn.cursor() as cur:
+                  cur.execute("SELECT option_value FROM wp_options WHERE option_name = 'active_plugins'")
+                  row = cur.fetchone()
+                  value = row[0] if row else ""
+                  print("Raw active_plugins value:")
+                  print(value)
+                  print()
+                  if "wingman-handoff" in value:
+                      print("RESULT: wingman-handoff plugin IS listed as active.")
+                  else:
+                      print("RESULT: wingman-handoff plugin is NOT active (not found in active_plugins).")
+
+                  # Also check whether the plugin file exists on disk at all, in
+                  # case it's present but deactivated (not just never uploaded).
+                  cur.execute(
+                      "SELECT option_value FROM wp_options WHERE option_name = 'siteurl'"
+                  )
+                  site = cur.fetchone()
+                  print("siteurl:", site[0] if site else "(unknown)")
+          finally:
+              conn.close()
+          PYEOF

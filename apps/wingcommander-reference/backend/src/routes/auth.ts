@@ -1,12 +1,13 @@
 import { Router, Request, Response } from "express";
 import crypto from "crypto";
 import { issueToken, verifyToken, type JWTPayload } from "../middleware/auth.js";
+import { requiredSecret } from "../lib/env.js";
 
 const router = Router();
 
 // Shared secret between thekpihub.com and Ditto Wingman backends.
 // Set HANDOFF_SECRET in both environments to the same random value.
-const HANDOFF_SECRET = process.env.HANDOFF_SECRET ?? "dev-handoff-secret-change-in-production";
+const HANDOFF_SECRET = requiredSecret("HANDOFF_SECRET", "dev-handoff-secret-change-in-production");
 
 // ── POST /api/auth/token ───────────────────────────────────────────────────────
 // Called by thekpihub.com server-side when a premium subscriber opens Wingman.

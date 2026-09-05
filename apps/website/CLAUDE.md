@@ -28,14 +28,18 @@ Live at: https://thekpihub.com
   this repo), and the backend itself has always been Railway, not fronted directly. See
   `servermemory.md` (2026-09-04) for the full investigation. `open-wingman.php`'s
   `WINGCOMMANDER_API_URL`/`WINGCOMMANDER_URL`/`WINGCOMMANDER_HANDOFF_SECRET` .htaccess `SetEnv`
-  values still need to be set on Hostinger to actually wire this up end to end — not done yet,
-  blocked on secret-writing actions needing explicit approval.
+  values are set on Hostinger and confirmed working — live-tested end to end 2026-09-04 with a
+  real Growth-plan user (200 OK, correct plan mapping). `.htaccess.template` (the checked-in
+  reference for reprovisioning) previously documented the wrong variable names/domain for this
+  and was fixed 2026-09-05 — see servermemory.md.
 - Analytics: GA4 + Microsoft Clarity
 - DNS: Hostinger nameservers (ns1/ns2.dns-parking.com) — apex + www resolve to Hostinger CDN (hstgr.net). Verified 2026-06-28.
 
 ## Design System
 - Colors: Navy #06071A, Gold #E9A123, Teal #00C9A7
-- Fonts: Cormorant Garamond, Syne, DM Sans
+- Fonts: Source Serif 4, Beiruti, Manrope, JetBrains Mono (monospace) — see
+  colors_and_type.css. This previously said Cormorant Garamond/Syne/DM Sans,
+  which was stale.
 
 ## Security Rules (CRITICAL)
 - NEVER put handoff_secret or supabase_service_role_key in config.js
@@ -76,12 +80,15 @@ Live at: https://thekpihub.com
 - Babel 1.7MB removed: JSX pre-compiled to 8 .js files
 - cache_control ephemeral: added to all 5 API call files
 
-## Current Status — Phase 1 PENDING
-- [ ] config.js live on Hostinger with real credentials
-- [ ] .htaccess SetEnv secrets added on Hostinger
-- [ ] 5x 404 pages verified and fixed
-- [ ] Stripe payment flow tested end to end
-- [ ] HMAC secret rotated (needs SSH access)
+## Current Status (updated 2026-09-05 — the checklist below was stale)
+- [x] config.js live on Hostinger with real credentials (server-maintained, not committed to git)
+- [x] .htaccess SetEnv secrets (Supabase, WingCommander) set on Hostinger — WingCommander
+  handoff live-tested end to end 2026-09-04 with a real Growth-plan user
+- [x] X-HMAC-Signature requirement removed from open-wingman.php (a browser fetch() could
+  never have computed it against a server-only secret) — this is what unblocked the above
+- [ ] Stripe payment flow — moot, `upgrade.html`'s Stripe flow was retired 2026-09-04 in favor
+  of apps/platform's Razorpay+PayPal checkout at /dashboard/billing (see Billing above)
+- Full history of what's actually been verified: see the repo's servermemory.md
 
 ## Pricing
 

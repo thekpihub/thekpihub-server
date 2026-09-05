@@ -1,3 +1,8 @@
+# OBSOLETE: all three target strings below predate auditor.html's migration
+# to the server-side ai-gateway.php flow and no longer exist in the file.
+# Kept only as a historical record -- running it today is a harmless no-op
+# (prints "NOT FOUND" three times and rewrites identical content).
+
 with open('auditor.html', 'r') as f:
     content = f.read()
 

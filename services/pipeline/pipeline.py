@@ -25,10 +25,18 @@ logging.basicConfig(
 )
 log = logging.getLogger('kpihub')
 
-ANTHROPIC_API_KEY  = os.environ['ANTHROPIC_API_KEY']
-SERPAPI_KEY        = os.environ['SERPAPI_KEY']
-TELEGRAM_BOT_TOKEN = os.environ['TELEGRAM_BOT_TOKEN']
-TELEGRAM_CHAT_ID   = os.environ['TELEGRAM_CHAT_ID']
+def _require_env(name: str) -> str:
+    value = os.environ.get(name)
+    if not value:
+        log.error("Missing required env var: %s", name)
+        sys.exit(1)
+    return value
+
+
+ANTHROPIC_API_KEY  = _require_env('ANTHROPIC_API_KEY')
+SERPAPI_KEY        = _require_env('SERPAPI_KEY')
+TELEGRAM_BOT_TOKEN = _require_env('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID   = _require_env('TELEGRAM_CHAT_ID')
 WP_SITE_URL        = os.environ.get('WP_SITE_URL', '').rstrip('/')
 ALPHA_VANTAGE_KEY  = os.environ.get('ALPHA_VANTAGE_KEY', '')
 

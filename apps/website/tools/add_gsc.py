@@ -35,8 +35,6 @@ def inject_gsc(filepath):
     return True
 
 def main():
-    os.chdir('/home/hsharma/thekpihub-website')
-    
     print("\n" + "=" * 70)
     print("  The KPI Hub — Google Search Console Injector")
     print(f"  Verification ID: {GSC_TAG[:30]}...")

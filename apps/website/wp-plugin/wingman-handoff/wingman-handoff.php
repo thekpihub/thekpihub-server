@@ -7,8 +7,19 @@
 
 if (!defined('ABSPATH')) exit;
 
-if (!defined('WINGMAN_HANDOFF_SECRET')) {
-    define('WINGMAN_HANDOFF_SECRET', getenv('WINGMAN_HANDOFF_SECRET') ?: '');
+// Same shared secret/API base the main site's open-wingman.php reads (see
+// apps/website/.htaccess.template) -- these are the names actually set on
+// Hostinger and actually read by the Railway backend (HANDOFF_SECRET), not
+// the WINGMAN_* names this plugin used to look for (always empty -> every
+// handoff silently failed).
+if (!defined('WINGCOMMANDER_HANDOFF_SECRET')) {
+    define('WINGCOMMANDER_HANDOFF_SECRET', getenv('WINGCOMMANDER_HANDOFF_SECRET') ?: getenv('HANDOFF_SECRET') ?: '');
+}
+if (!defined('WINGCOMMANDER_API_URL')) {
+    define('WINGCOMMANDER_API_URL', getenv('WINGCOMMANDER_API_URL') ?: 'https://ditto-wingman-backend-production-85f6.up.railway.app');
+}
+if (!defined('WINGCOMMANDER_URL')) {
+    define('WINGCOMMANDER_URL', getenv('WINGCOMMANDER_URL') ?: 'https://wingcommander.thekpihub.com');
 }
 
 add_action('init', function () {
@@ -20,23 +31,33 @@ add_action('init', function () {
     }
 
     $user = wp_get_current_user();
-    $premium_roles = ['premium', 'pro', 'enterprise', 'subscriber'];
-    $has_premium   = (bool) array_intersect($premium_roles, $user->roles);
+    // NOTE: deliberately excludes 'subscriber' -- that's WordPress's default
+    // role for any newly registered user, so including it here let every
+    // registered visitor (paid or not) through the premium gate.
+    $role_to_plan = ['enterprise' => 'enterprise', 'pro' => 'pro', 'premium' => 'pro'];
+    $matched_role = null;
+    foreach ($user->roles as $role) {
+        if (isset($role_to_plan[$role])) { $matched_role = $role; break; }
+    }
 
-    if (!$has_premium) {
+    if ($matched_role === null) {
         wp_redirect(home_url('/pricing/?reason=premium_required'));
         exit;
     }
 
-    $response = wp_remote_post('https://ditto-wingman-backend-production.up.railway.app/api/auth/token', [
+    if (empty(WINGCOMMANDER_HANDOFF_SECRET)) {
+        wp_die('Wingman handoff is not configured on this server.');
+    }
+
+    $response = wp_remote_post(WINGCOMMANDER_API_URL . '/api/auth/token', [
         'headers' => ['Content-Type' => 'application/json'],
         'body'    => json_encode([
             'sub'       => (string) $user->ID,
             'email'     => $user->user_email,
-            'plan'      => 'premium',
+            'plan'      => $role_to_plan[$matched_role],
             'name'      => $user->display_name,
             'avatarUrl' => get_avatar_url($user->ID),
-            'secret'    => WINGMAN_HANDOFF_SECRET,
+            'secret'    => WINGCOMMANDER_HANDOFF_SECRET,
         ]),
         'timeout' => 15,
     ]);
@@ -46,7 +67,10 @@ add_action('init', function () {
     }
 
     $data = json_decode(wp_remote_retrieve_body($response), true);
-    wp_redirect('https://agent.thekpihub.com/dashboard?token=' . $data['token']);
+    if (empty($data['token'])) {
+        wp_die('Could not launch Wingman. Please try again later.');
+    }
+    wp_redirect(WINGCOMMANDER_URL . '?token=' . urlencode($data['token']));
     exit;
 });
 

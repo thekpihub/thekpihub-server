@@ -1,7 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuthHandoff } from "@/hooks/useAuthHandoff";
 
-const API = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
+// Relative by default (like useAuthHandoff.ts's fetch("/api/auth/verify")) so
+// this goes through the same-origin proxy in both environments: Vite's dev
+// proxy (vite.config.ts, already targets localhost:4000) and Vercel's
+// "/api/:path*" rewrite in production. Defaulting to a hardcoded
+// http://localhost:4000 here meant every visitor's browser tried to call
+// their own machine unless VITE_API_URL happened to be set at build time --
+// and even then it made a real cross-origin call this backend's CORS
+// allowlist could only ever satisfy for one frontend domain at a time.
+const API = import.meta.env.VITE_API_URL ?? "";
 
 interface BYOKUser {
   id: string;

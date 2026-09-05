@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { requiredSecret } from "../lib/env.js";
 
-const JWT_SECRET = process.env.JWT_SECRET ?? "ditto-wingman-dev-secret-change-in-production";
+const JWT_SECRET = requiredSecret("JWT_SECRET", "ditto-wingman-dev-secret-change-in-production");
 const TOKEN_EXPIRY = "1h";
 
 export interface JWTPayload {

@@ -18,8 +18,35 @@ const PORT = process.env.PORT ?? 4000;
 
 // Security
 app.use(helmet({ contentSecurityPolicy: false }));
+
+// Allowlist, not a single static origin: the cors package can only echo back
+// one exact configured value for a plain string, which broke any direct
+// browser call from more than one legitimate origin at a time (e.g. the
+// Admin BYOK panel from wingcommander/wingman/dittowingman.thekpihub.com).
+// FRONTEND_URL may hold a comma-separated list; thekpihub.com's own domains
+// are always allowed since it's the site this backend serves.
+const DEFAULT_ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "https://thekpihub.com",
+  "https://www.thekpihub.com",
+  "https://blog.thekpihub.com",
+  "https://wingcommander.thekpihub.com",
+  "https://wingman.thekpihub.com",
+  "https://dittowingman.thekpihub.com",
+];
+const ALLOWED_ORIGINS = new Set([
+  ...DEFAULT_ALLOWED_ORIGINS,
+  ...(process.env.FRONTEND_URL?.split(",").map((o) => o.trim()).filter(Boolean) ?? []),
+]);
 app.use(cors({
-  origin: process.env.FRONTEND_URL ?? "http://localhost:3000",
+  origin(origin, callback) {
+    // No Origin header (server-to-server calls, curl, same-origin) -- allow.
+    if (!origin || ALLOWED_ORIGINS.has(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`Origin not allowed: ${origin}`));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: "10mb" }));

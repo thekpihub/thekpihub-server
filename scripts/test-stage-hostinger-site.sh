@@ -69,6 +69,11 @@ forbidden=(
   api
   landing/app.jsx
   landing/tailwind-input.css
+  config.js
+  .htaccess
+  wp-admin
+  wp-content
+  wp-includes
 )
 
 for path in "${forbidden[@]}"; do
