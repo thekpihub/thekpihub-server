@@ -156,3 +156,44 @@ checking GitHub's org "deleted repositories" recovery UI directly — outcome no
 **Standing rule this created:** see `servermemory.md` (this repo) and the global `/learnings`
 skill (`C:\Users\Dell\.claude\skills\learnings\learnings.md`) — invoke `/learnings` before any
 irreversible action if there's doubt about the evidence backing it.
+
+---
+
+## 2026-09-05 — Not a mistake, but logged for the causal record: a second external force-push
+to `main` mid-session, handled correctly rather than assumed away
+
+**What happened:** during the full-repo audit/fix session, `origin/main` was force-pushed
+(externally, not by this session) back to an old commit and then fast-forward-merged with a
+stale branch (PR #21), silently discarding the 91 commits of WingCommander/pipeline/deploy work
+this week had produced. Discovered via a routine `git fetch` before opening a remediation PR,
+not because anything looked obviously broken.
+
+**Why it could easily have gone wrong:** the instinct to "just get the PR open and merged" could
+have led to treating `origin/main`'s new state as ground truth and rebasing/force-pushing over
+it, which would have made the loss permanent and also silently reintroduced an older, buggier
+version of a payment integration this repo's own more recent history had already fixed.
+
+**What was done instead, matching the standing precaution rule:** traced the exact mechanism
+(fast-forward merge, `merge_commit_sha == head.sha`, PR #21's base branch predating this week's
+commits) via direct GitHub API queries before touching anything — never inferred intent from a
+string match or assumption. Reconciled with a real 3-way `git merge --no-ff`, diffing every
+conflicting file to confirm which side was actually more correct/complete (verified via
+`npm ci`/`tsc --noEmit`/`next build` after resolving, not just by eyeballing), rather than
+picking a side by default (`--ours`/`--theirs`) or by recency. Surfaced the discovery to the
+user explicitly and in detail as soon as it was confirmed, rather than silently absorbing it
+into the remediation work.
+
+**A second, smaller near-miss during the same session:** `gh pr merge --squash --delete-branch`
+reported a local fast-forward error and left the local checkout on stale `main`, which — read
+too quickly — could have looked like the PR had failed to merge or like local fixes had been
+lost. Verified via `gh api` that the PR had actually merged successfully on GitHub's side before
+concluding anything, then safely re-synced local `main` with `git reset --hard origin/main`
+only after confirming via `git diff --stat` that this added exactly the intended content with
+no surprises.
+
+**Standing rule this reinforces:** the existing "verify via direct, authoritative query, never
+infer from a string match or adjacent metadata" rule (see the 2026-09-02 `thekpihub-wing-commander`
+entry above) applies just as much to *reconciling git history* as it does to repo
+deletion/credential rotation — a merge conflict resolution that silently discards a "worse"
+side without diffing it first is the same class of mistake as inferring a domain's owner from a
+commit message.

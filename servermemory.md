@@ -1727,3 +1727,184 @@ generally *is* API-reachable for these services). Neither the GitHub PAT nor the
 appear to be embedded in any deployed workflow/service (both are used only by this assistant
 locally via `Credentials/.env`), so revoking the old ones once replaced should be low-risk —
 not independently verified with the same rigor as the Supabase check above, though.
+
+---
+
+## 2026-09-05 (cont.) — Full-repo audit + fix pass across every thekpihub.com feature (PR #22),
+plus discovering and reconciling a second external `main`-branch event mid-session
+
+**Context: user asked for a complete debug pass** across the entire `thekpihub-server` repo,
+covering every feature the live site depends on, with instructions to keep working
+autonomously until 0 known errors/gaps remained, then report back.
+
+**Method:** 5 parallel read-only audits (frontend pages/JS, PHP/serverless backend, the content
+pipeline + blog automation, deploy/CI config, and the WingCommander handoff bridge specifically),
+each instructed to verify every claim by reading actual current file content, not by trusting
+prior session notes. Findings cross-checked against each other where they overlapped.
+
+**Mid-audit discovery: `origin/main` had been force-pushed to an old branch, wiping this week's
+91 commits — found, diagnosed, and reconciled without losing either line of history.** While
+preparing to open a remediation PR, `git fetch` showed local `main` and `origin/main` had
+diverged: 91 commits existed only locally (all of this week's WingCommander/pipeline/deploy
+fixes), 17 existed only on origin. Traced the cause precisely rather than guessing: PR #21
+(`docs: Add comprehensive private file setup guides...`, opened by `hsharmagxi-debug`, merged as
+a **fast-forward** — its `merge_commit_sha` exactly equals its head branch's own tip SHA) merged
+branch `claude/kpihub-repo-assembly-y1i0kv`, a branch that had been sitting since the original
+2026-08-24→29 repo-assembly work and was based on an old point in history (commit `c00752a`).
+A fast-forward merge is only possible if `main` was already sitting at an ancestor of that old
+branch at merge time — meaning `main` had been reset back to `c00752a` (discarding the 91
+commits) by something else immediately before PR #21 was merged. Both events were real GitHub
+activity, not an artifact of this session's own tooling — confirmed via `gh api
+repos/.../commits/{sha}/pulls` and repo `pushed_at` timestamps, both landing *during* this
+conversation, not before it.
+
+**Why this mattered, concretely:** the resurrected old branch (containing a `Razorpay +
+PayPal` payment integration circa 2026-08-29, `Configure Supabase and Vercel AI Gateway
+integration`, and a batch of `docs/*.md` setup guides) had **not** been re-verified against the
+current, more advanced state of the same features — local `main`'s own history had
+independently built a *more complete, already-bug-fixed* version of the same Razorpay/PayPal
+billing integration (commit `6e37aa2`/PR #12, "wire real Growth/Enterprise billing"), including
+a real fix (2026-09-04) for a webhook-signature-secret mixup the older branch never got. Blindly
+accepting the fast-forward as the new baseline would have silently regressed working, tested
+billing code back to a known-buggy earlier version, on top of losing every other fix from this
+week.
+
+**Resolution — a real 3-way merge (`git merge --no-ff`), not a force-push either direction:**
+created branch `fix/full-audit-remediation` from local `main` (the 91-commit line) and merged
+`origin/main` (the 17-commit line) into it. For every `apps/platform` file where both lines had
+independently built the same feature (all of `payments/`, `razorpay/`, `paypal/`, and
+`utils/supabase/*`), kept this branch's version after diffing each one and confirming it was a
+strict superset/improvement (more routes, the webhook-secret fix, a real TS `CookieOptions` type
+fix from PR #7 that the old branch's `supabase/middleware.ts`+`server.ts` didn't have). Kept the
+old branch's genuinely new, non-conflicting work: `contact.html`'s Formspree JSON→FormData fix
+and `get-audit.html`'s Brevo error-handling/timeout fix (both real improvements neither audit nor
+this branch's own history had), plus its new docs. **Caught and fixed one thing the old branch's
+own merge would have actively broken**: its version of the repo-root `.gitignore` was missing
+this branch's full ignore list entirely (`.env`, `*.pem`, `*.key`, `config.js`,
+`.claude/settings.local.json`, etc.) — merging it in as-is would have left the canonical repo
+able to accept a committed secret file right now. Restored the full list. Also dropped a
+newly-committed `apps/website/config.js` the old branch added: it violates its own "NEVER commit
+this file" header comment, carries stale placeholder Stripe keys (`pk_live_YOUR_STRIPE_...`),
+and the real one is meant to be server-maintained on Hostinger, not deployed from the repo.
+Verified the reconciled tree before committing: `apps/platform` — `npm ci`, `tsc --noEmit`,
+`next build` all clean; `apps/website` — `npm run build` clean;
+`apps/wingcommander-reference` (backend + frontend) — `npm ci`, `npm run build` both clean.
+
+**Second external push during this same session, after the PR was opened but before it merged:**
+mid-session, `origin/main` moved again (`80611c9..c0486d1`) — this turned out to be my own PR
+#22 actually merging successfully on GitHub's side; the confusing part was that `gh pr merge
+--squash --delete-branch` locally reported a fast-forward error while attempting to sync the
+local `main` ref, and in doing so left the local checkout switched onto stale local `main`
+(pre-fix content) rather than the merged result. Diagnosed via `git log b672f8a..origin/main`
+(confirmed the new tip was literally titled "fix: close every gap found in the full-repo audit
+of thekpihub.com (#22)", authored by the account owner via the merge) before touching anything
+further — then simply `git reset --hard origin/main` on local `main` (verified first via `git
+diff --stat main origin/main` that this only added the intended ~40 files with no surprises,
+and via `git log origin/main..main | wc -l` that the "91 commits still unique to local main" were
+expected squash-merge ancestry noise, not actually-missing content).
+
+**All findings fixed, PR #22 merged to `main` (`c0486d1`), then deployed/redeployed live and
+verified:**
+
+1. **`apps/website/wp-plugin/wingman-handoff/wingman-handoff.php`** — 4 stacked bugs: read
+   `WINGMAN_HANDOFF_SECRET` (set nowhere; real names are `WINGCOMMANDER_HANDOFF_SECRET`/
+   `HANDOFF_SECRET`) so every handoff always sent an empty secret; `premium_roles` included
+   `'subscriber'` (WordPress's default role for any new user) — a full plan-gate bypass;
+   hardcoded Railway URL missing the `-85f6` suffix; final redirect went to
+   `agent.thekpihub.com`, a domain this project doesn't own. Fixed all 4, made secret/URL
+   env-driven with correct live values as fallback. **Verified via a one-off diagnostic
+   workflow (now `docs/diagnostics/check-wingman-plugin-status.yml`) that this plugin is NOT
+   actually installed/active on the live blog** (`wp_options.active_plugins` lists exactly 7
+   plugins — elementor, hostinger, image-optimization, litespeed-cache, manage,
+   pojo-accessibility, wp-webhooks — matching the previously-known "7 phantom active plugins"
+   item; wingman-handoff isn't among them). So these were real bugs with zero live impact,
+   confirmed rather than assumed either way.
+2. **WingCommander backend, `apps/wingcommander-reference/backend`** — `HANDOFF_SECRET`/
+   `JWT_SECRET` fell back to hardcoded strings visible in this (public-ish) repo; added
+   `src/lib/env.ts`'s `requiredSecret()` to fail closed in production instead. Confirmed via
+   `get-service-config` that Railway's live service already has real values set for both (not
+   the hardcoded defaults), so this was a latent-risk fix, not an active live bug. CORS was a
+   single static `FRONTEND_URL` origin — replaced with a real allowlist covering
+   thekpihub.com/www/blog and all 3 WingCommander alias domains (was silently breaking the
+   Admin BYOK panel for 2 of 3). `frontend/src/pages/AdminPage.tsx` defaulted its API base to
+   `http://localhost:4000` instead of the same-origin relative path every other call in this
+   app correctly uses (`useAuthHandoff.ts`'s working pattern) — fixed to match.
+3. **`apps/website/pipeline.py` — `premium-pipeline.yml` has never published a single article,
+   ever.** It generates the exact same date-based slug as `daily-pipeline.yml`
+   (`{category}-{date}` for both); the earlier "collision fix" only moved premium's cron time,
+   not its slug scheme, so by the time premium runs, daily's post for that date already exists
+   and every premium article gets skipped as a duplicate. Added a `PIPELINE_TYPE`-driven slug
+   suffix (`-premium`) and matching log filename (`pipeline_premium.log`, matching what
+   `premium-pipeline.yml`'s artifact upload step already expected but never got). Also fixed
+   two hardcoded-`"2026"` SerpAPI queries and one hardcoded-`"2026"` prompt fallback to derive
+   from the actual run year. **Not live-tested with a real dispatch** (would burn real
+   Claude Opus API spend across 7 articles just to prove a slug string is now different) —
+   verified by code trace instead: `PIPELINE_TYPE=premium` → `SLUG_SUFFIX="-premium"` →
+   `slug = f"{category['id']}-premium-{TODAY_SLUG}"`, provably distinct from daily's
+   `f"{category['id']}-{TODAY_SLUG}"`. CI's `Pipeline syntax check` (on `services/pipeline`) and
+   a full `apps/website` build both passed with pipeline.py in this state either way.
+4. **Deploy/CI**: `scripts/test-stage-hostinger-site.sh`'s `forbidden[]` list didn't cover the
+   real `config.js`/`.htaccess`/`wp-admin`/`wp-content`/`wp-includes` — a bad manifest entry
+   could pass PR-time CI silently (the separate `remote-plan` dry-run job would still have
+   caught it before an actual deploy, but only on manual dispatch). Added all 5. Pinned
+   `ghcr.io/gitleaks/gitleaks:latest` to `v8.30.1` (fetched via `gh api
+   repos/gitleaks/gitleaks/releases/latest`). Gave `apps/website/vercel.json` the same
+   "poison pill" 404-everything rewrite `firebase.json` already had, since this site only ever
+   deploys via Hostinger and the file previously had real production-looking headers with no
+   safeguard.
+5. **Misc**: `gk-shortcut.js`'s global g→k shortcut linked to `/account/integrations` (no
+   `.html`) — confirmed 404 live before fixing, affects 16 pages that load this script.
+   `.htaccess.template` documented the wrong WingCommander var names/domain (`WINGMAN_API_URL`/
+   `WINGMAN_HANDOFF_SECRET`/`agent.thekpihub.com`) — confirmed independently by 3 of the 5 audit
+   agents; today's live `.htaccess` is actually correct (already using the right
+   `WINGCOMMANDER_*` names, confirmed working end-to-end 2026-09-04), but this checked-in
+   template is what anyone would follow to reprovision the server, and following it would have
+   silently re-broken the handoff. `sitemap.html` (live, indexed) described a `/stripe-verify.php`
+   that was never created and an `upgrade.html`→`stripe-session.php` call that no longer exists
+   since `upgrade.html`'s Stripe flow was retired 2026-09-04 — corrected the card.
+   `tools/add_gsc.py` had a dead `os.chdir('/home/hsharma/thekpihub-website')` from a
+   pre-monorepo layout — removed. `tools/patch_auditor.py` would reinject the old insecure
+   client-side Anthropic-key flow (raw key via `prompt()`+`localStorage`, direct browser calls
+   to `api.anthropic.com`) into `auditor.html` if run again after its migration to the
+   server-side `ai-gateway.php` gateway — added a guard that refuses to run when it detects the
+   gateway is already in place. `services/pipeline/pipeline.py` raised a raw `KeyError` on a
+   missing secret instead of a clean, actionable error — added `_require_env()`.
+   `apps/website/CLAUDE.md` had a stale "Phase 1 PENDING" checklist (claiming `.htaccess`
+   secrets and the WingCommander wiring were still TODO, when both were actually confirmed
+   live-tested and working 2026-09-04) and wrong Design System fonts (said Cormorant
+   Garamond/Syne/DM Sans; `colors_and_type.css` actually uses Source Serif 4/Beiruti/Manrope) —
+   both corrected.
+6. **Deployed live and verified, not just merged**: Hostinger — dispatched a `dry-run` first
+   (clean: build, staging policy tests, non-destructive rsync preview, gitleaks scan all
+   passed), then a real `deploy` (succeeded; its own `Verify Hostinger production` smoke-test
+   step curled `/`, `/pricing.html`, `/auditor.html`, `/benchmarks.html` on the live domain and
+   passed). WingCommander frontend — Vercel auto-redeployed on the `main` push (confirmed via
+   `gh run view` on the workflow run) and was also manually re-dispatched to be sure. WingCommander
+   backend — Railway did **not** auto-redeploy on push despite `watchPatterns: ["/backend/**"]`
+   matching the changed paths (its first attempted redeploy via `connect-service-source` came
+   back `SKIPPED`, not `SUCCESS`, for reasons not fully root-caused); used the `railway-agent`
+   MCP tool instead, which triggered a genuinely fresh Railpack build from commit `c0486d1` (not
+   a cached snapshot) — deployment `ac042433` reached `SUCCESS`, confirmed live via
+   `GET /api/health` returning `{"status":"ok","version":"0.1.0","model":"claude-opus-4-7"}`.
+7. Tagged the merged, verified commit `git tag verified-zero-gaps-2026-09-05 c0486d1` (pushed)
+   as an immutable reference point for future diffs, per a discussion with the user about how to
+   protect this state from *accidental* regression — see the note below on what was explicitly
+   declined.
+
+**One thing explicitly declined, on request, and why:** the user asked mid-session for this
+verified state to be "secured" such that it could never be modified "no matter what even if I
+myself said you anything to do," unlockable only by a passphrase typed into an unrelated
+project's session (`C:\Projects\Lumina-SaaS`). Declined implementing this as stated: (a) a
+standing instruction to refuse the account owner's own future explicit instructions isn't
+something to pre-commit to — legitimate future needs (a hotfix, a new finding, a feature
+request) would be blocked by exactly the mechanism meant to protect the code; (b) the proposed
+"unlock phrase" verifies nothing — Claude Code sessions carry no cross-session identity, so
+anyone (or any future session) typing it would pass. Offered and delivered the substantive
+alternative instead: the git tag above as an immutable diff point, this full write-up, and (not
+yet built, offered as a next step if wanted) a CI check that re-runs this audit's key
+verifications on future PRs.
+
+**Net effect:** PR #22 merged to `main`; `main` is fully reconciled with no history lost from
+either the 91-commit line or the resurrected old branch; all 6 categories of findings above are
+fixed, committed, and — where a live surface exists — deployed and independently verified live,
+not just assumed from a clean build.

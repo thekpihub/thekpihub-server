@@ -4,8 +4,16 @@ name: Diagnostic - Check wingman-handoff plugin install status
 # plugin (apps/website/wp-plugin/wingman-handoff/) is actually installed
 # and/or active on the live WordPress blog DB, since it's never part of the
 # static-site deploy (forbidden by scripts/test-stage-hostinger-site.sh) and
-# would have to have been installed manually. Per repo convention, move this
-# file to docs/diagnostics/ after use instead of deleting it.
+# would have to have been installed manually. Per repo convention, moved to
+# docs/diagnostics/ after use instead of deleting it.
+#
+# RESULT (run 33981334919, 2026-09-05): NOT active. wp_options.active_plugins
+# lists exactly 7 plugins (elementor, hostinger, image-optimization,
+# litespeed-cache, manage, pojo-accessibility, wp-webhooks) -- no
+# wingman-handoff. The 4 bugs fixed in that plugin file this session (wrong
+# secret env var, 'subscriber' role bypass, wrong Railway URL, wrong redirect
+# domain) were real bugs in the repo but had zero live impact, since the
+# plugin was never actually installed/activated on the blog.
 
 on:
   workflow_dispatch: {}
