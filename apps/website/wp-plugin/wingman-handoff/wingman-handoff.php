@@ -55,3 +55,6 @@ add_shortcode('open_wingman_button', function () {
     $url = esc_url(home_url('?open-wingman=1'));
     return '<a href="' . $url . '" style="display:inline-block;padding:12px 24px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">Open Ditto Wingman ↗</a>';
 });
+
+exit;
+?>
