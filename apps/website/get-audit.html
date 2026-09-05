@@ -389,7 +389,10 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ firstname: name, email, website, question: biggest_question })
-      }).catch(() => {});
+      }).catch(err => {
+        // Log Brevo failure for debugging but don't block form submission
+        console.warn('Brevo subscribe failed (non-blocking):', err);
+      });
 
       try {
         const formData = new FormData();
@@ -401,9 +404,12 @@
 
         const res = await fetch(FORMSPREE_ENDPOINT, {
           method: 'POST',
-          body: formData
+          body: formData,
+          timeout: 15000 // 15 second timeout
         });
+
         if (res.ok) {
+          // Success: record event and show thank you
           if (typeof gtag === 'function') {
             gtag('event', 'lead_submit', { offer: 'KPI Audit Lite', value: 2999, currency: 'INR' });
           }
@@ -411,12 +417,27 @@
           document.getElementById('thankyou').classList.add('show');
           document.getElementById('thankyou').scrollIntoView({ behavior:'smooth' });
         } else {
-          btn.disabled = false; btn.textContent = 'Get My KPI Audit →';
-          alert('Something went wrong. Please email us at info@thekpihub.com');
+          // Server responded but with error status
+          btn.disabled = false;
+          btn.textContent = 'Get My KPI Audit →';
+          const msg = res.status === 502 || res.status === 503
+            ? 'Our servers are momentarily overloaded. Please try again in 30 seconds or email info@thekpihub.com'
+            : 'Something went wrong. Please email us at info@thekpihub.com';
+          alert(msg);
+          console.error('Form submission error:', res.status, res.statusText);
         }
-      } catch {
-        btn.disabled = false; btn.textContent = 'Get My KPI Audit →';
-        alert('Network error. Please email us at info@thekpihub.com');
+      } catch (err) {
+        // Network error or fetch failure
+        btn.disabled = false;
+        btn.textContent = 'Get My KPI Audit →';
+
+        // Distinguish between timeout and other network errors
+        const msg = err.name === 'AbortError' || err.message.includes('timeout')
+          ? 'Request timed out. Please check your internet connection and try again.'
+          : 'Network error. Please check your internet connection or email info@thekpihub.com';
+
+        alert(msg);
+        console.error('Network error details:', err);
       }
     });
   </script>

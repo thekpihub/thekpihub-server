@@ -148,3 +148,5 @@ if ($eventType === 'checkout.session.completed') {
 // Return 200 OK to Stripe for all processed events
 http_response_code(200);
 echo json_encode(['status' => 'success', 'event' => $eventType]);
+exit;
+?>

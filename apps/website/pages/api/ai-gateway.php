@@ -236,3 +236,5 @@ if (in_array($model, $directAnthropicModels, true)) {
     echo json_encode(['text' => $data['choices'][0]['message']['content'] ?? '', 'model' => $model]);
     exit;
 }
+exit;
+?>

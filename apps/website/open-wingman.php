@@ -195,3 +195,5 @@ echo json_encode([
     'plan'        => $wingPlan,
     'expiresIn'   => 3600,
 ]);
+exit;
+?>

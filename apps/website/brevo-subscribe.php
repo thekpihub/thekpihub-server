@@ -71,3 +71,5 @@ curl_close($ch);
 // Brevo returns 201 (created) or 204 (already existed, updated) on success.
 http_response_code(($code === 201 || $code === 204) ? 200 : 502);
 echo json_encode(['brevo_status' => $code]);
+exit;
+?>

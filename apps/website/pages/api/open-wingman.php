@@ -135,3 +135,5 @@ function curl_request(string $method, string $url, array $headers, ?array $paylo
         'body'   => json_decode($body, true) ?? [],
     ];
 }
+exit;
+?>
