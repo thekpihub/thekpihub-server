@@ -1,7 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuthHandoff } from "@/hooks/useAuthHandoff";
 
-const API = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
+// Relative by default (like useAuthHandoff.ts's fetch("/api/auth/verify")) so
+// this goes through the same-origin proxy in both environments: Vite's dev
+// proxy (vite.config.ts, already targets localhost:4000) and Vercel's
+// "/api/:path*" rewrite in production. Defaulting to a hardcoded
+// http://localhost:4000 here meant every visitor's browser tried to call
+// their own machine unless VITE_API_URL happened to be set at build time --
+// and even then it made a real cross-origin call this backend's CORS
+// allowlist could only ever satisfy for one frontend domain at a time.
+const API = import.meta.env.VITE_API_URL ?? "";
 
 interface BYOKUser {
   id: string;
@@ -131,12 +139,12 @@ export default function AdminPage() {
       {/* Top bar */}
       <div className="border-b border-border bg-card px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-wing-400 to-wing-700 flex items-center justify-center text-sm font-bold text-background">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-ditto-400 to-ditto-700 flex items-center justify-center text-sm font-bold text-background">
             W
           </div>
           <span className="font-bold">WingCommander</span>
           <span className="text-muted-foreground">/</span>
-          <span className="text-wing-400 font-semibold">Admin Dashboard</span>
+          <span className="text-ditto-400 font-semibold">Admin Dashboard</span>
         </div>
         <div className="text-sm text-muted-foreground">{user.email}</div>
       </div>
@@ -150,7 +158,7 @@ export default function AdminPage() {
               onClick={() => setTab(t)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors capitalize ${
                 tab === t
-                  ? "bg-wing-400 text-background"
+                  ? "bg-ditto-400 text-background"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -185,13 +193,13 @@ export default function AdminPage() {
                         <div>
                           <div className="font-medium">{r.email}</div>
                           <div className="text-sm text-muted-foreground mt-1">
-                            Plan: <span className="text-wing-400 font-medium">{r.plan}</span> · Requested {new Date(r.requested_at).toLocaleDateString()}
+                            Plan: <span className="text-ditto-400 font-medium">{r.plan}</span> · Requested {new Date(r.requested_at).toLocaleDateString()}
                           </div>
                         </div>
                         <button
                           onClick={() => approveUser(r.user_id)}
                           disabled={actionLoading === r.user_id}
-                          className="px-4 py-2 bg-wing-400 text-background rounded-lg text-sm font-semibold hover:bg-wing-500 transition-colors disabled:opacity-50"
+                          className="px-4 py-2 bg-ditto-400 text-background rounded-lg text-sm font-semibold hover:bg-ditto-500 transition-colors disabled:opacity-50"
                         >
                           {actionLoading === r.user_id ? "Approving…" : "Approve Access"}
                         </button>
@@ -218,7 +226,7 @@ export default function AdminPage() {
                         <div>
                           <div className="font-medium">{u.first_name} {u.last_name} <span className="text-muted-foreground font-normal">({u.email})</span></div>
                           <div className="text-sm text-muted-foreground mt-1">
-                            Plan: <span className="text-wing-400 font-medium">{u.plan}</span> · Approved {new Date(u.byok_approved_at).toLocaleDateString()}
+                            Plan: <span className="text-ditto-400 font-medium">{u.plan}</span> · Approved {new Date(u.byok_approved_at).toLocaleDateString()}
                           </div>
                         </div>
                         <button
@@ -243,7 +251,7 @@ export default function AdminPage() {
                   {[
                     { label: "Growth Plan Users", value: stats.growthUsers, color: "text-blue-400" },
                     { label: "Enterprise Users", value: stats.enterpriseUsers, color: "text-purple-400" },
-                    { label: "BYOK Approved", value: stats.byokApproved, color: "text-wing-400" },
+                    { label: "BYOK Approved", value: stats.byokApproved, color: "text-ditto-400" },
                   ].map(s => (
                     <div key={s.label} className="bg-card border border-border rounded-xl p-6 text-center">
                       <div className={`text-4xl font-bold mb-2 ${s.color}`}>{s.value}</div>

@@ -1,6 +1,6 @@
 import type { Theme } from "@/types";
 
-const THEME_KEY = "wingcommander-theme";
+const THEME_KEY = "ditto-theme";
 
 export function getStoredTheme(): Theme {
   try {

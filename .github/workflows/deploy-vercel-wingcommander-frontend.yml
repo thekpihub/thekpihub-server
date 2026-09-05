@@ -1,0 +1,79 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Deploys the WingCommander (Ditto Wingman) frontend to Vercel via the CLI + a
+# token, mirroring deploy-vercel-platform.yml / deploy-vercel-kpihub-assembled.yml.
+#
+# Why this exists: apps/wingcommander-reference's own vercel.json documents the
+# intended design (a Vercel project on agent.thekpihub.com, proxying /api/* to
+# the Railway backend) but no such deployment actually existed -- see
+# servermemory.md (2026-09-04) for the full investigation. agent.thekpihub.com
+# turned out to be owned by a different, inaccessible Vercel account, so this
+# stands up a fresh project (`wingcommander-frontend`, hs-debugs team) on the
+# previously-unused wingcommander.thekpihub.com instead. Uses the CLI-token
+# pattern (not Vercel's native Git integration) for the same reason as the
+# other two: the repo is currently private and org-owned, which the Hobby plan
+# refuses to auto-deploy via its GitHub App.
+#
+# rootDirectory=apps/wingcommander-reference is set on the Vercel project
+# itself (dashboard/API, not here) -- same trap as the other two workflows:
+# run from the repo root and let that setting apply the subdirectory, don't
+# scope this workflow to the subdirectory or you get a doubled path.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Deploy - Vercel (wingcommander-frontend)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/wingcommander-reference/frontend/**'
+      - 'apps/wingcommander-reference/vercel.json'
+      - 'apps/wingcommander-reference/package.json'
+      - 'apps/wingcommander-reference/package-lock.json'
+      - '.github/workflows/deploy-vercel-wingcommander-frontend.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-deploy-wingcommander-frontend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build + deploy wingcommander-frontend to Vercel (production)
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_WINGCOMMANDER_FRONTEND_PROJECT_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify required secrets
+        run: |
+          test -n "$VERCEL_TOKEN"
+          test -n "$VERCEL_ORG_ID"
+          test -n "$VERCEL_PROJECT_ID"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel project settings (production)
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      # Same "why not vercel build" reasoning as the other two workflows:
+      # `vercel build` + `deploy --prebuilt` is broken outside Vercel's own
+      # infra for a project with a Root Directory setting
+      # (github.com/vercel/vercel#15204). Upload source, build remotely.
+      - name: Deploy (production, built remotely on Vercel)
+        id: deploy
+        run: |
+          url=$(vercel deploy --prod --yes --token="$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed: $url"
+
+      - name: Summary
+        run: echo "### Deployed to ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"

@@ -26,6 +26,36 @@ interface PayPalOrder {
   }>;
 }
 
+interface PayPalCaptureResult {
+  id: string;
+  status: string;
+  purchase_units?: Array<{
+    custom_id?: string;
+    payments?: {
+      captures?: Array<{
+        id: string;
+        status: string;
+        custom_id?: string;
+        amount?: { currency_code: string; value: string };
+      }>;
+    };
+  }>;
+}
+
+// custom_id is a single free-text field PayPal echoes back unchanged on
+// capture responses and webhook events -- pack both fields we need to
+// recover into it (":"  can't appear in either a UUID userId or a plan
+// slug, so a simple split is safe).
+function encodeCustomId(userId: string, plan: string): string {
+  return `${userId}:${plan}`;
+}
+
+function decodeCustomId(customId: string | undefined): { userId?: string; plan?: string } {
+  if (!customId) return {};
+  const [userId, plan] = customId.split(":");
+  return { userId: userId || undefined, plan: plan || undefined };
+}
+
 export class PayPalProcessor implements PaymentProcessor {
   private clientId: string;
   private clientSecret: string;
@@ -95,15 +125,26 @@ export class PayPalProcessor implements PaymentProcessor {
             currency_code: currency,
             value: amountInDollars,
           },
-          custom_id: request.userId,
+          // Encodes both userId and plan so the capture response and the
+          // webhook (which get this field echoed back, see handleWebhook
+          // below) can recover which plan to grant without a separate
+          // lookup -- previously only userId was stored here, so plan
+          // info was silently lost by the time capture/webhook ran.
+          custom_id: encodeCustomId(request.userId, request.planId),
           description: `Subscription: ${request.planId.toUpperCase()}`,
         },
       ],
       application_context: {
         brand_name: "TheKPIHub",
         user_action: "PAY_NOW",
-        return_url: `${request.appUrl}/dashboard?checkout_session_id={ORDER_ID}`,
-        cancel_url: `${request.appUrl}/billing?cancelled=true`,
+        // PayPal does not support a "{ORDER_ID}" template placeholder in
+        // return_url (the previous value here was dead syntax that would
+        // have been sent to PayPal literally) -- it appends its own
+        // `token` (the order ID) and `PayerID` query params to whatever
+        // URL is given. The billing page reads `token` after redirect and
+        // calls POST /api/paypal/capture with it.
+        return_url: `${request.appUrl}/dashboard/billing?paypal_return=1`,
+        cancel_url: `${request.appUrl}/dashboard/billing?paypal_cancelled=1`,
       },
     };
 
@@ -141,9 +182,7 @@ export class PayPalProcessor implements PaymentProcessor {
       return { isValid: false };
     }
 
-    // For PayPal, we should verify the signature using their verification endpoint
-    // For now, implement basic signature validation
-    const isValid = await this.verifyPayPalSignature(data.signature, data.rawBody);
+    const isValid = await this.verifyPayPalSignature(data);
 
     if (!isValid) {
       return { isValid: false };
@@ -161,31 +200,36 @@ export class PayPalProcessor implements PaymentProcessor {
       const purchaseUnits = resource.purchase_units as Array<Record<string, unknown>> | undefined;
       const firstUnit = purchaseUnits?.[0];
       const amount = firstUnit?.amount as Record<string, unknown> | undefined;
+      const { userId, plan } = decodeCustomId(firstUnit?.custom_id as string | undefined);
 
       return {
         isValid: true,
-        userId: resource.custom_id as string | undefined,
+        userId,
+        plan,
         amount: amount?.value ? parseInt(amount.value as string) * 100 : undefined, // Convert to cents
         currency: (amount?.currency_code as "USD" | "INR" | undefined) || "USD",
         orderId: resource.id as string | undefined,
       };
     }
 
-    // Handle PAYMENT.CAPTURE.COMPLETED event
+    // Handle PAYMENT.CAPTURE.COMPLETED event. The webhook resource here is
+    // the Capture object itself, which carries custom_id as a top-level
+    // field (echoed straight from the order's purchase_units[0].custom_id)
+    // -- NOT nested under a "supplementary_data.additional_data.plan" path
+    // that nothing in this codebase ever wrote to.
     if (data.processorEventType === "PAYMENT.CAPTURE.COMPLETED") {
       const resource = payload.resource as Record<string, unknown> | undefined;
       if (!resource) {
         return { isValid: false };
       }
 
-      // Extract from supplementary data if available
-      const supplementaryData = payload.additional_data as Record<string, unknown> | undefined;
       const amount = resource.amount as Record<string, unknown> | undefined;
+      const { userId, plan } = decodeCustomId(resource.custom_id as string | undefined);
 
       return {
         isValid: true,
-        userId: supplementaryData?.user_id as string | undefined,
-        plan: supplementaryData?.plan as string | undefined,
+        userId,
+        plan,
         amount: amount?.value ? parseInt(amount.value as string) * 100 : undefined,
         currency: (amount?.currency_code as "USD" | "INR" | undefined) || "USD",
         orderId: resource.id as string | undefined,
@@ -195,13 +239,96 @@ export class PayPalProcessor implements PaymentProcessor {
     return { isValid: false };
   }
 
-  private async verifyPayPalSignature(signature: string, body: string): Promise<boolean> {
-    // PayPal uses a more complex verification process involving their verification API
-    // For development/testing, we'll accept signatures
-    // In production, you should call PayPal's verification endpoint
+  /**
+   * Capture a buyer-approved order. This is the step that was previously
+   * missing entirely from the codebase -- an order created via
+   * createCheckout() and approved by the buyer was never actually charged
+   * because nothing called PayPal's capture endpoint afterwards. Called
+   * from POST /api/paypal/capture after PayPal redirects the buyer back.
+   */
+  async captureOrder(orderId: string): Promise<PayPalCaptureResult> {
+    // orderId reaches here from a client-supplied request body
+    // (POST /api/paypal/capture) and is interpolated straight into the
+    // request URL below -- without this check it's an SSRF vector (e.g.
+    // an orderId like "x/../../evil.com" or containing "@attacker.com").
+    // Real PayPal order IDs are alphanumeric with hyphens, so a strict
+    // allowlist pattern is safe and not overly restrictive.
+    if (!/^[A-Za-z0-9-]{10,64}$/.test(orderId)) {
+      throw new Error("Invalid PayPal order id");
+    }
+
+    const accessToken = await this.getAccessToken();
+
+    const response = await fetch(`${this.baseUrl}/v2/checkout/orders/${orderId}/capture`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
+
+    const result = (await response.json()) as PayPalCaptureResult;
+
+    if (!response.ok) {
+      throw new Error(`PayPal order capture failed: ${JSON.stringify(result)}`);
+    }
+
+    return result;
+  }
+
+  /**
+   * Calls PayPal's real webhook signature verification endpoint
+   * (POST /v1/notifications/verify-webhook-signature). The previous
+   * implementation only regex-checked that the signature looked like a
+   * 256-char hex string and accepted anything matching that shape --
+   * meaning any caller could forge a webhook call and grant themselves a
+   * plan. Requires PAYPAL_WEBHOOK_ID (the webhook's ID from the PayPal
+   * dashboard, distinct from the client ID/secret) and the raw PayPal
+   * webhook headers, passed through via WebhookEventData.headers.
+   */
+  private async verifyPayPalSignature(data: WebhookEventData): Promise<boolean> {
+    if (!this.webhookId) {
+      throw new Error(
+        "PAYPAL_WEBHOOK_ID not configured -- set it to the webhook's ID from " +
+          "the PayPal dashboard (Developer Dashboard > Webhooks), not the client ID/secret."
+      );
+    }
+
+    const headers = data.headers || {};
+    const transmissionId = headers["paypal-transmission-id"];
+    const transmissionTime = headers["paypal-transmission-time"];
+    const certUrl = headers["paypal-cert-url"];
+    const authAlgo = headers["paypal-auth-algo"];
+
+    if (!transmissionId || !transmissionTime || !certUrl || !authAlgo || !data.signature) {
+      return false;
+    }
+
     try {
-      // Basic check: signature should be a valid hex string
-      return /^[a-f0-9]{256}$/i.test(signature);
+      const accessToken = await this.getAccessToken();
+      const response = await fetch(`${this.baseUrl}/v1/notifications/verify-webhook-signature`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          auth_algo: authAlgo,
+          cert_url: certUrl,
+          transmission_id: transmissionId,
+          transmission_sig: data.signature,
+          transmission_time: transmissionTime,
+          webhook_id: this.webhookId,
+          webhook_event: data.payload,
+        }),
+        cache: "no-store",
+      });
+
+      if (!response.ok) return false;
+
+      const result = (await response.json()) as { verification_status?: string };
+      return result.verification_status === "SUCCESS";
     } catch {
       return false;
     }

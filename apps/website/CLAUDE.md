@@ -9,23 +9,37 @@ Live at: https://thekpihub.com
 - Hosting: Hostinger (static files + PHP, git webhook deploy)
 - Frontend: Vanilla HTML/CSS + inline React 18 via unpkg CDN
 - Auth: Supabase (https://eeuwkislidznpgdbvvbo.supabase.co)
-- Billing: **two separate rails — do not conflate them**
-  - **Razorpay Payment Link — the only live revenue path.** The ₹2,999 KPI Audit.
+- Billing: **`upgrade.html`'s Stripe flow was retired 2026-09-04 — see the caveat below.**
+  - **Razorpay Payment Link — the only live one-time revenue path.** The ₹2,999 KPI Audit.
     Hardcoded as `PAYMENT_LINK_URL` in `get-audit.html`; does not touch `config.js`.
-  - **Stripe embedded checkout — subscriptions only, and they are unlaunched.**
-    `upgrade.html` loads Stripe.js, reads `CONFIG.stripe.prices[plan]`, and posts to
-    `/stripe-session` on the Cloud Run backend. Real code, and the live `config.js`
-    has the publishable key plus all three price IDs populated. See the caveat below.
+  - **Subscriptions (Growth/Enterprise) now live in `apps/platform`**, not this site — real
+    Razorpay + PayPal checkout at `/dashboard/billing` on the platform's own Vercel deployment
+    (`https://thekpihub-platform.vercel.app`), wired in PR #12. `config.js`'s Stripe keys are
+    now dead weight (nothing on this site calls them any more) — not yet removed from
+    `config.js`/`config.example.js`, just unused.
 - AI: Anthropic API (browser-side via api-key-modal.js)
 - Blog: WordPress on thekpihub.com
 - Pipeline: pipeline.py (GitHub Actions cron 3:03 AM IST)
-- Wingman: https://agent.thekpihub.com (Railway backend)
+- Wingman: frontend at https://wingcommander.thekpihub.com (Vercel, `apps/wingcommander-reference`),
+  API at Railway (`ditto-wingman-backend-production-85f6.up.railway.app`, proxied via the
+  frontend's `/api/*` rewrite). **Corrected 2026-09-04** — this line previously said
+  `agent.thekpihub.com (Railway backend)`, which was wrong on both counts: `agent.thekpihub.com`
+  turned out to be owned by a different, inaccessible Vercel account (not anything deployed from
+  this repo), and the backend itself has always been Railway, not fronted directly. See
+  `servermemory.md` (2026-09-04) for the full investigation. `open-wingman.php`'s
+  `WINGCOMMANDER_API_URL`/`WINGCOMMANDER_URL`/`WINGCOMMANDER_HANDOFF_SECRET` .htaccess `SetEnv`
+  values are set on Hostinger and confirmed working — live-tested end to end 2026-09-04 with a
+  real Growth-plan user (200 OK, correct plan mapping). `.htaccess.template` (the checked-in
+  reference for reprovisioning) previously documented the wrong variable names/domain for this
+  and was fixed 2026-09-05 — see servermemory.md.
 - Analytics: GA4 + Microsoft Clarity
 - DNS: Hostinger nameservers (ns1/ns2.dns-parking.com) — apex + www resolve to Hostinger CDN (hstgr.net). Verified 2026-06-28.
 
 ## Design System
 - Colors: Navy #06071A, Gold #E9A123, Teal #00C9A7
-- Fonts: Cormorant Garamond, Syne, DM Sans
+- Fonts: Source Serif 4, Beiruti, Manrope, JetBrains Mono (monospace) — see
+  colors_and_type.css. This previously said Cormorant Garamond/Syne/DM Sans,
+  which was stale.
 
 ## Security Rules (CRITICAL)
 - NEVER put handoff_secret or supabase_service_role_key in config.js
@@ -39,18 +53,25 @@ Live at: https://thekpihub.com
 - SSH: u117990013@thekpihub.com
 - **A red GitHub Actions run means the deploy did NOT happen.** This line previously read
   "GitHub Actions red = harmless (deploys via Hostinger webhook)". That is false and was
-  dangerous: there is no webhook deploy any more. Every push to `main` runs
-  `.github/workflows/deploy-hostinger.yml`, which rebuilds the site in the runner and ships it
-  with `rsync -avz --delete` over SSH. If it is red, production is stale. Corrected 2026-08-19
-  after watching three runs deploy this way.
-- **Hostinger intermittently blocks GitHub runner IPs.** Symptom is `Connection timed out` on SSH —
-  TCP-level, not auth; the credentials are fine. The job retries 3x, but a sticky block needs a
-  re-run on a fresh runner: `gh run rerun <id> --failed`.
-- **`rsync` runs `--delete` WITHOUT `--delete-excluded`.** So everything in `.deploy-exclude` is
-  *protected* from deletion on the server, which is how `config.js` and `.htaccess` survive.
-  The corollary bites: excluding a path does NOT remove a copy already deployed. To retire a live
-  file, move it into an already-excluded directory (`tools/`, `docs/`) and let `--delete` reap the
-  old path.
+  dangerous: there is no webhook deploy any more. If it is red, production is stale.
+- **Corrected 2026-09-02 — the deploy mechanism was rewritten since the note above was
+  written, and the description below it (kept for a while after, `rsync --delete`) was stale.**
+  The actual current workflow is `.github/workflows/deploy-website-hostinger.yml`
+  ("Website - Hostinger governed deploy"). It builds an **allow-listed** payload via
+  `scripts/stage-hostinger-site.sh` (only files explicitly allowed get staged — not the old
+  deny-list-via-`.deploy-exclude` model) and ships it with a plain `rsync -avz` overlay —
+  **no `--delete` flag at all**. Confirmed directly while installing WordPress under
+  `blog.thekpihub.com` (a folder that's never been in this repo): nothing in `.deploy-exclude`
+  was needed to protect it, because the deploy can only ever add/update files it explicitly
+  staged, never delete anything on the server. `.deploy-exclude` still exists and still lists
+  `wp-admin/`, `wp-content/`, etc., but it's now effectively belt-and-suspenders rather than
+  the only thing standing between a deploy and deleting the WordPress blog.
+- **Hostinger intermittently blocks/times out GitHub runner connections to the server.**
+  Symptom is `Connection timed out` on SSH — TCP-level, not auth; the credentials are fine.
+  Also seen 2026-09-02 on the *database* side (MySQL, not SSH) from a different workflow, same
+  symptom pattern — see `servermemory.md`. Not root-caused, but reproducible enough to not be
+  a fluke. The job retries 3x, but a sticky block needs a re-run on a fresh runner:
+  `gh run rerun <id> --failed`.
 
 ## Sprint 4 — CLOSED (May 23 2026)
 - api-key-modal.js: secure API key modal (replaces browser prompt)
@@ -59,12 +80,15 @@ Live at: https://thekpihub.com
 - Babel 1.7MB removed: JSX pre-compiled to 8 .js files
 - cache_control ephemeral: added to all 5 API call files
 
-## Current Status — Phase 1 PENDING
-- [ ] config.js live on Hostinger with real credentials
-- [ ] .htaccess SetEnv secrets added on Hostinger
-- [ ] 5x 404 pages verified and fixed
-- [ ] Stripe payment flow tested end to end
-- [ ] HMAC secret rotated (needs SSH access)
+## Current Status (updated 2026-09-05 — the checklist below was stale)
+- [x] config.js live on Hostinger with real credentials (server-maintained, not committed to git)
+- [x] .htaccess SetEnv secrets (Supabase, WingCommander) set on Hostinger — WingCommander
+  handoff live-tested end to end 2026-09-04 with a real Growth-plan user
+- [x] X-HMAC-Signature requirement removed from open-wingman.php (a browser fetch() could
+  never have computed it against a server-only secret) — this is what unblocked the above
+- [ ] Stripe payment flow — moot, `upgrade.html`'s Stripe flow was retired 2026-09-04 in favor
+  of apps/platform's Razorpay+PayPal checkout at /dashboard/billing (see Billing above)
+- Full history of what's actually been verified: see the repo's servermemory.md
 
 ## Pricing
 
@@ -81,17 +105,17 @@ shipped three different schemes at the same time.
 The earlier ₹999 / ₹2,499 / ₹7,999 monthly scheme recorded here was never published and
 conflicted with the live site. Removed 2026-08-19.
 
-### Caveat — `/upgrade.html` can still sell what the pricing pages say is not for sale
+### `/upgrade.html` — retired 2026-09-04, now redirects (was: could sell what pricing pages said wasn't for sale)
 
-`/upgrade.html` returns **200** (unlisted and `noindex`, but not access-controlled) and wires a
-real Stripe embedded checkout for three plans: `starter`, `growth`, `enterprise`. Two problems:
-
-- **`starter` no longer exists.** The seat-based Starter tier was removed from all public pricing
-  on 2026-08-19. The Stripe price ID is still live in `config.js` and still selectable here.
-- **`growth` is advertised as not purchasable until Q3 2026**, yet anyone with this URL can
-  attempt to pay for it now, at whatever amount is set in the Stripe dashboard — which nothing in
-  this repo pins to the published ₹5,999/mo.
-
-Nobody has decided what should happen here, so nothing was changed. The options are to gate the
-page behind auth, take the plans off it until launch, or launch them properly. **Do not treat the
-₹5,999/mo figure as verified against Stripe** — it is verified only against the site's own copy.
+Previously `/upgrade.html` returned **200** (unlisted, `noindex`, but not access-controlled) and
+wired a real Stripe embedded checkout for three plans — `starter` (removed from public pricing
+on 2026-08-19 but still selectable here), `growth` (advertised as not purchasable until Q3 2026,
+yet payable at whatever price Stripe's dashboard held, unpinned to the published ₹5,999/mo), and
+`enterprise` (marketed as Custom/contact-only, yet had a fixed Stripe price). User decision
+2026-09-04: redirect rather than gate-and-fix, since a real replacement now exists. The page is
+now a static redirect (meta-refresh + JS) to `apps/platform`'s `/dashboard/billing`, which has
+its own auth gate and real Razorpay/PayPal checkout (PR #12). All Stripe/Supabase/plan-fetch
+logic was removed from the page. 17 other files in this repo still link to `upgrade.html` by URL
+(nav CTAs, docs, sitemap) — left as-is since the redirect keeps every one of those links working
+without a 17-file find-and-replace; update them directly to the platform URL only if/when the
+redirect itself is removed.

@@ -1,0 +1,357 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# One-off / rarely-run provisioning tool, NOT part of regular CI.
+#
+# Installs WordPress core under public_html/blog-wordpress (served at
+# blog.thekpihub.com, a subdomain created 2026-09-02) and wires it to the
+# EXISTING u117990013_Thekpihub database -- the one the content pipeline
+# already writes into directly via PyMySQL (see servermemory.md, 2026-09-02).
+# No new database, no data migration: WordPress just starts rendering rows
+# that are already there (table prefix wp_, matching what's already in use).
+#
+# Safe to re-run: overwrites wp-config.php and re-extracts core files, but
+# never touches the database contents, and the docroot (blog-wordpress/) is
+# outside the allow-listed website-payload the regular deploy workflow
+# uploads, so the two never collide.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Install WordPress (blog.thekpihub.com)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    name: Install WordPress core + wire existing DB
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    env:
+      HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+      HOSTINGER_PORT: ${{ secrets.HOSTINGER_PORT }}
+      HOSTINGER_USERNAME: ${{ secrets.HOSTINGER_USERNAME }}
+      HOSTINGER_SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      HOSTINGER_SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+      WP_DB_NAME: ${{ secrets.WP_DB_NAME }}
+      WP_DB_USER: ${{ secrets.WP_DB_USER }}
+      WP_DB_PASSWORD: ${{ secrets.WP_DB_PASSWORD }}
+      WP_DB_HOST: ${{ secrets.WP_DB_HOST }}
+      WP_ADMIN_NEW_PASSWORD: ${{ secrets.WP_ADMIN_NEW_PASSWORD }}
+    steps:
+      - name: Configure verified SSH
+        run: |
+          test -n "$HOSTINGER_HOST"
+          test -n "$HOSTINGER_PORT"
+          test -n "$HOSTINGER_USERNAME"
+          test -n "$HOSTINGER_SSH_KEY"
+          test -n "$HOSTINGER_SSH_KNOWN_HOSTS"
+          test -n "$WP_DB_NAME"
+          test -n "$WP_DB_USER"
+          test -n "$WP_DB_PASSWORD"
+          test -n "$WP_DB_HOST"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$HOSTINGER_SSH_KEY" > ~/.ssh/hostinger_deploy_key
+          printf '%s\n' "$HOSTINGER_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/hostinger_deploy_key
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Install WordPress core on the remote server
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- "$WP_DB_NAME" "$WP_DB_USER" "$WP_DB_PASSWORD" "$WP_DB_HOST" \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          DB_NAME="$1"; DB_USER="$2"; DB_PASS="$3"; DB_HOST="$4"
+
+          cd "/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress"
+
+          echo "Downloading WordPress core..."
+          curl -sSL -o wordpress.zip https://wordpress.org/latest.zip
+
+          echo "Extracting..."
+          unzip -q -o wordpress.zip
+          rm -f default.php wordpress.zip
+          # rsync, not mv -- safely re-runnable (mv fails with "Directory not
+          # empty" against wp-admin/wp-content/wp-includes on a second run).
+          rsync -a wordpress/ .
+          rm -rf wordpress
+
+          echo "Fetching fresh secret keys..."
+          SALT="$(curl -sSL https://api.wordpress.org/secret-key/1.1/salt/)"
+
+          echo "Writing wp-config.php..."
+          {
+            echo "<?php"
+            echo "define('DB_NAME', '${DB_NAME}');"
+            echo "define('DB_USER', '${DB_USER}');"
+            echo "define('DB_PASSWORD', '${DB_PASS}');"
+            echo "define('DB_HOST', '${DB_HOST}');"
+            echo "define('DB_CHARSET', 'utf8mb4');"
+            echo "define('DB_COLLATE', '');"
+            echo "\$table_prefix = 'wp_';"
+            echo "$SALT"
+            echo "define('WP_HOME', 'https://blog.thekpihub.com');"
+            echo "define('WP_SITEURL', 'https://blog.thekpihub.com');"
+            echo "define('FS_METHOD', 'direct');"
+            echo "if ( ! defined('ABSPATH') ) define('ABSPATH', __DIR__ . '/');"
+            echo "require_once ABSPATH . 'wp-settings.php';"
+          } > wp-config.php
+
+          echo "INSTALL_OK"
+          REMOTE_SCRIPT
+
+      - name: Diagnose blank-page response
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          cd "/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress"
+          echo "--- php -v ---"
+          php -v || echo "no php cli"
+          echo "--- php.ini error_log directive ---"
+          php -i 2>/dev/null | grep -i "^error_log" || true
+          echo "--- direct php execution test ---"
+          echo '<?php echo "PHP OK: " . phpversion();' > phpcheck.php
+          php phpcheck.php || echo "php CLI exec failed"
+          rm -f phpcheck.php
+          echo ""
+          echo "--- actual WordPress bootstrap (wp-load.php), errors forced on ---"
+          php -d display_errors=1 -d error_reporting=E_ALL -r \
+            "define('WP_USE_THEMES', false); require 'wp-load.php'; echo 'WP_BOOTSTRAP_OK';" \
+            2>&1 || echo "wp-load.php bootstrap failed, see above"
+          echo ""
+          echo "--- searching common error log locations ---"
+          for f in error_log ../error_log ../logs/error_log \
+                   /home/u117990013/logs/thekpihub.com/error_log \
+                   /home/u117990013/domains/thekpihub.com/logs/error_log; do
+            if [ -f "$f" ]; then
+              echo "== $f (last 30 lines) =="
+              tail -n 30 "$f"
+            fi
+          done
+          echo "--- wp-config.php sanity (no secrets) ---"
+          grep -c "define" wp-config.php
+          echo "--- wp-content permissions ---"
+          ls -la | head -20
+          echo "--- installed themes ---"
+          ls -la wp-content/themes/
+          echo "--- active theme per DB ---"
+          php -d display_errors=1 -r \
+            "define('WP_USE_THEMES', false); require 'wp-load.php'; \
+             echo 'template=' . get_option('template') . ', stylesheet=' . get_option('stylesheet') . PHP_EOL;"
+          echo "--- active plugins per DB ---"
+          php -d display_errors=1 -r \
+            "define('WP_USE_THEMES', false); require 'wp-load.php'; \
+             print_r(get_option('active_plugins'));"
+          echo "--- simulate real front-end request: render homepage template ---"
+          set +e
+          php -d display_errors=1 -d error_reporting=E_ALL wp-blog-header.php \
+            > /tmp/render.html 2>&1
+          echo "exit status was: $?"
+          set -e
+          echo "--- rendered output size ---"
+          wc -c /tmp/render.html
+          echo "--- rendered output, first 100 lines ---"
+          head -n 100 /tmp/render.html
+          echo "--- writing a temporary web-facing diagnostic script (real PHP-FPM, not CLI) ---"
+          cat > __diag.php <<'PHPEOF'
+          <?php
+          echo "PHP_SAPI_VERSION=" . phpversion() . PHP_EOL;
+          echo "SAPI=" . php_sapi_name() . PHP_EOL;
+          echo "error_log_ini=" . ini_get('error_log') . PHP_EOL;
+          echo "display_errors=" . ini_get('display_errors') . PHP_EOL;
+          echo "log_errors=" . ini_get('log_errors') . PHP_EOL;
+          PHPEOF
+          echo "diagnostic script written"
+          REMOTE_SCRIPT
+
+      - name: Fetch the web-facing PHP diagnostic over real HTTP
+        run: |
+          echo "--- curl __diag.php over HTTPS ---"
+          curl -sS https://blog.thekpihub.com/__diag.php
+          echo ""
+          echo "--- now curl the homepage again for comparison ---"
+          curl -sS -D - -o /tmp/home2.html https://blog.thekpihub.com/
+          wc -c /tmp/home2.html
+
+      - name: Switch active theme to a theme that actually exists
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          cd "/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress"
+          # DB's active theme (hello-elementor) isn't installed -- only the
+          # bundled themes core ships with are. Root cause of the blank page:
+          # template-loader.php can't find any template file for a missing
+          # theme, so it silently outputs nothing (no fatal, no log entry).
+          # New pipeline content is plain HTML, renders fine under any theme.
+          php -r "
+            define('WP_USE_THEMES', false);
+            require 'wp-load.php';
+            update_option('template', 'twentytwentyfive');
+            update_option('stylesheet', 'twentytwentyfive');
+            echo 'template=' . get_option('template') . ', stylesheet=' . get_option('stylesheet') . PHP_EOL;
+          "
+          echo "THEME_SWITCH_OK"
+          REMOTE_SCRIPT
+
+      - name: Reset admin password (user ID 1, sharmahimanshu1178.hs92@gmail.com)
+        run: |
+          test -n "$WP_ADMIN_NEW_PASSWORD"
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- "$WP_ADMIN_NEW_PASSWORD" \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          NEWPASS="$1"
+          cd "/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress"
+          # wp_set_password() hashes via whatever scheme this WP version uses
+          # (bcrypt via password_hash on modern core) -- correct regardless of
+          # version, unlike hand-rolling a hash. Also clears any password-reset
+          # keys/session tokens for that user, same as a normal admin reset.
+          php -r "
+            define('WP_USE_THEMES', false);
+            require 'wp-load.php';
+            wp_set_password('${NEWPASS}', 1);
+            \$u = get_userdata(1);
+            echo 'PASSWORD_RESET_OK for user_login=' . \$u->user_login . PHP_EOL;
+          "
+          REMOTE_SCRIPT
+
+      - name: Flush rewrite rules (fixes pretty-permalink 404s)
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          cd "/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress"
+          echo "--- permalink_structure before ---"
+          php -r "define('WP_USE_THEMES', false); require 'wp-load.php'; echo get_option('permalink_structure') . PHP_EOL;"
+          echo "--- .htaccess before ---"
+          cat .htaccess 2>/dev/null || echo "(no .htaccess file)"
+          echo "--- flushing rewrite rules ---"
+          php -r "
+            define('WP_USE_THEMES', false);
+            require 'wp-load.php';
+            require_once ABSPATH . 'wp-admin/includes/misc.php';
+            \$ok = save_mod_rewrite_rules();
+            echo 'save_mod_rewrite_rules() returned: ' . var_export(\$ok, true) . PHP_EOL;
+            flush_rewrite_rules(false);
+            echo 'FLUSH_OK' . PHP_EOL;
+          "
+          # save_mod_rewrite_rules() detects the web server via
+          # \$_SERVER['SERVER_SOFTWARE'], which doesn't exist under CLI, so it
+          # silently skips writing .htaccess and returns false here (confirmed
+          # 2026-09-02: option was already correct, .htaccess was just never
+          # written). Write the standard WordPress rewrite block ourselves --
+          # well-known, stable boilerplate, same as what got_mod_rewrite()
+          # writes when a real web request triggers it.
+          if [ ! -s .htaccess ] || ! grep -q "BEGIN WordPress" .htaccess; then
+            echo "--- .htaccess missing WordPress block, writing it directly ---"
+            {
+              echo "# BEGIN WordPress"
+              echo "<IfModule mod_rewrite.c>"
+              echo "RewriteEngine On"
+              echo "RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]"
+              echo "RewriteBase /"
+              echo "RewriteRule ^index\\.php\$ - [L]"
+              echo "RewriteCond %{REQUEST_FILENAME} !-f"
+              echo "RewriteCond %{REQUEST_FILENAME} !-d"
+              echo "RewriteRule . /index.php [L]"
+              echo "</IfModule>"
+              echo "# END WordPress"
+            } >> .htaccess
+          fi
+          echo "--- .htaccess after ---"
+          cat .htaccess 2>/dev/null || echo "(no .htaccess file)"
+          REMOTE_SCRIPT
+
+      - name: Fix broken CTA links in already-published posts
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          cd "/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress"
+          # /go/hubspot and /go/semrush 404 -- no redirect for them exists
+          # anywhere in the codebase. Per user decision 2026-09-02: link
+          # directly to the real company homepages instead of a fake/broken
+          # affiliate indirection. pipeline.py fixed for future posts;
+          # this fixes the posts already published with the old URLs baked
+          # into post_content.
+          php -r "
+            define('WP_USE_THEMES', false);
+            require 'wp-load.php';
+            \$posts = get_posts(['post_status' => 'publish', 'post_type' => 'post', 'numberposts' => -1]);
+            \$fixed = 0;
+            foreach (\$posts as \$p) {
+              \$new = str_replace(
+                ['https://thekpihub.com/go/hubspot', 'https://thekpihub.com/go/semrush'],
+                ['https://www.hubspot.com/', 'https://www.semrush.com/'],
+                \$p->post_content,
+                \$count
+              );
+              if (\$count > 0) {
+                wp_update_post(['ID' => \$p->ID, 'post_content' => \$new]);
+                echo 'Fixed ' . \$count . ' link(s) in post #' . \$p->ID . ': ' . \$p->post_title . PHP_EOL;
+                \$fixed++;
+              }
+            }
+            echo 'CTA_FIX_OK, posts updated: ' . \$fixed . PHP_EOL;
+          "
+          REMOTE_SCRIPT
+
+      - uses: actions/checkout@v4
+
+      - name: Replace the footer pattern (fixes the theme's own url:"#" placeholders)
+        run: |
+          scp -i ~/.ssh/hostinger_deploy_key -P "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            .github/workflows/assets/blog-footer.php \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST:/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress/wp-content/themes/twentytwentyfive/patterns/footer.php"
+          echo "--- footer.php after replacement ---"
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            "cat '/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress/wp-content/themes/twentytwentyfive/patterns/footer.php'"
+
+      - name: Verify the homepage now renders real content
+        run: |
+          echo "--- homepage after theme switch ---"
+          curl -sS -D - -o /tmp/home3.html https://blog.thekpihub.com/
+          echo "--- body size ---"
+          wc -c /tmp/home3.html
+          echo "--- first 40 lines of body ---"
+          head -n 40 /tmp/home3.html
+          echo ""
+          echo "--- pretty-permalink post URL after rewrite flush ---"
+          curl -sS -o /dev/null -w 'HTTP %{http_code}\n' https://blog.thekpihub.com/tool_intelligence-2026-09-02/
+
+      - name: Tail the real error log
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            "tail -n 60 '/home/u117990013/.logs/error_log_blog_thekpihub_com' 2>&1 || echo 'log file not found at that path'"
+
+      - name: Clean up temporary diagnostic script
+        if: always()
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            "rm -f '/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress/__diag.php'"

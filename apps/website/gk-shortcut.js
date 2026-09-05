@@ -11,7 +11,7 @@
     } else if ((e.key === 'k' || e.key === 'K') && gPressed) {
       clearTimeout(timer);
       gPressed = false;
-      window.location.href = '/account/integrations';
+      window.location.href = '/account/integrations.html';
     }
   });
 })();

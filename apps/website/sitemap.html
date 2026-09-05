@@ -378,21 +378,11 @@
 
       <div class="page-card backend">
         <div class="page-icon">⚡</div>
-        <div class="page-name">Stripe Session</div>
+        <div class="page-name">Stripe Session (retired, unused)</div>
         <div class="page-url">/stripe-session.php</div>
-        <div class="page-desc">Creates a Stripe Checkout session server-side. Called by upgrade.html on plan selection. Returns clientSecret.</div>
+        <div class="page-desc">Legacy Stripe Checkout endpoint. upgrade.html's Stripe flow was retired 2026-09-04 — this file is no longer called by anything. Growth/Enterprise billing now runs on apps/platform's own Razorpay + PayPal checkout at /dashboard/billing.</div>
         <div class="page-tags">
-          <span class="tag api">POST API</span>
-        </div>
-      </div>
-
-      <div class="page-card backend">
-        <div class="page-icon">🔍</div>
-        <div class="page-name">Stripe Verify</div>
-        <div class="page-url">/stripe-verify.php</div>
-        <div class="page-desc">Verifies a Stripe session after payment. Updates user plan in DB. Called by upgrade-success.html on load.</div>
-        <div class="page-tags">
-          <span class="tag api">GET API</span>
+          <span class="tag api">Unused</span>
         </div>
       </div>
 

@@ -34,6 +34,8 @@ from pathlib import Path
 from typing import Optional
 
 import feedparser
+import pymysql
+import pymysql.cursors
 import requests
 from dotenv import load_dotenv
 import anthropic
@@ -47,15 +49,33 @@ _now             = datetime.now(IST)
 TODAY            = _now.strftime("%B %d, %Y")
 TODAY_SLUG       = _now.strftime("%Y-%m-%d")
 PUBLISH_AT       = _now.replace(hour=6, minute=0, second=0, microsecond=0)
-PUBLISH_UTC      = PUBLISH_AT.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+PUBLISH_UTC      = PUBLISH_AT.astimezone(timezone.utc)
+
+# daily-pipeline.yml runs this script with no PIPELINE_TYPE (defaults to
+# "daily"); premium-pipeline.yml passes PIPELINE_TYPE=premium. Without a
+# distinct slug suffix, both workflows target the exact same date-based slug
+# and premium's run always finds daily's post already published, skipping
+# every article as a duplicate -- premium never actually publishes anything.
+PIPELINE_TYPE    = os.getenv("PIPELINE_TYPE", "daily")
+SLUG_SUFFIX      = "" if PIPELINE_TYPE == "daily" else f"-{PIPELINE_TYPE}"
 
 ANTHROPIC_KEY    = os.getenv("ANTHROPIC_API_KEY")
 SERPAPI_KEY      = os.getenv("SERPAPI_KEY")
 TELEGRAM_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 WP_SITE_URL      = os.getenv("WP_SITE_URL", "https://thekpihub.com")
-WP_USERNAME      = os.getenv("WP_USERNAME")
-WP_APP_PASSWORD  = os.getenv("WP_APP_PASSWORD")
+
+# WordPress has no REST API to publish to on this deployment — its site files are gone,
+# DB only (see servermemory.md, 2026-09-02). We publish by writing straight into the
+# wp_ tables instead of going through wp-json. WP_DB_HOST_IP is a fallback if DNS for
+# WP_DB_HOST is ever flaky from a GitHub Actions runner.
+WP_DB_HOST       = os.getenv("WP_DB_HOST")
+WP_DB_HOST_IP    = os.getenv("WP_DB_HOST_IP")
+WP_DB_PORT       = int(os.getenv("WP_DB_PORT", "3306"))
+WP_DB_NAME       = os.getenv("WP_DB_NAME")
+WP_DB_USER       = os.getenv("WP_DB_USER")
+WP_DB_PASSWORD   = os.getenv("WP_DB_PASSWORD")
+WP_AUTHOR_ID     = int(os.getenv("WP_AUTHOR_ID", "1"))  # sharmahimanshu1178.hs92@gmail.com
 
 RUN_ID      = uuid.uuid4().hex[:8]
 REPORTS_DIR = Path("reports")
@@ -67,7 +87,10 @@ logging.basicConfig(
     format=f"%(asctime)s IST | run={RUN_ID} | %(levelname)s | %(message)s",
     datefmt="%H:%M:%S",
     handlers=[
-        logging.FileHandler("pipeline.log"),
+        # daily-pipeline.yml uploads pipeline.log; premium-pipeline.yml
+        # uploads pipeline_premium.log -- name must match PIPELINE_TYPE or
+        # premium's log artifact upload silently finds nothing.
+        logging.FileHandler("pipeline.log" if PIPELINE_TYPE == "daily" else f"pipeline_{PIPELINE_TYPE}.log"),
         logging.StreamHandler(sys.stdout),
     ],
 )
@@ -97,8 +120,10 @@ def validate_env(dry_run: bool = False) -> None:
         "TELEGRAM_CHAT_ID":  TELEGRAM_CHAT_ID,
     }
     if not dry_run:
-        required["WP_USERNAME"]    = WP_USERNAME
-        required["WP_APP_PASSWORD"] = WP_APP_PASSWORD
+        required["WP_DB_HOST"]     = WP_DB_HOST
+        required["WP_DB_NAME"]     = WP_DB_NAME
+        required["WP_DB_USER"]     = WP_DB_USER
+        required["WP_DB_PASSWORD"] = WP_DB_PASSWORD
 
     missing = [k for k, v in required.items() if not v]
     if missing:
@@ -172,18 +197,36 @@ def claude_call(**kwargs):
                       label=f"claude({kwargs.get('model', MODEL)[:20]})")
 
 
+def claude_text(resp) -> str:
+    """
+    Return the first text block's content from a Claude response.
+
+    `resp.content[0]` is not always a TextBlock — extended thinking makes Claude
+    sometimes return a ThinkingBlock first, and indexing straight to [0].text blew
+    up 3 of 7 articles on 2026-09-02 with 'ThinkingBlock' object has no attribute
+    'text'. Scan for the first block that actually has one instead of assuming
+    position 0.
+    """
+    for block in resp.content:
+        text = getattr(block, "text", None)
+        if text is not None:
+            return text
+    raise RuntimeError(f"No text block in Claude response (block types: "
+                       f"{[type(b).__name__ for b in resp.content]})")
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # ENGINE 1 — RESEARCH HARVESTER  (03:03–03:30 AM IST)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 SERPAPI_QUERIES = [
-    "SaaS KPI benchmarks 2026 latest",
+    f"SaaS KPI benchmarks {_now.year} latest",
     "SaaS market trends today",
     "SaaS funding news today",
     "India SaaS startup news today",
-    "AI SaaS intelligence tools 2026",
+    f"AI SaaS intelligence tools {_now.year}",
     "SaaS churn retention benchmarks",
-    "B2B SaaS pricing trends 2026",
+    f"B2B SaaS pricing trends {_now.year}",
     "G2 Capterra competitor analysis",
     "SaaS CAC payback period benchmarks",
     "enterprise software market news today",
@@ -308,7 +351,7 @@ Keep it under 800 words. Every line actionable. No filler.
                        messages=[{"role": "user", "content": prompt}])
     if resp is None:
         raise RuntimeError("ENGINE 2A: Claude synthesis returned None after retries")
-    report = resp.content[0].text
+    report = claude_text(resp)
     log.info("✅ ENGINE 2A done — %d chars synthesized", len(report))
     return report
 
@@ -389,13 +432,13 @@ CTA_BLOCKS = {
 <div style="background:#0A1628;padding:20px;border-radius:8px;border-left:4px solid #E9A123;margin:30px 0;">
 <strong style="color:#E9A123">🔗 Recommended Tool</strong><br>
 <p style="color:#94A3B8;margin:10px 0;">HubSpot's CRM gives you the KPI dashboards to track every metric in this article. 30% recurring commission — your first referral pays you every month, forever.</p>
-<a href="https://thekpihub.com/go/hubspot" style="color:#E9A123;font-weight:bold;">Start Free with HubSpot →</a>
+<a href="https://www.hubspot.com/" style="color:#E9A123;font-weight:bold;">Start Free with HubSpot →</a>
 </div>""",
     "affiliate_semrush": """
 <div style="background:#0A1628;padding:20px;border-radius:8px;border-left:4px solid #E9A123;margin:30px 0;">
 <strong style="color:#E9A123">📊 Track These Metrics</strong><br>
 <p style="color:#94A3B8;margin:10px 0;">SEMrush gives you the competitive intelligence data behind these benchmarks. See exactly where you stand vs. competitors in real time.</p>
-<a href="https://thekpihub.com/go/semrush" style="color:#E9A123;font-weight:bold;">Try SEMrush Free →</a>
+<a href="https://www.semrush.com/" style="color:#E9A123;font-weight:bold;">Try SEMrush Free →</a>
 </div>""",
     "email_signup": """
 <div style="background:#0A1628;padding:20px;border-radius:8px;border-left:4px solid #E9A123;margin:30px 0;">
@@ -447,7 +490,7 @@ And this synthesized daily market report:
 Requirements:
 1. First line: <!-- META: your SEO meta description (max 160 chars) -->
 2. Second line: <!-- TAGS: tag1, tag2, tag3, tag4, tag5 --> (5 SEO tags, comma-separated)
-3. Then: <h1>SEO-optimized title including "{TODAY.split(',')[0]}" or "2026" where natural</h1>
+3. Then: <h1>SEO-optimized title including "{TODAY.split(',')[0]}" or "{_now.year}" where natural</h1>
 4. Body: WordPress-ready HTML (h2, h3, p, ul, li, strong, em — no inline styles)
 5. Include 2-3 specific data points with numbers
 6. Include one India-specific angle if data supports it
@@ -464,7 +507,7 @@ Write the full article now, starting with <!-- META: -->"""
     if resp is None:
         raise RuntimeError(f"Claude returned None for article: {category['id']}")
 
-    raw = resp.content[0].text.strip()
+    raw = claude_text(resp).strip()
 
     # Extract <!-- META: ... -->
     meta = ""
@@ -498,7 +541,7 @@ Write the full article now, starting with <!-- META: -->"""
         "meta":        meta,
         "tags":        tags_list,
         "category_id": category["id"],
-        "slug":        f"{category['id']}-{TODAY_SLUG}",
+        "slug":        f"{category['id']}{SLUG_SUFFIX}-{TODAY_SLUG}",
     }
 
 
@@ -516,7 +559,7 @@ def generate_all_articles(report: str, research: dict) -> list:
                 "title": f"{cat['name']} — {TODAY}",
                 "content": "", "meta": "", "tags": [],
                 "category_id": cat["id"],
-                "slug": f"{cat['id']}-{TODAY_SLUG}",
+                "slug": f"{cat['id']}{SLUG_SUFFIX}-{TODAY_SLUG}",
                 "error": str(exc),
             })
         time.sleep(2)
@@ -549,7 +592,10 @@ def verify_article_claims(article: dict) -> dict:
     )
     resp = claude_call(model=MODEL, max_tokens=30,
                        messages=[{"role": "user", "content": check_prompt}])
-    query = resp.content[0].text.strip() if resp else article["title"][:50]
+    try:
+        query = claude_text(resp).strip() if resp else article["title"][:50]
+    except RuntimeError:
+        query = article["title"][:50]
 
     results = serpapi_search(query)
     article["verified"]       = len(results) > 0
@@ -581,79 +627,96 @@ WP_CATEGORY_MAP = {
     "founders_brief":    "Founder's Brief",
 }
 
-_wp_category_cache: dict = {}  # name → id, populated lazily
+_wp_category_cache: dict = {}  # name → term_taxonomy_id, populated lazily
 
 
-def _wp_auth():
-    return (WP_USERNAME, WP_APP_PASSWORD)
+def _slugify(value: str) -> str:
+    """WordPress-style slug: lowercase, non-alnum runs collapsed to single hyphens."""
+    value = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
+    return value or "term"
 
 
-def _wp_base():
-    return f"{WP_SITE_URL.rstrip('/')}/wp-json/wp/v2"
+def _wp_db():
+    """
+    One connection per call — this runs a handful of times per pipeline execution
+    (not a web request loop), so pooling isn't worth the complexity. Tries the
+    hostname first, falls back to the raw IP (WP_DB_HOST_IP) if DNS resolution
+    from the runner is flaky — the same fallback the credentials doc notes.
+    """
+    last_exc = None
+    for host in (WP_DB_HOST, WP_DB_HOST_IP):
+        if not host:
+            continue
+        try:
+            return pymysql.connect(
+                host=host, port=WP_DB_PORT, user=WP_DB_USER, password=WP_DB_PASSWORD,
+                database=WP_DB_NAME, charset="utf8mb4",
+                cursorclass=pymysql.cursors.DictCursor, connect_timeout=10, autocommit=False,
+            )
+        except Exception as exc:
+            last_exc = exc
+            log.warning("  DB connect via %s failed: %s", host, exc)
+    raise last_exc or RuntimeError("No WP_DB_HOST/WP_DB_HOST_IP configured")
 
 
-def get_or_create_wp_category(name: str) -> int:
+def get_or_create_wp_term(cur, name: str, taxonomy: str) -> int:
+    """Return a term_taxonomy_id for (name, taxonomy), creating wp_terms/wp_term_taxonomy rows if needed."""
+    cur.execute(
+        "SELECT tt.term_taxonomy_id FROM wp_term_taxonomy tt "
+        "JOIN wp_terms t ON t.term_id = tt.term_id "
+        "WHERE tt.taxonomy = %s AND t.name = %s LIMIT 1",
+        (taxonomy, name),
+    )
+    row = cur.fetchone()
+    if row:
+        return row["term_taxonomy_id"]
+
+    slug = _slugify(name)
+    cur.execute(
+        "INSERT INTO wp_terms (name, slug, term_group) VALUES (%s, %s, 0)",
+        (name, slug),
+    )
+    term_id = cur.lastrowid
+    cur.execute(
+        "INSERT INTO wp_term_taxonomy (term_id, taxonomy, description, parent, count) "
+        "VALUES (%s, %s, '', 0, 0)",
+        (term_id, taxonomy),
+    )
+    return cur.lastrowid
+
+
+def get_or_create_wp_category(cur, name: str) -> int:
     if name in _wp_category_cache:
         return _wp_category_cache[name]
-
-    def _fetch():
-        r = requests.get(f"{_wp_base()}/categories",
-                         params={"search": name, "per_page": 5},
-                         auth=_wp_auth(), timeout=10)
-        r.raise_for_status()
-        cats = r.json()
-        if cats and isinstance(cats, list):
-            return cats[0]["id"]
-        # Create it
-        cr = requests.post(f"{_wp_base()}/categories",
-                           json={"name": name}, auth=_wp_auth(), timeout=10)
-        cr.raise_for_status()
-        return cr.json()["id"]
-
-    cat_id = with_retry(_fetch, retries=3, base_delay=2.0, label=f"wp_category:{name}") or 1
-    _wp_category_cache[name] = cat_id
-    return cat_id
+    tt_id = get_or_create_wp_term(cur, name, "category")
+    _wp_category_cache[name] = tt_id
+    return tt_id
 
 
-def get_or_create_wp_tags(tag_names: list) -> list:
-    """Return list of WP tag IDs, creating any that don't exist."""
-    tag_ids = []
-    for name in tag_names[:5]:
-        def _fetch(n=name):
-            r = requests.get(f"{_wp_base()}/tags",
-                             params={"search": n, "per_page": 5},
-                             auth=_wp_auth(), timeout=10)
-            r.raise_for_status()
-            tags = r.json()
-            if tags and isinstance(tags, list):
-                # exact match
-                for t in tags:
-                    if t["name"].lower() == n.lower():
-                        return t["id"]
-                return tags[0]["id"]
-            cr = requests.post(f"{_wp_base()}/tags",
-                               json={"name": n}, auth=_wp_auth(), timeout=10)
-            cr.raise_for_status()
-            return cr.json()["id"]
-        tid = with_retry(_fetch, retries=2, base_delay=1.5, label=f"wp_tag:{name}")
-        if tid:
-            tag_ids.append(tid)
-    return tag_ids
+def get_or_create_wp_tags(cur, tag_names: list) -> list:
+    return [get_or_create_wp_term(cur, name, "post_tag") for name in tag_names[:5] if name]
 
 
-def check_existing_post(slug: str) -> Optional[int]:
+def check_existing_post(cur, slug: str) -> Optional[int]:
     """Return existing post ID if a post with this slug already exists, else None."""
-    def _check():
-        r = requests.get(f"{_wp_base()}/posts",
-                         params={"slug": slug, "status": "any"},
-                         auth=_wp_auth(), timeout=10)
-        r.raise_for_status()
-        posts = r.json()
-        return posts[0]["id"] if posts else None
-    return with_retry(_check, retries=2, base_delay=1.5, label=f"wp_check:{slug}")
+    cur.execute(
+        "SELECT ID FROM wp_posts WHERE post_name = %s AND post_type = 'post' LIMIT 1",
+        (slug,),
+    )
+    row = cur.fetchone()
+    return row["ID"] if row else None
 
 
-def publish_to_wordpress(article: dict, publish_time: str, dry_run: bool = False) -> dict:
+def publish_to_wordpress(article: dict, publish_time_utc: datetime, dry_run: bool = False) -> dict:
+    """
+    Writes the post straight into wp_posts/wp_postmeta/wp_term_relationships.
+    There's no live WordPress serving thekpihub.com right now to hit a REST API on
+    (the site's PHP files are gone — DB only, see servermemory.md 2026-09-02), so this
+    is the only way to get generated content into that database. If/when WordPress is
+    reinstalled against this same DB, these rows are ordinary posts — nothing here is
+    a workaround that needs undoing, it's just a different client for the same tables
+    wp-admin would write to.
+    """
     if article.get("error") or not article.get("content"):
         return {"title": article["title"], "wp_id": None, "error": article.get("error", "empty content")}
 
@@ -661,45 +724,95 @@ def publish_to_wordpress(article: dict, publish_time: str, dry_run: bool = False
         log.info("  [DRY RUN] Would publish: %s", article["title"][:60])
         return {"title": article["title"], "wp_id": "dry-run", "link": "", "status": "dry-run"}
 
-    # Idempotency: skip if already published today
-    existing_id = check_existing_post(article["slug"])
-    if existing_id:
-        log.info("  ⚠️  Skipping duplicate — post %s already exists (id=%s)", article["slug"], existing_id)
-        return {"title": article["title"], "wp_id": existing_id, "link": "", "status": "already_exists"}
+    post_date_gmt = publish_time_utc.strftime("%Y-%m-%d %H:%M:%S")
+    post_date     = publish_time_utc.astimezone(IST).strftime("%Y-%m-%d %H:%M:%S")
+    is_future     = publish_time_utc > datetime.now(timezone.utc)
+    post_status   = "future" if is_future else "publish"
 
-    cat_name = WP_CATEGORY_MAP.get(article["category_id"], "Intelligence")
-    cat_id   = get_or_create_wp_category(cat_name)
-    tag_ids  = get_or_create_wp_tags(article.get("tags", []))
+    try:
+        conn = _wp_db()
+    except Exception as exc:
+        return {"title": article["title"], "wp_id": None, "error": f"WP DB connect failed: {exc}"}
 
-    post_data = {
-        "title":      article["title"],
-        "content":    article["content"],
-        "status":     "future",
-        "date":       publish_time,
-        "slug":       article["slug"],
-        "categories": [cat_id],
-        "tags":       tag_ids,
-        "excerpt":    article.get("meta", ""),
-        "meta": {
-            "_yoast_wpseo_metadesc": article.get("meta", ""),
-        },
-    }
+    # Explicit commit/rollback/close rather than `with conn:` — PyMySQL's connection
+    # context manager commits or rolls back on exit but does NOT close the socket, so
+    # relying on it here would leak one open connection per article (up to 7/run).
+    try:
+        with conn.cursor() as cur:
+            # Idempotency: skip if already published today
+            existing_id = check_existing_post(cur, article["slug"])
+            if existing_id:
+                log.info("  ⚠️  Skipping duplicate — post %s already exists (id=%s)",
+                         article["slug"], existing_id)
+                return {"title": article["title"], "wp_id": existing_id, "link": "", "status": "already_exists"}
 
-    def _post():
-        r = requests.post(f"{_wp_base()}/posts", json=post_data,
-                          auth=_wp_auth(), timeout=30)
-        r.raise_for_status()
-        return r.json()
+            cat_name = WP_CATEGORY_MAP.get(article["category_id"], "Intelligence")
+            cat_tt_id = get_or_create_wp_category(cur, cat_name)
+            tag_tt_ids = get_or_create_wp_tags(cur, article.get("tags", []))
 
-    result = with_retry(_post, retries=3, base_delay=3.0, label=f"wp_post:{article['slug']}")
-    if result is None:
-        return {"title": article["title"], "wp_id": None, "error": "WP publish failed after retries"}
+            cur.execute(
+                "INSERT INTO wp_posts ("
+                "  post_author, post_date, post_date_gmt, post_content, post_title,"
+                "  post_excerpt, post_status, comment_status, ping_status, post_password,"
+                "  post_name, to_ping, pinged, post_modified, post_modified_gmt,"
+                "  post_content_filtered, post_parent, guid, menu_order, post_type,"
+                "  post_mime_type, comment_count"
+                ") VALUES ("
+                "  %(author)s, %(date)s, %(date_gmt)s, %(content)s, %(title)s,"
+                "  %(excerpt)s, %(status)s, 'open', 'open', '',"
+                "  %(name)s, '', '', %(date)s, %(date_gmt)s,"
+                "  '', 0, '', 0, 'post',"
+                "  '', 0"
+                ")",
+                {
+                    "author": WP_AUTHOR_ID, "date": post_date, "date_gmt": post_date_gmt,
+                    "content": article["content"], "title": article["title"],
+                    "excerpt": article.get("meta", ""), "status": post_status,
+                    "name": article["slug"],
+                },
+            )
+            post_id = cur.lastrowid
 
+            guid = f"{WP_SITE_URL.rstrip('/')}/?p={post_id}"
+            cur.execute("UPDATE wp_posts SET guid = %s WHERE ID = %s", (guid, post_id))
+
+            term_taxonomy_ids = [cat_tt_id] + tag_tt_ids
+            for order, tt_id in enumerate(term_taxonomy_ids):
+                cur.execute(
+                    "INSERT INTO wp_term_relationships (object_id, term_taxonomy_id, term_order) "
+                    "VALUES (%s, %s, %s)",
+                    (post_id, tt_id, order),
+                )
+            if term_taxonomy_ids:
+                cur.execute(
+                    "UPDATE wp_term_taxonomy SET count = count + 1 WHERE term_taxonomy_id IN "
+                    f"({','.join(['%s'] * len(term_taxonomy_ids))})",
+                    term_taxonomy_ids,
+                )
+
+            if article.get("meta"):
+                cur.execute(
+                    "INSERT INTO wp_postmeta (post_id, meta_key, meta_value) VALUES (%s, %s, %s)",
+                    (post_id, "_yoast_wpseo_metadesc", article["meta"]),
+                )
+
+        conn.commit()
+    except Exception as exc:
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        log.error("  ❌ wp_post insert failed for %s: %s", article["slug"], exc)
+        return {"title": article["title"], "wp_id": None, "error": f"WP DB write failed: {exc}"}
+    finally:
+        conn.close()
+
+    log.info("  ✅ DB insert — post #%d (%s)", post_id, post_status)
     return {
         "title":  article["title"],
-        "wp_id":  result.get("id"),
-        "link":   result.get("link", ""),
-        "status": result.get("status", ""),
+        "wp_id":  post_id,
+        "link":   guid,
+        "status": post_status,
     }
 
 

@@ -29,13 +29,13 @@ const MODE_CONFIG: Record<AgentMode, { icon: React.ElementType; label: string; c
 function ThinkingIndicator() {
   return (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      <Cpu className="w-3 h-3 animate-pulse text-wing-400" />
+      <Cpu className="w-3 h-3 animate-pulse text-ditto-400" />
       <span>Thinking deeply...</span>
       <span className="flex gap-0.5">
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            className="w-1 h-1 rounded-full bg-wing-400 animate-bounce"
+            className="w-1 h-1 rounded-full bg-ditto-400 animate-bounce"
             style={{ animationDelay: `${i * 0.15}s` }}
           />
         ))}
@@ -64,11 +64,11 @@ function MessageBubble({ message, isStreaming }: { message: Message; isStreaming
     >
       <Avatar className="w-7 h-7 shrink-0 mt-0.5">
         {isUser ? (
-          <AvatarFallback className="bg-wing-500/20 text-wing-400 text-xs">
+          <AvatarFallback className="bg-ditto-500/20 text-ditto-400 text-xs">
             <User className="w-3.5 h-3.5" />
           </AvatarFallback>
         ) : (
-          <AvatarFallback className="bg-wing-600/20 text-wing-400 text-xs">
+          <AvatarFallback className="bg-ditto-600/20 text-ditto-400 text-xs">
             <Sparkles className="w-3.5 h-3.5" />
           </AvatarFallback>
         )}
@@ -87,7 +87,7 @@ function MessageBubble({ message, isStreaming }: { message: Message; isStreaming
         <div
           className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
             isUser
-              ? "bg-wing-600/20 border border-wing-500/30 text-foreground rounded-tr-sm"
+              ? "bg-ditto-600/20 border border-ditto-500/30 text-foreground rounded-tr-sm"
               : "bg-secondary border border-border text-foreground rounded-tl-sm"
           }`}
         >
@@ -126,7 +126,7 @@ function MessageBubble({ message, isStreaming }: { message: Message; isStreaming
               >
                 {message.content}
               </ReactMarkdown>
-              {isStreaming && <span className="inline-block w-2 h-4 bg-wing-400 animate-pulse ml-0.5 rounded-sm" />}
+              {isStreaming && <span className="inline-block w-2 h-4 bg-ditto-400 animate-pulse ml-0.5 rounded-sm" />}
             </div>
           )}
         </div>
@@ -298,7 +298,7 @@ export default function ChatPanel({ projectId, onFileGenerated, onCacheUpdate }:
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1.5 text-sm font-medium hover:text-wing-400 transition-colors">
+              <button className="flex items-center gap-1.5 text-sm font-medium hover:text-ditto-400 transition-colors">
                 {selectedModel.name}
                 <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
               </button>
@@ -315,7 +315,7 @@ export default function ChatPanel({ projectId, onFileGenerated, onCacheUpdate }:
                   <div className="flex items-center gap-2 w-full">
                     <span className="font-medium text-sm">{model.name}</span>
                     {model.isDefault && <Badge variant="info" className="text-xs">Best</Badge>}
-                    {selectedModel.id === model.id && <Check className="w-3.5 h-3.5 ml-auto text-wing-400" />}
+                    {selectedModel.id === model.id && <Check className="w-3.5 h-3.5 ml-auto text-ditto-400" />}
                   </div>
                   <span className="text-xs text-muted-foreground">{model.description}</span>
                 </DropdownMenuItem>
@@ -343,7 +343,7 @@ export default function ChatPanel({ projectId, onFileGenerated, onCacheUpdate }:
                 >
                   <cfg.icon className={`w-4 h-4 ${cfg.color}`} />
                   {cfg.label}
-                  {agentMode === mode && <Check className="w-3.5 h-3.5 ml-auto text-wing-400" />}
+                  {agentMode === mode && <Check className="w-3.5 h-3.5 ml-auto text-ditto-400" />}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -363,11 +363,11 @@ export default function ChatPanel({ projectId, onFileGenerated, onCacheUpdate }:
       >
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-wing-500/10 flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-wing-400" />
+            <div className="w-16 h-16 rounded-2xl bg-ditto-500/10 flex items-center justify-center">
+              <Sparkles className="w-8 h-8 text-ditto-400" />
             </div>
             <div>
-              <h3 className="font-display font-semibold text-lg mb-1">How can I help you build?</h3>
+              <h3 className="font-figtree font-semibold text-lg mb-1">How can I help you build?</h3>
               <p className="text-sm text-muted-foreground max-w-xs">
                 Powered by Claude Opus 4.7 with extended thinking and autonomous agent capabilities.
               </p>
@@ -382,7 +382,7 @@ export default function ChatPanel({ projectId, onFileGenerated, onCacheUpdate }:
                 <button
                   key={s}
                   onClick={() => setInput(s)}
-                  className="text-left px-4 py-2.5 rounded-xl border border-border hover:border-wing-500/30 hover:bg-wing-500/5 text-sm text-muted-foreground hover:text-foreground transition-all"
+                  className="text-left px-4 py-2.5 rounded-xl border border-border hover:border-ditto-500/30 hover:bg-ditto-500/5 text-sm text-muted-foreground hover:text-foreground transition-all"
                 >
                   {s}
                 </button>
@@ -402,7 +402,7 @@ export default function ChatPanel({ projectId, onFileGenerated, onCacheUpdate }:
         {isStreaming && messages[messages.length - 1]?.role === "user" && (
           <div className="flex gap-3">
             <Avatar className="w-7 h-7 shrink-0">
-              <AvatarFallback className="bg-wing-600/20 text-wing-400 text-xs">
+              <AvatarFallback className="bg-ditto-600/20 text-ditto-400 text-xs">
                 <Sparkles className="w-3.5 h-3.5" />
               </AvatarFallback>
             </Avatar>

@@ -197,6 +197,18 @@ def patch_file(filepath):
         print(f"  ⏭️  {filepath} — Claude AI already present")
         return False
 
+    # auditor.html was migrated to a server-side gateway (pages/api/ai-gateway.php,
+    # Supabase-session auth) after this script last ran. This marker check is the
+    # ONLY thing that used to stop patch_file() from re-injecting the old
+    # insecure client-side flow (raw Anthropic key via prompt()+localStorage,
+    # direct api.anthropic.com calls from the browser, a stale model id) on top
+    # of the new gateway-based script -- refuse outright instead, since the two
+    # would conflict (duplicate/competing click handlers on the audit button).
+    if 'ai-gateway.php' in content or 'ai-model-selector' in content:
+        print(f"  ⛔ {filepath} — already uses the server-side ai-gateway.php flow; "
+              f"this script is obsolete and refuses to run against it")
+        return False
+
     if '</body>' not in content:
         print(f"  ❌ {filepath} — no </body> tag")
         return False

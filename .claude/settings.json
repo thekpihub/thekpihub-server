@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git commit:*)",
+            "command": "echo '{\"systemMessage\":\"MANDATORY (repo rule): update servermemory.md and mistakesdone.md at repo root with this commit findings and any mistake plus correction, before ending the turn.\"}'"
+          },
+          {
+            "type": "command",
+            "if": "Bash(git push:*)",
+            "command": "echo '{\"systemMessage\":\"MANDATORY (repo rule): confirm servermemory.md and mistakesdone.md are updated for everything just pushed, before ending the turn.\"}'"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -45,7 +45,7 @@ export default function CodeEditor({
     });
 
     // Define Ditto dark theme
-    monaco.editor.defineTheme("wing-dark", {
+    monaco.editor.defineTheme("ditto-dark", {
       base: "vs-dark",
       inherit: true,
       rules: [
@@ -73,7 +73,7 @@ export default function CodeEditor({
       },
     });
 
-    monaco.editor.defineTheme("wing-light", {
+    monaco.editor.defineTheme("ditto-light", {
       base: "vs",
       inherit: true,
       rules: [],
@@ -83,7 +83,7 @@ export default function CodeEditor({
       },
     });
 
-    monaco.editor.setTheme(effectiveTheme === "dark" ? "wing-dark" : "wing-light");
+    monaco.editor.setTheme(effectiveTheme === "dark" ? "ditto-dark" : "ditto-light");
 
     // Format on save (Ctrl+S)
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
@@ -105,7 +105,7 @@ export default function CodeEditor({
       language={language}
       value={value}
       path={path}
-      theme={effectiveTheme === "dark" ? "wing-dark" : "wing-light"}
+      theme={effectiveTheme === "dark" ? "ditto-dark" : "ditto-light"}
       onChange={handleChange}
       onMount={handleMount}
       options={{

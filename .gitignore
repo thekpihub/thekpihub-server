@@ -12,7 +12,6 @@ __pycache__/
 venv/
 *.log
 config.js
-!apps/website/config.js
 credentials.md
 *.pem
 *.key

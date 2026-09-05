@@ -12,6 +12,8 @@ import time
 import logging
 import hashlib
 import feedparser
+import pymysql
+import pymysql.cursors
 import requests
 from datetime import datetime, timezone
 from anthropic import Anthropic
@@ -23,16 +25,50 @@ logging.basicConfig(
 )
 log = logging.getLogger('kpihub')
 
-ANTHROPIC_API_KEY  = os.environ['ANTHROPIC_API_KEY']
-SERPAPI_KEY        = os.environ['SERPAPI_KEY']
-TELEGRAM_BOT_TOKEN = os.environ['TELEGRAM_BOT_TOKEN']
-TELEGRAM_CHAT_ID   = os.environ['TELEGRAM_CHAT_ID']
+def _require_env(name: str) -> str:
+    value = os.environ.get(name)
+    if not value:
+        log.error("Missing required env var: %s", name)
+        sys.exit(1)
+    return value
+
+
+ANTHROPIC_API_KEY  = _require_env('ANTHROPIC_API_KEY')
+SERPAPI_KEY        = _require_env('SERPAPI_KEY')
+TELEGRAM_BOT_TOKEN = _require_env('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID   = _require_env('TELEGRAM_CHAT_ID')
 WP_SITE_URL        = os.environ.get('WP_SITE_URL', '').rstrip('/')
-WP_USERNAME        = os.environ.get('WP_USERNAME', '')
-WP_APP_PASSWORD    = os.environ.get('WP_APP_PASSWORD', '')
 ALPHA_VANTAGE_KEY  = os.environ.get('ALPHA_VANTAGE_KEY', '')
 
+# No live WordPress REST API on this deployment — its site files are gone, DB only
+# (see servermemory.md, 2026-09-02). We write straight into the wp_ tables instead.
+WP_DB_HOST      = os.environ.get('WP_DB_HOST', '')
+WP_DB_HOST_IP   = os.environ.get('WP_DB_HOST_IP', '')
+WP_DB_PORT      = int(os.environ.get('WP_DB_PORT', '3306'))
+WP_DB_NAME      = os.environ.get('WP_DB_NAME', '')
+WP_DB_USER      = os.environ.get('WP_DB_USER', '')
+WP_DB_PASSWORD  = os.environ.get('WP_DB_PASSWORD', '')
+WP_AUTHOR_ID    = int(os.environ.get('WP_AUTHOR_ID', '1'))  # sharmahimanshu1178.hs92@gmail.com
+
 client = Anthropic(api_key=ANTHROPIC_API_KEY)
+
+
+def claude_text(resp) -> str:
+    """
+    Return the first text block's content from a Claude response.
+
+    resp.content[0] is not always a TextBlock — extended thinking makes Claude
+    sometimes return a ThinkingBlock first, and indexing straight to [0].text blew
+    up article generation on 2026-09-02 with 'ThinkingBlock' object has no
+    attribute 'text'. Scan for the first block that actually has one.
+    """
+    for block in resp.content:
+        text = getattr(block, 'text', None)
+        if text is not None:
+            return text
+    raise RuntimeError(f'No text block in Claude response (block types: '
+                       f'{[type(b).__name__ for b in resp.content]})')
+
 
 RSS_FEEDS = [
     'https://feeds.feedburner.com/TechCrunch',
@@ -112,11 +148,11 @@ RULES:
 - Start directly with content, no preamble"""
 
     resp = client.messages.create(
-        model='claude-sonnet-4-20250514',
+        model='claude-sonnet-5',
         max_tokens=2000,
         messages=[{'role': 'user', 'content': prompt}]
     )
-    content = resp.content[0].text
+    content = claude_text(resp)
     log.info(f'ENGINE 2: Generated {len(content)} chars for {article_type["slug"]}')
     return {
         'title': title,
@@ -143,38 +179,88 @@ def engine3_verify(article):
     return article
 
 # ═══════════════════════════════════════════════════════
-# ENGINE 4 — PUBLISH (WordPress REST API with JSON fallback)
+# ENGINE 4 — PUBLISH (direct WordPress DB write, JSON fallback)
 # ═══════════════════════════════════════════════════════
+
+def _wp_db():
+    """One connection per call — tries WP_DB_HOST then WP_DB_HOST_IP if DNS is flaky."""
+    last_exc = None
+    for host in (WP_DB_HOST, WP_DB_HOST_IP):
+        if not host:
+            continue
+        try:
+            return pymysql.connect(
+                host=host, port=WP_DB_PORT, user=WP_DB_USER, password=WP_DB_PASSWORD,
+                database=WP_DB_NAME, charset='utf8mb4',
+                cursorclass=pymysql.cursors.DictCursor, connect_timeout=10, autocommit=False,
+            )
+        except Exception as exc:
+            last_exc = exc
+            log.warning(f'ENGINE 4: DB connect via {host} failed: {exc}')
+    raise last_exc or RuntimeError('No WP_DB_HOST/WP_DB_HOST_IP configured')
+
+
+def wp_db_publish(article):
+    """
+    Insert straight into wp_posts as a draft. There's no live WordPress REST API to
+    hit on this deployment — the site's PHP files are gone, DB only (see
+    servermemory.md, 2026-09-02) — so this writes the same tables wp-admin would.
+    No category/tag handling here (this pipeline never set those via REST either);
+    apps/website/pipeline.py is the richer sibling that does.
+    """
+    if not (WP_DB_HOST or WP_DB_HOST_IP) or not (WP_DB_NAME and WP_DB_USER and WP_DB_PASSWORD):
+        return None
+
+    slug = f'{article["slug"]}-{datetime.now().strftime("%Y%m%d%H%M")}'
+    now = datetime.now(timezone.utc)
+    now_str = now.strftime('%Y-%m-%d %H:%M:%S')
+
+    conn = _wp_db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO wp_posts ("
+                "  post_author, post_date, post_date_gmt, post_content, post_title,"
+                "  post_excerpt, post_status, comment_status, ping_status, post_password,"
+                "  post_name, to_ping, pinged, post_modified, post_modified_gmt,"
+                "  post_content_filtered, post_parent, guid, menu_order, post_type,"
+                "  post_mime_type, comment_count"
+                ") VALUES ("
+                "  %(author)s, %(date)s, %(date)s, %(content)s, %(title)s,"
+                "  %(excerpt)s, 'draft', 'open', 'open', '',"
+                "  %(name)s, '', '', %(date)s, %(date)s,"
+                "  '', 0, '', 0, 'post',"
+                "  '', 0"
+                ")",
+                {
+                    'author': WP_AUTHOR_ID, 'date': now_str, 'content': article['content'],
+                    'title': article['title'], 'excerpt': article['excerpt'], 'name': slug,
+                },
+            )
+            post_id = cur.lastrowid
+            guid = f'{WP_SITE_URL}/?p={post_id}'
+            cur.execute('UPDATE wp_posts SET guid = %s WHERE ID = %s', (guid, post_id))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+    return {'id': post_id, 'url': guid, 'title': article['title'], 'method': 'wordpress'}
+
+
 def engine4_publish(article):
     log.info(f'ENGINE 4: Publishing → {article["slug"]}')
 
-    # Try WordPress REST API first
-    if WP_SITE_URL and WP_USERNAME and WP_APP_PASSWORD:
-        rest_url = f'{WP_SITE_URL}/wp-json/wp/v2/posts'
-        log.info(f'ENGINE 4: Trying WordPress REST API → {rest_url}')
-        try:
-            resp = requests.post(
-                rest_url,
-                auth=(WP_USERNAME, WP_APP_PASSWORD),
-                json={
-                    'title':   article['title'],
-                    'content': article['content'],
-                    'excerpt': article['excerpt'],
-                    'status':  'draft',
-                    'slug':    f'{article["slug"]}-{datetime.now().strftime("%Y%m%d%H%M")}',
-                },
-                timeout=20
-            )
-            if resp.status_code in (200, 201):
-                data = resp.json()
-                post_id = data.get('id')
-                post_url = data.get('link', f'{WP_SITE_URL}/?p={post_id}')
-                log.info(f'ENGINE 4: ✅ WordPress draft #{post_id} created')
-                return {'id': post_id, 'url': post_url, 'title': article['title'], 'method': 'wordpress'}
-            else:
-                log.warning(f'ENGINE 4: REST API returned {resp.status_code} — {resp.text[:150]}')
-        except Exception as ex:
-            log.warning(f'ENGINE 4: REST API error: {ex}')
+    # Try direct WordPress DB write first
+    try:
+        result = wp_db_publish(article)
+        if result:
+            log.info(f'ENGINE 4: ✅ WordPress draft #{result["id"]} created')
+            return result
+    except Exception as ex:
+        log.warning(f'ENGINE 4: WP DB write error: {ex}')
 
     # Fallback: save article as JSON artifact for manual review
     log.info(f'ENGINE 4: Saving to local artifact (WordPress unavailable)')

@@ -24,9 +24,20 @@
 # SetEnv FORMSPREE_WAITLIST xnjoevjk
 # SetEnv FORMSPREE_BLOG xgojpynr
 
-# Wingman (AI agent backend)
-# SetEnv WINGMAN_API_URL https://agent.thekpihub.com
+# WingCommander / Ditto Wingman handoff (used by open-wingman.php) --
+# these are the exact names that file reads via getenv(). The old
+# WINGMAN_API_URL / WINGMAN_HANDOFF_SECRET names below are leftover from a
+# deprecated, dead implementation (pages/api/open-wingman.php) and following
+# them here would leave the live open-wingman.php's config incomplete.
+# SetEnv WINGCOMMANDER_API_URL https://ditto-wingman-backend-production-85f6.up.railway.app
+# SetEnv WINGCOMMANDER_HANDOFF_SECRET your_actual_handoff_secret_here
+# SetEnv WINGCOMMANDER_URL https://wingcommander.thekpihub.com
+#
+# Deprecated names (only used by the dead apps/website/pages/api/open-wingman.php):
+# SetEnv WINGMAN_API_URL https://ditto-wingman-backend-production-85f6.up.railway.app
 # SetEnv WINGMAN_HANDOFF_SECRET your_actual_handoff_secret_here
+# SetEnv HANDOFF_SECRET your_actual_handoff_secret_here
+# SetEnv WINGMAN_URL https://wingcommander.thekpihub.com
 
 # Google Analytics
 # SetEnv GA4_ID G-DZPCCPEP1J

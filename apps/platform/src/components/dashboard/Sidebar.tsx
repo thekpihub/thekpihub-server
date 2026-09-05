@@ -7,6 +7,7 @@ const items = [
   { href: "/dashboard", label: "Overview" },
   { href: "/dashboard/intelligence-hub", label: "Intelligence Hub" },
   { href: "/dashboard/recommendation-engine", label: "Recommendation Engine" },
+  { href: "/dashboard/billing", label: "Billing" },
 ] as const;
 
 export function Sidebar() {

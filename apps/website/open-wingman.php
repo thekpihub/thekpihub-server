@@ -3,14 +3,28 @@
  * open-wingman.php — WingCommander JWT launch endpoint
  *
  * Flow:
- *   1. Frontend sends POST with Supabase session JWT + HMAC signature
- *   2. We verify HMAC (proves request is from our own frontend)
- *   3. We verify Supabase JWT with service role key
- *   4. We look up user's plan in profiles table
- *   5. If growth or enterprise → call WingCommander /api/auth/token → return JWT
- *   6. If starter → return 403 with upgrade URL
+ *   1. Frontend sends POST with Supabase session JWT
+ *   2. We verify Supabase JWT with service role key
+ *   3. We look up user's plan in profiles table
+ *   4. If growth or enterprise → call WingCommander /api/auth/token → return JWT
+ *   5. If starter → return 403 with upgrade URL
  *
- * Called by: dashboard.html "Open WingCommander" button
+ * Called by: dashboard.html "Open WingCommander" button (fetch + POST,
+ * navigates to the returned redirectUrl on success).
+ *
+ * Corrected 2026-09-04: originally required an X-HMAC-Signature header too
+ * ("proves request is from our own frontend, not a bot"), but that can only
+ * be verified against HMAC_SECRET, a server-only secret this file's own
+ * caller — plain browser JS — has no way to compute. That made this endpoint
+ * uncallable from the actual site (apps/website is a static/client-side
+ * Supabase app, not a server with access to that secret), which is why
+ * dashboard.html's button never actually called this file before now. Real
+ * auth here doesn't depend on the HMAC anyway: a request still needs a
+ * genuine, service-role-verified Supabase JWT, and the resulting plan is
+ * looked up server-side, never client-supplied — matching the security model
+ * apps/website/pages/api/open-wingman.php (the sibling implementation) already
+ * used with no HMAC step at all. See servermemory.md for the full trace.
+ *
  * Returns:   { token, redirectUrl } or { error, upgradeUrl }
  */
 
@@ -18,7 +32,7 @@ require_once('/home/u117990013/private/kpihub_config.php');
 
 header('Access-Control-Allow-Origin: ' . ALLOWED_ORIGIN);
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, X-HMAC-Signature');
+header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -32,17 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// ── Step 1: Verify HMAC (proves request is from our frontend, not a bot) ─────
-$body      = file_get_contents('php://input');
-$signature = $_SERVER['HTTP_X_HMAC_SIGNATURE'] ?? '';
-$expected  = hash_hmac('sha256', $body, HMAC_SECRET);
-
-if (!hash_equals($expected, $signature)) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Invalid request signature']);
-    exit;
-}
-
+$body         = file_get_contents('php://input');
 $data         = json_decode($body, true);
 $supabaseJwt  = $data['supabase_token'] ?? '';
 

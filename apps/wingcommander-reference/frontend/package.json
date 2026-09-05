@@ -1,14 +1,11 @@
 {
-  "name": "thekpihub-wingcommander-frontend",
+  "name": "ditto-wingman-frontend",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "module": "./dist-lib/index.es.js",
-  "types": "./dist-lib/index.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:lib": "vite build --config vite.lib.config.ts && tsc --project tsconfig.lib.json",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
@@ -37,7 +34,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^9.0.1",
-    "react-router-dom": "^7.18.2",
+    "react-router-dom": "^6.26.0",
     "rehype-highlight": "^7.0.0",
     "remark-gfm": "^4.0.0",
     "tailwind-merge": "^2.5.0",

@@ -26,10 +26,14 @@ export async function POST(request: Request) {
   const transmissionSig = request.headers.get("paypal-transmission-sig");
   const transmissionTime = request.headers.get("paypal-transmission-time");
   const certUrl = request.headers.get("paypal-cert-url");
+  const authAlgo = request.headers.get("paypal-auth-algo");
 
-  if (!transmissionId || !transmissionSig || !transmissionTime) {
+  if (!transmissionId || !transmissionSig || !transmissionTime || !certUrl || !authAlgo) {
     return NextResponse.json(
-      { error: "Missing PayPal webhook headers (transmission-id, transmission-sig, transmission-time)" },
+      {
+        error:
+          "Missing PayPal webhook headers (transmission-id, transmission-sig, transmission-time, cert-url, auth-algo)",
+      },
       { status: 400 }
     );
   }
@@ -51,6 +55,12 @@ export async function POST(request: Request) {
       payload: event,
       signature: transmissionSig,
       rawBody: payload,
+      headers: {
+        "paypal-transmission-id": transmissionId,
+        "paypal-transmission-time": transmissionTime,
+        "paypal-cert-url": certUrl,
+        "paypal-auth-algo": authAlgo,
+      },
     });
 
     if (!verification.isValid) {

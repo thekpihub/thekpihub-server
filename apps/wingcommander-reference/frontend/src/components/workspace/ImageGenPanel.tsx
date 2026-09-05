@@ -60,7 +60,7 @@ function ImageCard({ img, onSelect }: { img: GeneratedImage; onSelect: (img: Gen
     try {
       const a = document.createElement("a");
       a.href = img.url;
-      a.download = `wingcommander-gen-${img.id}.png`;
+      a.download = `ditto-gen-${img.id}.png`;
       a.click();
     } finally {
       setDownloading(false);
@@ -71,7 +71,7 @@ function ImageCard({ img, onSelect }: { img: GeneratedImage; onSelect: (img: Gen
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="group relative rounded-xl overflow-hidden border border-border bg-card cursor-pointer hover:border-wing-500/40 transition-all"
+      className="group relative rounded-xl overflow-hidden border border-border bg-card cursor-pointer hover:border-ditto-500/40 transition-all"
       onClick={() => onSelect(img)}
     >
       <img
@@ -265,7 +265,7 @@ export default function ImageGenPanel({ projectId: _projectId }: ImageGenPanelPr
             />
             <div className="flex gap-2 mt-2">
               <Button size="sm" variant="ghost" className="text-xs h-7 gap-1" onClick={handleEnhancePrompt} disabled={generating || !prompt}>
-                <Sparkles className="w-3 h-3 text-wing-400" /> Enhance with AI
+                <Sparkles className="w-3 h-3 text-ditto-400" /> Enhance with AI
               </Button>
             </div>
           </div>
@@ -390,7 +390,7 @@ export default function ImageGenPanel({ projectId: _projectId }: ImageGenPanelPr
                       key={img.id}
                       onClick={() => setSelectedImage(img)}
                       className={`rounded-lg overflow-hidden border-2 transition-all ${
-                        selectedImage?.id === img.id ? "border-wing-500" : "border-transparent"
+                        selectedImage?.id === img.id ? "border-ditto-500" : "border-transparent"
                       }`}
                     >
                       <img src={img.url} alt="" className="w-full aspect-square object-cover" />

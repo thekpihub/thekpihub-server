@@ -1,0 +1,76 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# One-off / rarely-run styling tool, NOT part of regular CI.
+#
+# Applies thekpihub.com's actual brand tokens (from apps/website/colors_and_type.css
+# -- the single source of truth for the main site's design, not the stale summary
+# in apps/website/CLAUDE.md) to blog.thekpihub.com via WordPress's standard
+# "Additional CSS" mechanism (wp_update_custom_css_post). Theme-independent,
+# fully reversible from wp-admin > Appearance > Customize > Additional CSS,
+# doesn't touch theme files.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Apply brand CSS (blog.thekpihub.com)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  brand:
+    name: Apply thekpihub.com brand tokens as Additional CSS
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    env:
+      HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+      HOSTINGER_PORT: ${{ secrets.HOSTINGER_PORT }}
+      HOSTINGER_USERNAME: ${{ secrets.HOSTINGER_USERNAME }}
+      HOSTINGER_SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      HOSTINGER_SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure verified SSH
+        run: |
+          test -n "$HOSTINGER_HOST"
+          test -n "$HOSTINGER_PORT"
+          test -n "$HOSTINGER_USERNAME"
+          test -n "$HOSTINGER_SSH_KEY"
+          test -n "$HOSTINGER_SSH_KNOWN_HOSTS"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$HOSTINGER_SSH_KEY" > ~/.ssh/hostinger_deploy_key
+          printf '%s\n' "$HOSTINGER_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/hostinger_deploy_key
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Upload brand.css to the server
+        run: |
+          scp -i ~/.ssh/hostinger_deploy_key -P "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            .github/workflows/assets/blog-brand.css \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST:/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress/__brand.css"
+
+      - name: Apply as WordPress Additional CSS
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          cd "/home/u117990013/domains/thekpihub.com/public_html/blog-wordpress"
+          php -r "
+            define('WP_USE_THEMES', false);
+            require 'wp-load.php';
+            \$css = file_get_contents('__brand.css');
+            \$post = wp_update_custom_css_post(\$css);
+            if (is_wp_error(\$post)) {
+              echo 'FAILED: ' . \$post->get_error_message() . PHP_EOL;
+              exit(1);
+            }
+            echo 'BRAND_CSS_APPLIED, post ID=' . \$post->ID . ', ' . strlen(\$css) . ' bytes' . PHP_EOL;
+          "
+          rm -f __brand.css
+          echo "cleaned up staging file"
+          REMOTE_SCRIPT

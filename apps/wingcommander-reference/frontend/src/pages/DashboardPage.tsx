@@ -96,7 +96,7 @@ function NewProjectDialog({ open, onClose }: { open: boolean; onClose: () => voi
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="font-display text-xl">New project</DialogTitle>
+          <DialogTitle className="font-figtree text-xl">New project</DialogTitle>
           <DialogDescription>Choose a mode and describe what you want to build</DialogDescription>
         </DialogHeader>
 
@@ -111,8 +111,8 @@ function NewProjectDialog({ open, onClose }: { open: boolean; onClose: () => voi
                   onClick={() => setSelectedMode(mode)}
                   className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all text-xs font-medium ${
                     selectedMode === mode
-                      ? "border-wing-500/50 bg-wing-500/10 text-foreground"
-                      : "border-border hover:border-wing-500/30 hover:bg-accent text-muted-foreground"
+                      ? "border-ditto-500/50 bg-ditto-500/10 text-foreground"
+                      : "border-border hover:border-ditto-500/30 hover:bg-accent text-muted-foreground"
                   }`}
                 >
                   <config.icon className={`w-5 h-5 ${config.color}`} />
@@ -195,12 +195,12 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate("/")}
-            className="flex items-center gap-2 font-display font-bold text-base"
+            className="flex items-center gap-2 font-figtree font-bold text-base"
           >
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-wing-400 to-wing-700 flex items-center justify-center">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-ditto-400 to-ditto-700 flex items-center justify-center">
               <Sparkles className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="gradient-text hidden sm:block">WingCommander</span>
+            <span className="gradient-text hidden sm:block">Ditto Wingman</span>
           </button>
 
           <div className="flex items-center gap-2">
@@ -229,7 +229,7 @@ export default function DashboardPage() {
                   <DropdownMenuItem key={t} onClick={() => setTheme(t)} className="gap-2">
                     {t === "light" ? <Sun className="w-4 h-4" /> : t === "dark" ? <Moon className="w-4 h-4" /> : <Monitor className="w-4 h-4" />}
                     <span className="capitalize">{t}</span>
-                    {theme === t && <span className="ml-auto text-wing-400">✓</span>}
+                    {theme === t && <span className="ml-auto text-ditto-400">✓</span>}
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
@@ -248,7 +248,7 @@ export default function DashboardPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-display font-bold mb-1">
+          <h1 className="text-2xl font-figtree font-bold mb-1">
             Good {new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"},{" "}
             {user?.name?.split(" ")[0] ?? "there"} 👋
           </h1>
@@ -257,12 +257,12 @@ export default function DashboardPage() {
 
         {/* Quick start prompt */}
         <div
-          className="mb-8 p-4 rounded-2xl border border-wing-500/20 bg-wing-500/5 cursor-pointer hover:bg-wing-500/10 transition-colors group"
+          className="mb-8 p-4 rounded-2xl border border-ditto-500/20 bg-ditto-500/5 cursor-pointer hover:bg-ditto-500/10 transition-colors group"
           onClick={() => setShowNewProject(true)}
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-wing-500/20 flex items-center justify-center shrink-0">
-              <Sparkles className="w-5 h-5 text-wing-400" />
+            <div className="w-10 h-10 rounded-xl bg-ditto-500/20 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5 text-ditto-400" />
             </div>
             <div className="flex-1 text-sm text-muted-foreground">
               Describe what you want to build...
@@ -338,7 +338,7 @@ export default function DashboardPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ delay: i * 0.05 }}
-                    className="group relative p-5 rounded-2xl border border-border bg-card hover:border-wing-500/30 hover:shadow-lg hover:shadow-wing-500/5 transition-all duration-200 cursor-pointer"
+                    className="group relative p-5 rounded-2xl border border-border bg-card hover:border-ditto-500/30 hover:shadow-lg hover:shadow-ditto-500/5 transition-all duration-200 cursor-pointer"
                     onClick={() => navigate(`/workspace/${project.id}`)}
                   >
                     <div className="flex items-start justify-between mb-3">
@@ -393,7 +393,7 @@ export default function DashboardPage() {
               {/* New project card */}
               <motion.div
                 layout
-                className="p-5 rounded-2xl border border-dashed border-border hover:border-wing-500/40 hover:bg-wing-500/5 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center gap-3 min-h-[180px] text-muted-foreground hover:text-foreground"
+                className="p-5 rounded-2xl border border-dashed border-border hover:border-ditto-500/40 hover:bg-ditto-500/5 transition-all duration-200 cursor-pointer flex flex-col items-center justify-center gap-3 min-h-[180px] text-muted-foreground hover:text-foreground"
                 onClick={() => setShowNewProject(true)}
               >
                 <div className="w-10 h-10 rounded-xl border border-dashed border-current flex items-center justify-center">

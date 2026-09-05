@@ -17,10 +17,11 @@
     <priority>0.95</priority>
   </url>
 
-  <!-- Blog / Intelligence Feed -->
+  <!-- Blog / Intelligence Feed — now published at blog.thekpihub.com (WordPress); blog.html
+       is a redirect only, so it's intentionally left out of this sitemap, same as upgrade.html. -->
   <url>
-    <loc>https://thekpihub.com/blog.html</loc>
-    <lastmod>2026-04-20</lastmod>
+    <loc>https://blog.thekpihub.com/</loc>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>

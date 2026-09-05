@@ -1,6 +1,12 @@
 -- BYOK + Admin Approval Schema Migration
--- Run this in the Supabase SQL editor for project: eeuwkislidznpgdbvvbo
--- Safe to run multiple times (uses IF NOT EXISTS / ADD COLUMN IF NOT EXISTS)
+-- Project: eeuwkislidznpgdbvvbo (production)
+-- APPLIED: 2026-09-02, via Supabase Management API, verified column/table/RLS/policy
+-- presence individually afterward. Safe to re-run (idempotent).
+--
+-- Corrected 2026-09-02: the original version used `CREATE POLICY IF NOT EXISTS`,
+-- which is not valid PostgreSQL syntax (CREATE POLICY has no IF NOT EXISTS form —
+-- only DROP POLICY supports IF EXISTS). Fixed to DROP-then-CREATE, which is the
+-- standard idempotent pattern.
 
 -- ── 1. Add BYOK columns to profiles ──────────────────────────────────────────
 ALTER TABLE profiles
@@ -21,7 +27,8 @@ CREATE TABLE IF NOT EXISTS byok_approval_requests (
 
 -- RLS: users can insert/select their own request; admins use service role
 ALTER TABLE byok_approval_requests ENABLE ROW LEVEL SECURITY;
-CREATE POLICY IF NOT EXISTS "users_own_request" ON byok_approval_requests
+DROP POLICY IF EXISTS "users_own_request" ON byok_approval_requests;
+CREATE POLICY "users_own_request" ON byok_approval_requests
   FOR ALL USING (auth.uid() = user_id);
 
 -- ── 3. Encrypted user API keys ────────────────────────────────────────────────

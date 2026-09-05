@@ -39,6 +39,7 @@ login.html
 narrative.html
 og-image.png
 og-image.svg
+open-wingman.php
 pages/api/ai-gateway.php
 pages/api/open-wingman.php
 pricing.html

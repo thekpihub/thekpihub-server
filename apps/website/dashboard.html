@@ -1106,23 +1106,27 @@
     try {
       const { data: { session } } = await sb.auth.getSession();
       if (!session) { window.location.href = CONFIG.app.loginUrl; return; }
-      const res = await fetch('https://kpihub-backend-821108037779.asia-south1.run.app/open-wingman', {
-        headers: { 'Authorization': 'Bearer ' + session.access_token },
-        redirect: 'manual'
+      // Corrected 2026-09-04: this used to pre-check a Cloud Run endpoint that
+      // no longer (or never did) implement /open-wingman, then fall back to a
+      // plain navigation that could never carry the session token (no cookie
+      // is ever set on this site). Call open-wingman.php directly instead —
+      // it verifies the Supabase token server-side and hands back where to go.
+      status.textContent = 'Launching WingCommander…';
+      const res = await fetch('/open-wingman.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ supabase_token: session.access_token })
       });
-      // PHP returns a 302 redirect to agent.thekpihub.com
-      if (res.status === 302 || res.type === 'opaqueredirect') {
-        status.textContent = 'Launching WingCommander…';
-        // Re-fetch following redirect in same tab
-        window.location.href = '/pages/api/open-wingman.php?_t=' + Date.now();
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.redirectUrl) {
+        window.location.href = data.redirectUrl;
         return;
       }
-      if (res.ok || res.status === 0) {
-        window.location.href = '/pages/api/open-wingman.php?_t=' + Date.now();
+      if (res.status === 403 && data.upgradeUrl) {
+        window.location.href = data.upgradeUrl;
         return;
       }
-      const err = await res.json().catch(() => ({}));
-      status.textContent = err.error || 'Could not launch WingCommander. Try again.';
+      status.textContent = data.error || 'Could not launch WingCommander. Try again.';
       status.style.color = 'var(--danger)';
       btn.disabled = false;
       btn.textContent = 'Open WingCommander ↗';

@@ -1,0 +1,135 @@
+# One-off, live functional test (2026-09-04) -- NOT part of regular CI.
+#
+# Tests the real "Open WingCommander" handoff end to end using a real Supabase
+# session for the account owner's own account (the only profile that exists
+# in the DB right now, hsharma.gxi@gmail.com). Steps, all server-side so no
+# token/secret ever reaches the assistant's own session or gets printed:
+#   1. Temporarily set that profile's plan to 'growth'.
+#   2. Mint a real session for that account via Supabase's admin
+#      generate_link + verify OTP flow (no password needed/used).
+#   3. POST that real access token to https://thekpihub.com/open-wingman.php,
+#      exactly like dashboard.html's button does.
+#   4. Report only safe, non-secret fields: HTTP status, whether a
+#      redirectUrl came back, its host, and the mapped plan.
+#   5. Revert the profile's plan back to 'starter' regardless of outcome.
+#
+# Never echoes any token, secret, or key value at any point.
+name: (one-off) WingCommander live handoff test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    env:
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_URL: https://eeuwkislidznpgdbvvbo.supabase.co
+      TEST_EMAIL: hsharma.gxi@gmail.com
+      TEST_USER_ID: 2ef527c0-0bf6-408e-a31a-ede0055de3b4
+    steps:
+      - name: Verify required secrets
+        run: test -n "$SUPABASE_SERVICE_ROLE_KEY"
+
+      - name: Set plan=growth for the test
+        run: |
+          curl -sf -X PATCH "$SUPABASE_URL/rest/v1/profiles?id=eq.$TEST_USER_ID" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"plan":"growth"}' -o /dev/null -w "PATCH status: %{http_code}\n"
+
+      - name: Mint a real session and test the handoff
+        id: run_test
+        run: |
+          set -euo pipefail
+
+          # Step 1: generate a magiclink (no email is actually sent when
+          # called via the admin API with a service key - it just returns
+          # the link/OTP for us to use directly).
+          link_code=$(curl -s -o link_resp.json -w "%{http_code}" -X POST "$SUPABASE_URL/auth/v1/admin/generate_link" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"type\":\"magiclink\",\"email\":\"$TEST_EMAIL\"}")
+          echo "generate_link HTTP status: $link_code"
+          if [ "$link_code" != "200" ]; then
+            echo "generate_link error body (safe to print, no token on error):"
+            cat link_resp.json
+            exit 1
+          fi
+          link_resp=$(cat link_resp.json)
+          rm -f link_resp.json
+
+          echo "generate_link response top-level keys (values never printed):"
+          echo "$link_resp" | node -e "console.log(Object.keys(JSON.parse(require('fs').readFileSync(0,'utf8'))))"
+          echo "generate_link response .properties keys (if any):"
+          echo "$link_resp" | node -e "const r=JSON.parse(require('fs').readFileSync(0,'utf8')); console.log(r.properties ? Object.keys(r.properties) : '(no .properties field)')"
+
+          otp=$(echo "$link_resp" | node -e "
+            const r = JSON.parse(require('fs').readFileSync(0,'utf8'));
+            process.stdout.write((r.properties && r.properties.email_otp) || r.email_otp || '')
+          ")
+          if [ -z "$otp" ]; then
+            echo "Could not extract email_otp from generate_link response"
+            exit 1
+          fi
+          echo "Got OTP (not printed)."
+
+          # Step 2: verify the OTP to get a real session.
+          verify_code=$(curl -s -o verify_resp.json -w "%{http_code}" -X POST "$SUPABASE_URL/auth/v1/verify" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"type\":\"magiclink\",\"token\":\"$otp\",\"email\":\"$TEST_EMAIL\"}")
+          echo "verify HTTP status: $verify_code"
+          if [ "$verify_code" != "200" ]; then
+            echo "verify error body (safe to print, no token on error):"
+            cat verify_resp.json
+            exit 1
+          fi
+          echo "verify response top-level keys (values never printed):"
+          node -e "console.log(Object.keys(JSON.parse(require('fs').readFileSync('verify_resp.json','utf8'))))"
+
+          access_token=$(node -e "process.stdout.write(JSON.parse(require('fs').readFileSync('verify_resp.json','utf8')).access_token || '')" verify_resp.json)
+          rm -f verify_resp.json
+          if [ -z "$access_token" ]; then
+            echo "Could not extract access_token from verify response"
+            exit 1
+          fi
+          echo "Got real access_token for $TEST_EMAIL (not printed)."
+
+          # Step 3: the actual handoff call, exactly like dashboard.html does.
+          body=$(node -e "process.stdout.write(JSON.stringify({supabase_token: process.argv[1]}))" "$access_token")
+          http_code=$(curl -s -o wingman_response.json -w "%{http_code}" \
+            -X POST "https://thekpihub.com/open-wingman.php" \
+            -H "Content-Type: application/json" \
+            -d "$body")
+
+          echo "open-wingman.php HTTP status: $http_code"
+          echo "--- Response (redirectUrl host + plan only, token/url redacted) ---"
+          node -e "
+            const r = JSON.parse(require('fs').readFileSync('wingman_response.json','utf8'));
+            if (r.redirectUrl) {
+              const u = new URL(r.redirectUrl);
+              console.log('redirectUrl host:', u.host);
+              console.log('redirectUrl path:', u.pathname);
+              console.log('has token param:', u.searchParams.has('token'));
+            }
+            if (r.plan) console.log('mapped plan:', r.plan);
+            if (r.error) console.log('error:', r.error);
+            if (r.upgradeUrl) console.log('upgradeUrl:', r.upgradeUrl);
+          "
+          rm -f wingman_response.json
+
+      - name: Revert plan back to starter (always runs)
+        if: always()
+        run: |
+          curl -sf -X PATCH "$SUPABASE_URL/rest/v1/profiles?id=eq.$TEST_USER_ID" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"plan":"starter"}' -o /dev/null -w "Reverted. PATCH status: %{http_code}\n"

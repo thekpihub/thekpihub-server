@@ -9,7 +9,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://thekpihub-wingcommander-backend.up.railway.app/api/:path*"
+      "destination": "https://ditto-wingman-backend-production-85f6.up.railway.app/api/:path*"
     },
     {
       "source": "/((?!api).*)",

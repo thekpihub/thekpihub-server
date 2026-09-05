@@ -1,0 +1,91 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# One-off, read-only diagnostic (2026-09-04), NOT part of regular CI.
+#
+# Answers 2 open questions from the Phase-1 / RE-AUDIT tracking:
+#   1. open-wingman.php's "dual targets" -- what do WINGCOMMANDER_API_URL and
+#      WINGCOMMANDER_URL actually resolve to on production right now? (never
+#      pinned down after the 2026-09-02 mistaken-deletion incident)
+#   2. .htaccess SetEnv secrets -- are HMAC_SECRET / WINGCOMMANDER_HANDOFF_SECRET
+#      / SUPABASE_SERVICE_ROLE_KEY actually present, and when was .htaccess
+#      last modified (a proxy for "has this secret ever been rotated")?
+#
+# Reports PRESENCE and non-secret URL values only -- never prints actual
+# secret values. Once used, move to docs/diagnostics/ per this repo's
+# established one-off-workflow lifecycle, don't delete.
+# ─────────────────────────────────────────────────────────────────────────────
+name: (one-off) Website config diagnostic — SetEnv + wingman targets
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    env:
+      HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+      HOSTINGER_PORT: ${{ secrets.HOSTINGER_PORT }}
+      HOSTINGER_USERNAME: ${{ secrets.HOSTINGER_USERNAME }}
+      HOSTINGER_SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      HOSTINGER_SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+    steps:
+      - name: Configure verified SSH
+        run: |
+          test -n "$HOSTINGER_HOST"
+          test -n "$HOSTINGER_PORT"
+          test -n "$HOSTINGER_USERNAME"
+          test -n "$HOSTINGER_SSH_KEY"
+          test -n "$HOSTINGER_SSH_KNOWN_HOSTS"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$HOSTINGER_SSH_KEY" > ~/.ssh/hostinger_deploy_key
+          printf '%s\n' "$HOSTINGER_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/hostinger_deploy_key
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Read-only report — .htaccess SetEnv names + wingman target URLs
+        run: |
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            bash -s -- \
+            <<'REMOTE_SCRIPT'
+          set -euo pipefail
+          cd "/home/u117990013/domains/thekpihub.com/public_html"
+
+          echo "=== .htaccess: last modified ==="
+          stat -c '%y' .htaccess 2>&1 || echo "(stat failed / .htaccess not found)"
+
+          echo
+          echo "=== .htaccess: SetEnv variable NAMES only (never values) ==="
+          grep -oE '^\s*SetEnv\s+[A-Z0-9_]+' .htaccess 2>&1 | awk '{print $2}' | sort || echo "(none found / read failed)"
+
+          echo
+          echo "=== private/kpihub_config.php: last modified ==="
+          stat -c '%y' /home/u117990013/private/kpihub_config.php 2>&1 || echo "(not found)"
+
+          echo
+          echo "=== private/kpihub_config.php: defined constant/getenv NAMES only ==="
+          grep -oE "(define\('[A-Z0-9_]+'|getenv\('[A-Z0-9_]+')" /home/u117990013/private/kpihub_config.php 2>&1 | sort -u || echo "(read failed)"
+
+          echo
+          echo "=== Live values of the 2 NON-secret wingman target URLs (SetEnv, safe to print) ==="
+          php -r '
+            $vars = ["WINGCOMMANDER_API_URL", "WINGCOMMANDER_URL"];
+            foreach ($vars as $v) {
+              $val = getenv($v);
+              echo $v . " = " . ($val !== false ? $val : "(not set / falls back to default in code)") . PHP_EOL;
+            }
+          '
+          REMOTE_SCRIPT
+
+      - name: Reachability of whatever those 2 URLs resolve to
+        run: |
+          echo "(fetched from the previous step's output — see job log above for the actual URLs)"
+          for url in https://agent.thekpihub.com https://wingcommander.thekpihub.com; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$url" || echo "ERR")
+            echo "$url -> $code"
+          done

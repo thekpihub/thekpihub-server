@@ -29,6 +29,12 @@ export interface WebhookEventData {
   payload: Record<string, unknown>;
   signature?: string;
   rawBody?: string;
+  // Raw processor-specific webhook headers (e.g. PayPal's paypal-auth-algo,
+  // paypal-cert-url, paypal-transmission-id/-time), keyed lowercase.
+  // Needed because PayPal's real signature verification call
+  // (POST /v1/notifications/verify-webhook-signature) requires several of
+  // these alongside the signature itself -- Razorpay doesn't need this.
+  headers?: Record<string, string | null>;
 }
 
 export interface PaymentVerification {

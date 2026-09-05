@@ -1,5 +1,15 @@
 <?php
 // Supabase auth handoff to Wingman agent dashboard.
+//
+// DEPRECATED 2026-09-04: dashboard.html's "Open WingCommander" button now
+// calls apps/website/open-wingman.php (repo root) directly via fetch+POST
+// instead. This file relied on an Authorization header or sb-token cookie
+// reaching it via a plain browser navigation, but this site never sets that
+// cookie (it was ported from a Next.js design assuming SSR cookie sessions,
+// which doesn't match this static/client-side Supabase setup) — so it could
+// never actually receive a valid token in practice. Left in place, unused,
+// rather than deleted; see servermemory.md (2026-09-04) for the full trace.
+//
 // Requires these env vars set in .htaccess via SetEnv directives:
 //   SetEnv SUPABASE_URL            https://YOUR_PROJECT_ID.supabase.co
 //   SetEnv SUPABASE_SERVICE_ROLE_KEY  <service role key from Supabase dashboard>

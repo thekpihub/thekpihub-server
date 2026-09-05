@@ -3,6 +3,8 @@
   "buildCommand": "npm run build:site",
   "outputDirectory": ".",
   "trailingSlash": false,
+  "_comment": "This site deploys via GitHub Actions -> Hostinger (deploy-website-hostinger.yml), never via Vercel. This file is a stale leftover; the rewrite below is a deliberate poison pill (matching firebase.json's own safeguard) so that if a Vercel project is ever accidentally pointed at this repo/directory, it serves nothing but 404s instead of an uncontrolled duplicate of the live site.",
+  "rewrites": [{ "source": "/(.*)", "destination": "/404.html" }],
   "headers": [
     {
       "source": "/",

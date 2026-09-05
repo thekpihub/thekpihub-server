@@ -1,0 +1,60 @@
+name: KPI Hub Content Pipeline
+
+# Schedule retired 2026-09-05 (was once/day, 13:00 UTC / 18:30 IST -- see servermemory.md
+# for that history). Root cause: this runs services/pipeline/pipeline.py, a separate codebase
+# from apps/website/pipeline.py (which daily-pipeline.yml/premium-pipeline.yml run). Its
+# wp_db_publish() hardcodes post_status='draft' and never sets category/tags, so every post
+# it has ever produced is orphaned wp-admin clutter nobody sees or publishes -- confirmed via
+# a direct wp_posts query 2026-09-04 (100% draft, zero overlap/duplicate risk with the other
+# two pipelines). Kept as workflow_dispatch-only rather than deleted, in case the underlying
+# 5-engine pipeline is ever revived for a real purpose.
+on:
+  workflow_dispatch:
+
+jobs:
+  run-pipeline:
+    name: Run KPI Hub 5-Engine Pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: services/pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: services/pipeline/requirements.txt
+      - run: pip install -r requirements.txt
+      - run: python pipeline.py
+        env:
+          ANTHROPIC_API_KEY:    ${{ secrets.ANTHROPIC_API_KEY }}
+          SERPAPI_KEY:          ${{ secrets.SERPAPI_KEY }}
+          TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
+          # No live WordPress REST API on this deployment — site files are gone, DB only
+          # (see servermemory.md, 2026-09-02). pipeline.py writes straight into wp_ tables.
+          WP_SITE_URL:          "https://thekpihub.com"
+          WP_DB_HOST:           ${{ secrets.WP_DB_HOST }}
+          WP_DB_HOST_IP:        ${{ secrets.WP_DB_HOST_IP }}
+          WP_DB_PORT:           ${{ secrets.WP_DB_PORT }}
+          WP_DB_NAME:           ${{ secrets.WP_DB_NAME }}
+          WP_DB_USER:           ${{ secrets.WP_DB_USER }}
+          WP_DB_PASSWORD:       ${{ secrets.WP_DB_PASSWORD }}
+          ALPHA_VANTAGE_KEY:    ${{ secrets.ALPHA_VANTAGE_KEY }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pipeline-log-${{ github.run_number }}
+          # articles/ added 2026-09-02: when the WP DB write fails, engine4_publish()
+          # falls back to saving each article as local JSON instead of crashing -- but
+          # that fallback previously only lived on the runner's disk, which is destroyed
+          # when the job ends. A DB connectivity hiccup on this same day (run 33629397860)
+          # silently lost 3 fully-generated, verified articles this way. Uploading the
+          # folder as a build artifact means a future hiccup is recoverable, not lost.
+          path: |
+            services/pipeline/pipeline.log
+            services/pipeline/articles/
+          if-no-files-found: ignore
+          retention-days: 14

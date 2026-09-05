@@ -5,10 +5,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["DM Sans", "system-ui", "sans-serif"],
-        display: ["Syne", "sans-serif"],
-        serif: ["Cormorant Garamond", "Georgia", "serif"],
+        sans: ["Inter", "system-ui", "sans-serif"],
+        figtree: ["Figtree", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
+        tight: ["Inter Tight", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -44,25 +44,19 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // WingCommander brand colors (KPI Hub gold)
-        wing: {
-          50: "#fef9ee",
-          100: "#fdf0d0",
-          200: "#fae0a0",
-          300: "#f5c660",
-          400: "#E9A123",
-          500: "#d4891a",
-          600: "#b87015",
-          700: "#9a5910",
-          800: "#7d450c",
-          900: "#5a3008",
-          950: "#2d1804",
-        },
-        // KPI Hub teal accent
-        teal: {
-          400: "#00C9A7",
-          500: "#00b096",
-          600: "#009980",
+        // Ditto custom colors
+        ditto: {
+          50: "#f0f4ff",
+          100: "#e0e9ff",
+          200: "#c7d6ff",
+          300: "#a5baff",
+          400: "#8094ff",
+          500: "#6070ff",
+          600: "#4a4ff5",
+          700: "#3d3fd8",
+          800: "#3335ae",
+          900: "#2d3089",
+          950: "#1a1b52",
         },
       },
       borderRadius: {
@@ -88,8 +82,8 @@ export default {
           to: { transform: "translateX(0)" },
         },
         "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 0 0 rgba(233, 161, 35, 0.4)" },
-          "50%": { boxShadow: "0 0 0 12px rgba(233, 161, 35, 0)" },
+          "0%, 100%": { boxShadow: "0 0 0 0 rgba(96, 112, 255, 0.4)" },
+          "50%": { boxShadow: "0 0 0 12px rgba(96, 112, 255, 0)" },
         },
         shimmer: {
           "0%": { backgroundPosition: "-200% 0" },
@@ -118,7 +112,7 @@ export default {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
         "mesh-gradient":
-          "radial-gradient(at 40% 20%, hsla(38,82%,53%,0.25) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(170,100%,39%,0.15) 0px, transparent 50%), radial-gradient(at 0% 50%, hsla(38,82%,53%,0.08) 0px, transparent 50%)",
+          "radial-gradient(at 40% 20%, hsla(240,100%,74%,0.3) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(189,100%,56%,0.2) 0px, transparent 50%), radial-gradient(at 0% 50%, hsla(355,100%,93%,0.1) 0px, transparent 50%)",
       },
     },
   },

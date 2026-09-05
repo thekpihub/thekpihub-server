@@ -1,0 +1,152 @@
+/* ============================================================
+   The KPI Hub — blog.thekpihub.com brand match
+   Tokens sourced directly from apps/website/colors_and_type.css,
+   the main site's single source of truth for colors & type.
+   Applied via WordPress's Additional CSS (theme-independent,
+   fully reversible from wp-admin > Appearance > Customize).
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Beiruti:wght@200..900&family=Manrope:wght@200..800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg:    #06071A;
+  --bg-2:  #0C0E28;
+  --bg-3:  #111637;
+
+  --gold:      #E9A123;
+  --gold-glow: rgba(233, 161, 35, 0.18);
+  --gold-rim:  rgba(233, 161, 35, 0.28);
+
+  --teal:      #00C9A7;
+  --teal-glow: rgba(0, 201, 167, 0.18);
+
+  --text:   #EAEDF5;
+  --text-2: rgba(234, 237, 245, 0.62);
+  --text-3: rgba(234, 237, 245, 0.32);
+
+  --border: rgba(234, 237, 245, 0.10);
+  --card:   #0C0E28;
+
+  --font-display: 'Source Serif 4', Georgia, serif;
+  --font-head:    Beiruti, 'Trebuchet MS', sans-serif;
+  --font-body:    Manrope, 'Segoe UI', sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Mono', Consolas, monospace;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-pill: 100px;
+}
+
+/* ---------- Base ---------- */
+html { background-color: var(--bg); }
+body {
+  background-color: var(--bg) !important;
+  color: var(--text-2) !important;
+  font-family: var(--font-body) !important;
+}
+.wp-site-blocks, .site, #page { background-color: var(--bg); }
+
+/* ---------- Headings & titles ---------- */
+h1, h2, h3, h4, h5, h6,
+.wp-block-post-title,
+.entry-title,
+.wp-block-query-title,
+.page-title {
+  font-family: var(--font-display) !important;
+  color: var(--text) !important;
+  letter-spacing: -0.01em;
+}
+
+.site-title, .wp-block-site-title, .wp-block-site-title a {
+  font-family: var(--font-head) !important;
+  color: var(--gold) !important;
+  font-weight: 700;
+}
+.site-description, .wp-block-site-tagline {
+  font-family: var(--font-body) !important;
+  color: var(--text-2) !important;
+}
+
+/* ---------- Links ---------- */
+a { color: var(--teal); text-decoration-color: var(--teal-glow); }
+a:hover, a:focus { color: var(--gold); }
+.entry-title a, .wp-block-post-title a { color: var(--text) !important; }
+.entry-title a:hover, .wp-block-post-title a:hover { color: var(--gold) !important; }
+
+/* ---------- Body copy ---------- */
+.entry-content, .wp-block-post-content, p, li, .wp-block-paragraph {
+  color: var(--text-2);
+  line-height: 1.7;
+}
+.entry-content strong, .wp-block-post-content strong { color: var(--text); }
+
+blockquote, .wp-block-quote {
+  border-left: 3px solid var(--gold);
+  background: var(--gold-glow);
+  color: var(--text-2);
+  padding: 0.75rem 1.25rem;
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+}
+
+code, pre, .wp-block-code {
+  font-family: var(--font-mono) !important;
+  background: var(--bg-3);
+  color: var(--teal);
+  border-radius: var(--r-sm);
+}
+
+/* ---------- Buttons / CTAs ---------- */
+.wp-element-button,
+.wp-block-button__link,
+button:not(.wp-block-search__button):not([type="reset"]),
+input[type="submit"] {
+  background-color: var(--gold) !important;
+  color: var(--bg) !important;
+  border: none !important;
+  border-radius: var(--r-pill) !important;
+  font-family: var(--font-head) !important;
+  font-weight: 600;
+}
+.wp-element-button:hover,
+.wp-block-button__link:hover,
+button:hover,
+input[type="submit"]:hover {
+  background-color: var(--teal) !important;
+  color: var(--bg) !important;
+}
+
+/* ---------- Cards / surfaces ---------- */
+.wp-block-group,
+.wp-block-columns > .wp-block-column,
+article, .hentry {
+  background-color: transparent;
+}
+.wp-block-separator, hr {
+  border-color: var(--border) !important;
+  background-color: var(--border) !important;
+}
+
+/* ---------- Navigation ---------- */
+.wp-block-navigation, nav {
+  font-family: var(--font-head);
+}
+.wp-block-navigation-item a {
+  color: var(--text) !important;
+}
+.wp-block-navigation-item a:hover {
+  color: var(--gold) !important;
+}
+
+/* ---------- Meta / dates / tags ---------- */
+.wp-block-post-date,
+.wp-block-post-terms,
+.entry-meta,
+time {
+  color: var(--text-3) !important;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+/* ---------- Selection ---------- */
+::selection { background: var(--gold); color: var(--bg); }
