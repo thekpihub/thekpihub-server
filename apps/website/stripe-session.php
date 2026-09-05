@@ -84,3 +84,5 @@ echo json_encode([
     'clientSecret' => $data['client_secret'] ?? '',
     'session_id'   => $data['id'] ?? ''
 ]);
+exit;
+?>
