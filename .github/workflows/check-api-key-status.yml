@@ -1,0 +1,105 @@
+name: Diagnostic - Check API key/credit status across all providers
+
+# One-off, read-only diagnostic. Hits each provider's free "account status"
+# endpoint (never a paid completion/search/send call) to confirm each key
+# is still valid and report remaining quota/credits where the provider
+# exposes that. Per repo convention, move this file to docs/diagnostics/
+# after use instead of deleting it. Never echoes a raw secret value.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  github-secrets:
+    name: Check keys stored as GitHub secrets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Anthropic (GET /v1/models -- free, no token cost)
+        env:
+          KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          code=$(curl -s -o /tmp/out.json -w "%{http_code}" \
+            -H "x-api-key: $KEY" -H "anthropic-version: 2023-06-01" \
+            https://api.anthropic.com/v1/models)
+          echo "HTTP $code"
+          if [ "$code" = "200" ]; then
+            echo "Anthropic key is VALID (not revoked). Model list endpoint succeeded."
+            echo "(Note: this endpoint doesn't consume tokens, so it can succeed even while the Messages endpoint is spend-capped -- check the actual error separately.)"
+          else
+            echo "Anthropic key check FAILED:"; cat /tmp/out.json
+          fi
+
+      - name: SerpAPI (GET /account -- free, no search consumed)
+        env:
+          KEY: ${{ secrets.SERPAPI_KEY }}
+        run: |
+          curl -s "https://serpapi.com/account?api_key=$KEY" | \
+            grep -oE '"(plan_id|searches_per_month|this_month_usage|total_searches_left|account_email)":"?[^,"]*"?' || echo "request failed"
+
+      - name: Telegram Bot (GET /getMe -- free)
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          curl -s "https://api.telegram.org/bot$TOKEN/getMe" | \
+            grep -oE '"(ok|username|first_name)":"?[^,"]*"?' || echo "request failed"
+
+      - name: Alpha Vantage (minimal GLOBAL_QUOTE call -- costs 1 of the free daily quota)
+        env:
+          KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
+        run: |
+          resp=$(curl -s "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=$KEY")
+          if echo "$resp" | grep -q "Global Quote"; then
+            echo "Alpha Vantage key is VALID -- real quote data returned."
+          else
+            echo "Alpha Vantage response (truncated):"
+            echo "$resp" | head -c 500
+          fi
+
+  hostinger-secrets:
+    name: Check keys stored on Hostinger's .htaccess
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    env:
+      HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+      HOSTINGER_PORT: ${{ secrets.HOSTINGER_PORT }}
+      HOSTINGER_USERNAME: ${{ secrets.HOSTINGER_USERNAME }}
+      HOSTINGER_SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      HOSTINGER_SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$HOSTINGER_SSH_KEY" > ~/.ssh/hostinger_deploy_key
+          printf '%s\n' "$HOSTINGER_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/hostinger_deploy_key
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Check OpenRouter + Brevo keys live on the server (values never printed)
+        run: |
+          WEBROOT="/home/$HOSTINGER_USERNAME/domains/thekpihub.com/public_html"
+          ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
+            -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
+            "grep -oP '(?<=SetEnv OPENROUTER_API_KEY ).*' '$WEBROOT/.htaccess' 2>/dev/null || true; \
+             grep -oP '(?<=SetEnv BREVO_API_KEY ).*' '$WEBROOT/.htaccess' 2>/dev/null || true" \
+            > /tmp/htaccess_keys.txt
+          OPENROUTER_KEY=$(sed -n '1p' /tmp/htaccess_keys.txt)
+          BREVO_KEY=$(sed -n '2p' /tmp/htaccess_keys.txt)
+          rm -f /tmp/htaccess_keys.txt
+
+          if [ -z "$OPENROUTER_KEY" ]; then
+            echo "OPENROUTER_API_KEY: not set in .htaccess"
+          else
+            code=$(curl -s -o /tmp/or.json -w "%{http_code}" -H "Authorization: Bearer $OPENROUTER_KEY" https://openrouter.ai/api/v1/auth/key)
+            echo "OPENROUTER_API_KEY: HTTP $code"
+            [ "$code" = "200" ] && grep -oE '"(limit|usage|limit_remaining)":[^,}]*' /tmp/or.json
+          fi
+
+          if [ -z "$BREVO_KEY" ]; then
+            echo "BREVO_API_KEY: not set in .htaccess"
+          else
+            code=$(curl -s -o /tmp/brevo.json -w "%{http_code}" -H "api-key: $BREVO_KEY" https://api.brevo.com/v3/account)
+            echo "BREVO_API_KEY: HTTP $code"
+            [ "$code" = "200" ] && grep -oE '"(email|plan)":[^,}]*' /tmp/brevo.json | head -5
+          fi
