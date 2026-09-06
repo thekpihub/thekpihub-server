@@ -1,0 +1,28 @@
+name: Diagnostic - Check PHP syntax of apps/website's PHP files
+
+# One-off. This repo has no local PHP available and CI doesn't lint PHP
+# files, so this uses `php -l` on a GitHub-hosted runner (which ships PHP
+# by default) to catch any syntax error before it reaches production.
+# Per repo convention, move to docs/diagnostics/ after use.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: php -l on every PHP file under apps/website
+        run: |
+          fail=0
+          for f in $(find apps/website -name "*.php"); do
+            if ! php -l "$f" > /tmp/out.txt 2>&1; then
+              echo "SYNTAX ERROR in $f:"
+              cat /tmp/out.txt
+              fail=1
+            else
+              echo "OK: $f"
+            fi
+          done
+          exit $fail
