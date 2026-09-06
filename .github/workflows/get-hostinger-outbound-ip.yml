@@ -28,9 +28,10 @@ jobs:
           chmod 600 ~/.ssh/hostinger_deploy_key
           chmod 644 ~/.ssh/known_hosts
 
-      - name: Get outbound IP from the server itself
+      - name: Get outbound IP from the server itself (both v4 and v6)
         run: |
           ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
             -o BatchMode=yes -o StrictHostKeyChecking=yes \
             "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
-            "curl -s https://ifconfig.me || curl -s https://api.ipify.org"
+            "echo -n 'IPv4: '; curl -s -4 https://api.ipify.org; echo; \
+             echo -n 'IPv6: '; curl -s -6 https://api64.ipify.org; echo"
