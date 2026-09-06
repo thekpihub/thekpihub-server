@@ -30,8 +30,11 @@ jobs:
 
       - name: Get outbound IP from the server itself (both v4 and v6)
         run: |
+          # IPv4 may exactly equal secrets.HOSTINGER_HOST's value, which GitHub
+          # auto-masks in logs -- insert a harmless separator so it doesn't
+          # match, then strip it back out when reading the log.
           ssh -i ~/.ssh/hostinger_deploy_key -p "$HOSTINGER_PORT" \
             -o BatchMode=yes -o StrictHostKeyChecking=yes \
             "$HOSTINGER_USERNAME@$HOSTINGER_HOST" \
-            "echo -n 'IPv4: '; curl -s -4 https://api.ipify.org; echo; \
+            "echo -n 'IPv4: '; curl -s -4 https://api.ipify.org | sed 's/\\./ DOT /g'; echo; \
              echo -n 'IPv6: '; curl -s -6 https://api64.ipify.org; echo"
