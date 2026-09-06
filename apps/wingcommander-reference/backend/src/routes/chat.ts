@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import Anthropic from "@anthropic-ai/sdk";
+import { openRouterComplete } from "../lib/openrouterFallback.js";
 
 const router = Router();
 
@@ -145,30 +146,50 @@ router.post("/", async (req: Request, res: Response) => {
       streamOptions.thinking = { type: "enabled", budget_tokens: 8000 };
     }
 
-    const stream = await client.messages.stream(
-      streamOptions as unknown as Anthropic.Messages.MessageCreateParamsStreaming
-    );
-
     let inputTokens = 0;
     let cacheCreationTokens = 0;
     let cacheReadTokens = 0;
+    let anySent = false;
 
-    for await (const event of stream) {
-      if (event.type === "message_start" && event.message.usage) {
-        const usage = event.message.usage as unknown as Record<string, number>;
-        inputTokens = usage.input_tokens ?? 0;
-        cacheCreationTokens = usage.cache_creation_input_tokens ?? 0;
-        cacheReadTokens = usage.cache_read_input_tokens ?? 0;
-      }
+    try {
+      const stream = await client.messages.stream(
+        streamOptions as unknown as Anthropic.Messages.MessageCreateParamsStreaming
+      );
 
-      if (event.type === "content_block_delta") {
-        const delta = event.delta as unknown as Record<string, string>;
-        if (delta.type === "text_delta") {
-          sendEvent({ type: "text", content: delta.text });
-        } else if (delta.type === "thinking_delta") {
-          sendEvent({ type: "thinking", content: delta.thinking });
+      for await (const event of stream) {
+        if (event.type === "message_start" && event.message.usage) {
+          const usage = event.message.usage as unknown as Record<string, number>;
+          inputTokens = usage.input_tokens ?? 0;
+          cacheCreationTokens = usage.cache_creation_input_tokens ?? 0;
+          cacheReadTokens = usage.cache_read_input_tokens ?? 0;
+        }
+
+        if (event.type === "content_block_delta") {
+          const delta = event.delta as unknown as Record<string, string>;
+          if (delta.type === "text_delta") {
+            sendEvent({ type: "text", content: delta.text });
+            anySent = true;
+          } else if (delta.type === "thinking_delta") {
+            sendEvent({ type: "thinking", content: delta.thinking });
+          }
         }
       }
+    } catch (directError: unknown) {
+      // Only fall back if direct Anthropic failed before any content
+      // reached the client (invalid key, usage cap, rate limit) -- never
+      // after a partial response, which would duplicate/conflict.
+      if (anySent) throw directError;
+
+      const fallbackText = await openRouterComplete(
+        model,
+        systemText,
+        messages.slice(-20).map((m) => ({ role: m.role, content: m.content })),
+        useThinking ? 16000 : 8192
+      );
+      if (fallbackText === null) throw directError;
+
+      sendEvent({ type: "text", content: fallbackText });
+      inputTokens = cacheCreationTokens = cacheReadTokens = 0;
     }
 
     // Send usage stats so frontend can show cache hit indicator

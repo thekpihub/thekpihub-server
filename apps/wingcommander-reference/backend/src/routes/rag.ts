@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import Anthropic from "@anthropic-ai/sdk";
 import multer from "multer";
+import { openRouterComplete } from "../lib/openrouterFallback.js";
 import { v4 as uuidv4 } from "uuid";
 import {
   addDocument,
@@ -106,6 +107,10 @@ router.post("/query", async (req: Request, res: Response) => {
     }
 
     const client = new Anthropic({ apiKey });
+    const ragSystem = `You are a precise RAG assistant. Answer ONLY based on the provided document context.
+Always cite sources as [Source: <filename>, Chunk <n>].
+If the answer is not in the context, say "Not found in uploaded documents."`;
+    const ragQuestion = `DOCUMENT CONTEXT:\n\n${context}\n\n---\n\nQUESTION: ${query}`;
 
     if (stream) {
       res.setHeader("Content-Type", "text/event-stream");
@@ -114,40 +119,55 @@ router.post("/query", async (req: Request, res: Response) => {
       res.setHeader("X-Accel-Buffering", "no");
 
       const sendEvent = (data: object) => res.write(`data: ${JSON.stringify(data)}\n\n`);
+      let anySent = false;
 
-      const streamRes = await client.messages.stream({
-        model: "claude-opus-4-7",
-        max_tokens: 4096,
-        system: [
-          {
-            type: "text",
-            text: `You are a precise RAG assistant. Answer ONLY based on the provided document context.
-Always cite sources as [Source: <filename>, Chunk <n>].
-If the answer is not in the context, say "Not found in uploaded documents."`,
-            // @ts-ignore — cache_control is supported but not in all SDK type versions
-            cache_control: { type: "ephemeral" },
-          },
-        ],
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: `DOCUMENT CONTEXT:\n\n${context}\n\n---\n\nQUESTION: ${query}`,
-                // @ts-ignore
-                cache_control: { type: "ephemeral" },
-              },
-            ],
-          },
-        ],
-        stream: true,
-      });
+      try {
+        const streamRes = await client.messages.stream({
+          model: "claude-opus-4-7",
+          max_tokens: 4096,
+          system: [
+            {
+              type: "text",
+              text: ragSystem,
+              // @ts-ignore — cache_control is supported but not in all SDK type versions
+              cache_control: { type: "ephemeral" },
+            },
+          ],
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: ragQuestion,
+                  // @ts-ignore
+                  cache_control: { type: "ephemeral" },
+                },
+              ],
+            },
+          ],
+          stream: true,
+        });
 
-      for await (const event of streamRes) {
-        if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-          sendEvent({ type: "text", content: event.delta.text });
+        for await (const event of streamRes) {
+          if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+            sendEvent({ type: "text", content: event.delta.text });
+            anySent = true;
+          }
         }
+      } catch (directError: unknown) {
+        // Direct Anthropic failed (invalid key, usage cap, rate limit) --
+        // fall back to OpenRouter, a separate account/balance, unless we'd
+        // already streamed partial content (would duplicate/conflict).
+        if (anySent) throw directError;
+        const fallbackText = await openRouterComplete(
+          "claude-opus-4-7",
+          ragSystem,
+          [{ role: "user", content: ragQuestion }],
+          4096
+        );
+        if (fallbackText === null) throw directError;
+        sendEvent({ type: "text", content: fallbackText });
       }
 
       sendEvent({
@@ -163,21 +183,27 @@ If the answer is not in the context, say "Not found in uploaded documents."`,
       res.write("data: [DONE]\n\n");
       res.end();
     } else {
-      const response = await client.messages.create({
-        model: "claude-opus-4-7",
-        max_tokens: 4096,
-        system: `You are a precise RAG assistant. Answer ONLY based on the provided document context.
-Always cite sources as [Source: <filename>, Chunk <n>].
-If the answer is not in the context, say "Not found in uploaded documents."`,
-        messages: [
-          {
-            role: "user",
-            content: `DOCUMENT CONTEXT:\n\n${context}\n\n---\n\nQUESTION: ${query}`,
-          },
-        ],
-      });
+      let answer: string;
+      try {
+        const response = await client.messages.create({
+          model: "claude-opus-4-7",
+          max_tokens: 4096,
+          system: ragSystem,
+          messages: [{ role: "user", content: ragQuestion }],
+        });
+        answer = response.content[0].type === "text" ? response.content[0].text : "";
+      } catch (directError: unknown) {
+        // Same OpenRouter fallback as the streaming branch above.
+        const fallbackText = await openRouterComplete(
+          "claude-opus-4-7",
+          ragSystem,
+          [{ role: "user", content: ragQuestion }],
+          4096
+        );
+        if (fallbackText === null) throw directError;
+        answer = fallbackText;
+      }
 
-      const answer = response.content[0].type === "text" ? response.content[0].text : "";
       res.json({
         answer,
         sources: results.map((r) => ({
