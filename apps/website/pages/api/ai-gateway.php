@@ -139,6 +139,45 @@ $modelAccess = [
 // Direct-Anthropic models (bypass OpenRouter)
 $directAnthropicModels = ['claude-sonnet-4-6', 'claude-haiku-4-5-20251001', 'claude-opus-4-7'];
 
+// Fallback route when the direct Anthropic account is rate/usage-capped
+// (hit 2026-09-05) -- same model via OpenRouter, which bills against a
+// completely separate account/balance. Names differ slightly from
+// OpenRouter's own catalog (dots vs dashes, no date suffix on haiku).
+$openrouterFallbackModel = [
+    'claude-sonnet-4-6'          => 'anthropic/claude-sonnet-4.6',
+    'claude-haiku-4-5-20251001'  => 'anthropic/claude-haiku-4.5',
+    'claude-opus-4-7'            => 'anthropic/claude-opus-4.7',
+];
+
+function call_openrouter($openrouterApiKey, $model, $system, $prompt, $maxTokens) {
+    $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+        'model'      => $model,
+        'messages'   => [
+            ['role' => 'system', 'content' => $system],
+            ['role' => 'user', 'content' => $prompt],
+        ],
+        'max_tokens' => $maxTokens,
+    ]));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Bearer ' . $openrouterApiKey,
+        'Content-Type: application/json',
+        'HTTP-Referer: https://thekpihub.com',
+        'X-Title: The KPI Hub',
+    ]);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    $response = curl_exec($ch);
+    $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if ($httpStatus !== 200) {
+        return null;
+    }
+    $data = json_decode($response, true);
+    return $data['choices'][0]['message']['content'] ?? null;
+}
+
 $allowedModels = $modelAccess[$plan] ?? $modelAccess['starter'];
 if (!in_array($model, $allowedModels, true)) {
     http_response_code(402);
@@ -184,6 +223,16 @@ if (in_array($model, $directAnthropicModels, true)) {
     curl_close($ch);
 
     if ($httpStatus !== 200) {
+        // Direct Anthropic failed (e.g. the account's own usage/spend limit
+        // was hit) -- fall back to the same model via OpenRouter before
+        // giving up, since that's a separate account/balance entirely.
+        if ($openrouterApiKey && isset($openrouterFallbackModel[$model])) {
+            $fallbackText = call_openrouter($openrouterApiKey, $openrouterFallbackModel[$model], $system, $prompt, 2048);
+            if ($fallbackText !== null) {
+                echo json_encode(['text' => $fallbackText, 'model' => $model, 'via' => 'openrouter-fallback']);
+                exit;
+            }
+        }
         http_response_code($httpStatus);
         echo json_encode(['error' => 'Direct Claude API error', 'details' => json_decode($response, true)]);
         exit;

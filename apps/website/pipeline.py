@@ -31,6 +31,7 @@ import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Optional
 
 import feedparser
@@ -60,6 +61,7 @@ PIPELINE_TYPE    = os.getenv("PIPELINE_TYPE", "daily")
 SLUG_SUFFIX      = "" if PIPELINE_TYPE == "daily" else f"-{PIPELINE_TYPE}"
 
 ANTHROPIC_KEY    = os.getenv("ANTHROPIC_API_KEY")
+OPENROUTER_KEY   = os.getenv("OPENROUTER_API_KEY")
 SERPAPI_KEY      = os.getenv("SERPAPI_KEY")
 TELEGRAM_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
@@ -184,8 +186,57 @@ def get_claude() -> anthropic.Anthropic:
     return _claude
 
 
+def _openrouter_fallback(**kwargs):
+    """
+    Last resort when the direct Anthropic account is rate/usage-capped (hit
+    2026-09-05, see servermemory.md): call the exact same Claude model via
+    OpenRouter instead. OpenRouter bills against a completely separate
+    account/balance, so it works even while console.anthropic.com's own
+    usage limit is blocking the direct API key. Returns an object shaped
+    like an Anthropic response (so claude_text() needs no changes), or None
+    if OPENROUTER_API_KEY isn't configured or the fallback call itself fails.
+    """
+    if not OPENROUTER_KEY:
+        return None
+
+    model = kwargs.get("model", MODEL)
+    or_model = model if model.startswith("anthropic/") else f"anthropic/{model}"
+
+    messages = []
+    system = kwargs.get("system")
+    if system:
+        sys_text = system[0]["text"] if isinstance(system, list) else system
+        messages.append({"role": "system", "content": sys_text})
+    for m in kwargs.get("messages", []):
+        content = m["content"]
+        if isinstance(content, list):
+            content = "\n".join(b.get("text", "") for b in content if isinstance(b, dict))
+        messages.append({"role": m["role"], "content": content})
+
+    try:
+        r = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_KEY}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://thekpihub.com",
+                "X-Title": "The KPI Hub Pipeline",
+            },
+            json={"model": or_model, "messages": messages, "max_tokens": kwargs.get("max_tokens", 2048)},
+            timeout=60,
+        )
+        r.raise_for_status()
+        text = r.json()["choices"][0]["message"]["content"]
+        return SimpleNamespace(content=[SimpleNamespace(text=text)])
+    except Exception as exc:
+        log.error("❌ OpenRouter fallback also failed: %s", exc)
+        return None
+
+
 def claude_call(**kwargs):
-    """Wrapper around messages.create with retry + 429 back-pressure handling."""
+    """Wrapper around messages.create with retry + 429 back-pressure handling.
+    Falls back to the same model via OpenRouter (see _openrouter_fallback)
+    if the direct Anthropic account is exhausted after retries."""
     def _call():
         try:
             return get_claude().messages.create(**kwargs)
@@ -193,8 +244,12 @@ def claude_call(**kwargs):
             log.warning("Claude rate-limited — backing off 30s")
             time.sleep(30)
             return get_claude().messages.create(**kwargs)
-    return with_retry(_call, retries=3, base_delay=5.0,
+    resp = with_retry(_call, retries=3, base_delay=5.0,
                       label=f"claude({kwargs.get('model', MODEL)[:20]})")
+    if resp is None and OPENROUTER_KEY:
+        log.warning("⚠️  Direct Anthropic exhausted — falling back to OpenRouter")
+        resp = _openrouter_fallback(**kwargs)
+    return resp
 
 
 def claude_text(resp) -> str:

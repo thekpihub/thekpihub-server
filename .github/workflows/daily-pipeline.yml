@@ -34,6 +34,10 @@ jobs:
 
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # Fallback when the direct Anthropic account is rate/usage-capped --
+      # pipeline.py's claude_call() retries direct Anthropic first, then
+      # falls back to the same model via OpenRouter (separate billing).
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       SERPAPI_KEY:        ${{ secrets.SERPAPI_KEY }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
