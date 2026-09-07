@@ -72,22 +72,25 @@ async function embedCohere(texts: string[]): Promise<number[][]> {
 }
 
 function embedTFIDF(texts: string[]): number[][] {
-  // Build corpus IDF weights
-  const df: Record<string, number> = {};
-  const tokenised = texts.map(tokenize);
-  for (const tokens of tokenised) {
-    for (const t of new Set(tokens)) df[t] = (df[t] ?? 0) + 1;
-  }
-  const N = texts.length;
-
-  return tokenised.map((tokens) => {
+  // Pure term-frequency hashing (the "hashing trick") -- deliberately NOT
+  // classic TF-IDF. A real IDF weight needs a stable corpus to compute
+  // document frequency against; this function only ever sees the text(s)
+  // passed to one embed() call, and query-time embedding always goes
+  // through embedOne() -- a single text, so N=1 and every term's IDF
+  // collapsed to log((1+1)/(1+1))=0 in the previous version, producing an
+  // all-zero vector for every query and therefore a cosine similarity of
+  // exactly 0 against every stored document, regardless of content. Found
+  // 2026-09-08 via a live RAG test (upload+query a real document, got a
+  // literal 0.0 score even for a query sharing most of its words with the
+  // document). Confirmed via /api/rag/search with minScore=0.
+  return texts.map((text) => {
+    const tokens = tokenize(text);
     const tf: Record<string, number> = {};
     for (const t of tokens) tf[t] = (tf[t] ?? 0) + 1;
     const vec = new Array(TFIDF_DIMS).fill(0);
     for (const [term, count] of Object.entries(tf)) {
-      const idf = Math.log((N + 1) / ((df[term] ?? 0) + 1));
       const bucket = hashToBucket(term, TFIDF_DIMS);
-      vec[bucket] += (count / tokens.length) * idf;
+      vec[bucket] += count / tokens.length;
     }
     return normalize(vec);
   });
