@@ -192,40 +192,44 @@ if (!in_array($model, $allowedModels, true)) {
 
 // ─── 6. ROUTE AND CALL THE CHOSEN AI ENDPOINT ────────────────────────────────
 if (in_array($model, $directAnthropicModels, true)) {
-    // ➔ Call direct Anthropic Messages API
-    if (!$anthropicApiKey) {
-        http_response_code(500);
-        echo json_encode(['error' => 'Direct Anthropic connection is not configured on the server']);
-        exit;
+    // ➔ Call direct Anthropic Messages API -- but only if a key is actually
+    // configured. Missing the key entirely (confirmed 2026-09-07: it never
+    // was set on Hostinger's live .htaccess, despite the template
+    // documenting it) used to hard-fail here before ever attempting the
+    // OpenRouter fallback below -- go straight to the fallback instead.
+    $httpStatus = 0;
+    $response = null;
+
+    if ($anthropicApiKey) {
+        $url = 'https://api.anthropic.com/v1/messages';
+        $payload = [
+            'model'      => $model,
+            'max_tokens' => 2048,
+            'system'     => [['type' => 'text', 'text' => $system, 'cache_control' => ['type' => 'ephemeral']]],
+            'messages'   => [['role' => 'user', 'content' => $prompt]]
+        ];
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'x-api-key: ' . $anthropicApiKey,
+            'anthropic-version: 2023-06-01',
+            'anthropic-beta: prompt-caching-2024-07-31',
+            'Content-Type: application/json'
+        ]);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 45);
+        $response = curl_exec($ch);
+        $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
     }
 
-    $url = 'https://api.anthropic.com/v1/messages';
-    $payload = [
-        'model'      => $model,
-        'max_tokens' => 2048,
-        'system'     => [['type' => 'text', 'text' => $system, 'cache_control' => ['type' => 'ephemeral']]],
-        'messages'   => [['role' => 'user', 'content' => $prompt]]
-    ];
-
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'x-api-key: ' . $anthropicApiKey,
-        'anthropic-version: 2023-06-01',
-        'anthropic-beta: prompt-caching-2024-07-31',
-        'Content-Type: application/json'
-    ]);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 45);
-    $response = curl_exec($ch);
-    $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
     if ($httpStatus !== 200) {
-        // Direct Anthropic failed (e.g. the account's own usage/spend limit
-        // was hit) -- fall back to the same model via OpenRouter before
-        // giving up, since that's a separate account/balance entirely.
+        // Direct Anthropic failed or was never configured (missing key,
+        // usage/spend limit, rate limit) -- fall back to the same model via
+        // OpenRouter before giving up, since that's a separate
+        // account/balance entirely.
         if ($openrouterApiKey && isset($openrouterFallbackModel[$model])) {
             $fallbackText = call_openrouter($openrouterApiKey, $openrouterFallbackModel[$model], $system, $prompt, 2048);
             if ($fallbackText !== null) {
@@ -233,8 +237,8 @@ if (in_array($model, $directAnthropicModels, true)) {
                 exit;
             }
         }
-        http_response_code($httpStatus);
-        echo json_encode(['error' => 'Direct Claude API error', 'details' => json_decode($response, true)]);
+        http_response_code($httpStatus ?: 500);
+        echo json_encode(['error' => 'Direct Claude API error', 'details' => $response ? json_decode($response, true) : 'ANTHROPIC_API_KEY not configured']);
         exit;
     }
 
