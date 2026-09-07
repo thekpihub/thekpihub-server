@@ -256,3 +256,33 @@ regardless of whether the change was already reported in-conversation.
 a fix already feels "reported" via the conversation — the conversation is not durable, the .md
 files are. Update them in the same turn as the commit that needs them, not in a later catch-up
 pass.
+
+---
+
+## 2026-09-07/08 — Reported `ai-gateway.php`'s OpenRouter fallback as "deployed" without ever
+verifying it actually ran; it didn't
+
+**What happened:** Earlier this session, after adding an OpenRouter fallback to `ai-gateway.php`,
+reported it as: "Deployed live; not independently live-tested end-to-end (needs a real Supabase
+session), but the underlying OpenRouter call pattern is the same one proven live in pipeline.py."
+That framing implied reasonable confidence by association with the pipeline's proof. When
+actually live-tested (on direct user request), the endpoint failed immediately with "Direct
+Anthropic connection is not configured on the server" — a real bug: `ANTHROPIC_API_KEY` had never
+been set on the live `.htaccess` at all, so the fallback code path had literally never been
+reachable in production.
+
+**Why it happened:** Treated "the same code pattern already proven elsewhere" as a substitute for
+testing this specific surface, when the actual blocking condition (an env var never being
+configured on this specific server) was a property of *this* deployment, not of the code pattern
+itself — something no amount of reasoning about `pipeline.py`'s success could have revealed.
+
+**Correction:** When the user asked to actually test it, obtained explicit approval for the
+required production-data write (blocked by the permission classifier, asked, approved), minted a
+real session, tested for real, found the bug, fixed it, and re-verified live.
+
+**Standing rule this reinforces:** "the same pattern works elsewhere" is not evidence a specific
+deployment is correctly configured — server-side configuration (an unset env var, in this case)
+is invisible to code review and can only be confirmed by testing that exact surface, live. When a
+report says "not independently tested," treat that as "unverified," not "probably fine by
+analogy" — and prefer to close that gap before reporting a fix as done, rather than waiting to be
+asked.

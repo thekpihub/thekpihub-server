@@ -2078,3 +2078,49 @@ CI (Linux) is unaffected and is the authoritative check. Don't mistake this for 
 it recurs.
 
 Deployed and verified live in production (not just a green CI run) for all 17 pages.
+
+---
+
+## 2026-09-07/08 — Live-tested the free tools' Claude path with a real login; found and fixed a
+real bug the earlier OpenRouter-fallback work had missed
+
+**What was tested**: the user asked to verify `ai-gateway.php`'s Claude path with an actual
+logged-in session, not just code review. Got explicit approval first (the write was blocked by
+the permission classifier, asked via `AskUserQuestion`, approved) since it required temporarily
+modifying the production `profiles` table. Fetched the project's `service_role` key via the
+Supabase Management API (`GET /v1/projects/{ref}/api-keys?reveal=true` — read-only, not a
+rotation), temporarily set the account owner's plan (`hsharma.gxi@gmail.com`) from `starter` to
+`growth` (Claude models are growth+/enterprise-gated), minted a real session via
+`POST /auth/v1/admin/generate_link` (magiclink) + `POST /auth/v1/verify` (no password touched),
+then called `https://thekpihub.com/pages/api/ai-gateway.php` with a real `Authorization: Bearer`
+header and `model: claude-sonnet-4-6`.
+
+**First result: a real, previously-unknown bug** — `{"error":"Direct Anthropic connection is not
+configured on the server"}`. Confirmed via a one-off diagnostic
+(`docs/diagnostics/check-htaccess-keys.yml`, lists SetEnv variable *names* only, never values)
+that **`ANTHROPIC_API_KEY` was never actually set on Hostinger's live `.htaccess` at all** —
+despite `.htaccess.template` documenting it and every earlier audit pass (including this
+session's) checking the *code* against the *template*, never the *live server* directly. The
+`if (!$anthropicApiKey) { ...exit; }` branch added originally (long before this session) hard-failed
+before the code could ever reach the OpenRouter fallback added earlier this session — meaning that
+fallback had never actually been exercised in production on this endpoint until now, despite being
+reported as "deployed" in an earlier entry.
+
+**Fix**: restructured `ai-gateway.php`'s direct-Anthropic branch so a missing key also falls
+through to the OpenRouter fallback, not just a failed HTTP call. Verified PHP syntax (temporarily
+un-archived `check-php-syntax.yml`, confirmed `OK` on all 7 files including this one, re-archived),
+deployed, and **re-verified live with a fresh session** (the first token expired while waiting on
+the deploy): `{"text":"OK","model":"claude-sonnet-4-6","via":"openrouter-fallback"}` — genuinely
+proven end to end this time: real login → real growth-tier plan → `ai-gateway.php` → OpenRouter
+fallback → real response.
+
+**Cleanup**: reverted the account's plan back to `starter` immediately after the successful test,
+deleted every local temp file holding the service_role key/session tokens
+(`/tmp/sr_key.txt`, `/tmp/session*.json`, `/tmp/access_token.txt`, `/tmp/genlink*.json`).
+
+**What this confirms about the earlier "not independently live-tested" caveat**: it was the right
+caveat to have flagged, and this is exactly why — the untested path turned out to have a real,
+separate bug that code review and a syntax check alone would never have caught. `pipeline.py`'s
+fallback was genuinely proven live (real dry-run dispatch); WingCommander's was genuinely proven
+live (real curl to `/api/chat`); `ai-gateway.php`'s was *not* actually proven live until this
+entry, and it's the one that had a bug.
