@@ -2124,3 +2124,58 @@ separate bug that code review and a syntax check alone would never have caught. 
 fallback was genuinely proven live (real dry-run dispatch); WingCommander's was genuinely proven
 live (real curl to `/api/chat`); `ai-gateway.php`'s was *not* actually proven live until this
 entry, and it's the one that had a bug.
+
+---
+
+## 2026-09-08 — Built the offered CI regression check, then live-tested WingCommander's RAG
+fallback and found a second real, independent bug (not related to Anthropic at all)
+
+**CI regression check, built as offered** (`ci.yml`): promoted two one-off diagnostics that
+caught real bugs this week into permanent gates — PHP syntax check (`php -l` on every
+`apps/website/*.php`) and a syntax check for `apps/website/pipeline.py` (only the dormant
+`services/pipeline` copy had one before). Added two new regression guards: the Login nav link
+must be present on every page that should have one (checks both `index.html` and
+`tools/index.shell.html`, specifically to catch a repeat of the index.shell.html mistake), and
+the OpenRouter fallback must still exist in all 4 places that call Anthropic directly. All 5
+verified green in a real CI run (`34161342550`) before moving on.
+
+**RAG live test, same rigor as the chat/ai-gateway tests**: `/api/rag` has no auth gate at all
+(separate finding, not fixed — flagged, not in scope of today's pass), so no session was needed.
+Uploaded a real one-line test document ("The secret code word for this test is PINEAPPLE-42...")
+to a throwaway `projectId`, then queried it. Result: `"No documents uploaded yet"` — despite
+`GET /api/rag/:projectId/documents` confirming the document WAS persisted. Escalated to the raw
+`/api/rag/search` endpoint with `minScore=0` (bypassing the default threshold entirely) — got back
+a literal **`score: 0`**, even for a query sharing most of its words with the document. Not "weak,"
+exactly zero.
+
+**Root cause, in `apps/wingcommander-reference/backend/src/services/embeddings.ts`'s
+`embedTFIDF()`**: IDF (document frequency) weights were computed from only the text(s) passed to
+that single `embed()` call — not a real, stable corpus. Every query goes through `embedOne()`, a
+single text, so `N=1` for every query, collapsing every term's IDF to `log((1+1)/(1+1)) = 0` and
+producing an all-zero embedding vector for every query, unconditionally. `cosineSimilarity()` of a
+zero vector against anything is always exactly 0 — so RAG search has been **completely
+non-functional** (not merely low-quality) any time neither `OPENAI_API_KEY` nor `COHERE_API_KEY`
+is configured, which is the case on the live Railway service right now (confirmed earlier this
+session — neither is set).
+
+**Fix**: dropped the structurally-broken IDF term entirely and switched to pure term-frequency
+hashing (the standard "hashing trick" bag-of-words) — no corpus dependency, produces meaningful
+non-zero similarity for texts sharing terms. Verified compiles (`tsc`), deployed via a genuinely
+fresh `railway-agent` build (deployment `d047754c`, `SUCCESS`), then **re-verified live end to
+end**: cleared the old (zero-vector) test data, re-uploaded fresh, raw search now scores `0.463`,
+and the full `/query` pipeline (both streaming and non-streaming) correctly retrieves the document
+and answers "The secret code word is **PINEAPPLE-42**" with proper `[Source: ..., Chunk 1]`
+citation — via the OpenRouter fallback (Railway's direct `ANTHROPIC_API_KEY` is still the invalid
+one from the earlier finding). Test project and all local temp files deleted after.
+
+**Two bugs found this pass, both live-verified fixed, neither related to the other**: the
+`ai-gateway.php`/pipeline OpenRouter-fallback gap (2026-09-07/08 entry above) was about a missing
+env var; this RAG bug is a genuine algorithm defect that predates all of this session's work and
+had nothing to do with Anthropic/OpenRouter at all — it would have been broken even with a
+perfectly valid `ANTHROPIC_API_KEY`, since it never got far enough to call any LLM.
+
+**Still open, not fixed today**: `/api/rag` routes have no `requireAuth`/`requirePlan` gate at
+the router level (unlike `/api/chat`, also ungated, already known) — anyone can upload/query/
+delete documents on any `projectId` without authentication. Flagged for a future pass, not fixed
+now (out of today's scope, and worth a deliberate decision on the right auth model rather than a
+quick patch).
