@@ -2179,3 +2179,44 @@ the router level (unlike `/api/chat`, also ungated, already known) — anyone ca
 delete documents on any `projectId` without authentication. Flagged for a future pass, not fixed
 now (out of today's scope, and worth a deliberate decision on the right auth model rather than a
 quick patch).
+
+---
+
+## 2026-09-08 (cont.) — Fixed the no-auth gap on WingCommander's /api/chat and /api/rag,
+verified live with the real handoff flow
+
+**Fix**: added `requireAuth` to both routers (`chat.ts`'s single route directly, `rag.ts` via
+`router.use()` covering every route — upload, upload-many, query, search, list, delete, clear —
+deliberately all-or-nothing so a future new RAG route can't ship ungated by accident). Wired the
+frontend's existing-but-unused `getHandoffToken()` helper (already built in `useAuthHandoff.ts`,
+explicitly commented "for use in API calls," just never actually called) into all 6 fetch() sites
+across `ChatPanel.tsx`, `AgentPanel.tsx`, and `RAGPanel.tsx` (×4).
+
+**Deployed both sides together** (backend requiring auth before the frontend sends it would have
+broken the feature for everyone until the frontend redeployed) — backend via a fresh
+`railway-agent` build (deployment `3d4cc0f8`, `SUCCESS`), frontend via
+`deploy-vercel-wingcommander-frontend.yml`.
+
+**Verified live, both directions**:
+- Unauthenticated: `POST /api/chat` and `GET /api/rag/.../documents` with no header both now
+  return `{"error":"Authentication required"}` (previously both worked with no auth at all).
+- Authenticated, using the *exact* real flow the frontend actually goes through (not a shortcut):
+  minted a Supabase session (magiclink+verify, account owner, plan temporarily elevated to
+  `growth` again and reverted after), called the real `open-wingman.php` handoff endpoint to get
+  a genuine WingCommander JWT (the same one `getHandoffToken()` would return client-side), then
+  called both endpoints with it — chat returned `{"type":"text","content":"OK"}` via the
+  OpenRouter fallback, RAG list returned `{"documents":[]}` cleanly. Both work correctly for a
+  real logged-in user.
+
+**Deliberately not added**: `requirePlan` tier-gating. The missing auth check was an unambiguous
+bug (a helper built for exactly this was just never wired in); which plans should have RAG/chat
+access is a separate, deliberate product decision, not something to guess at while fixing a
+security gap.
+
+**Razorpay test secret in `apps/platform/.env.example`**: replaced the real-looking value
+(`RAZORPAY_KEY_SECRET=71v7yj6qxuMP5UUiMHW5C8as`) with a `replace_me`-style placeholder matching
+every other line in that file. This does **not** remove it from git history (already exposed
+there regardless) and does **not** rotate anything live — purely stops the current tree from
+displaying a real secret as if it were a template value. Rotating the actual key (if it's ever
+been used for anything real) is still a separate, user-owned decision per the standing
+"don't rotate without being asked" rule.
