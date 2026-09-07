@@ -197,3 +197,35 @@ entry above) applies just as much to *reconciling git history* as it does to rep
 deletion/credential rotation — a merge conflict resolution that silently discards a "worse"
 side without diffing it first is the same class of mistake as inferring a domain's owner from a
 commit message.
+
+---
+
+## 2026-09-07 — Edited a generated file instead of its source template; caught it myself before declaring done
+
+**What happened:** Fixing the homepage's missing "Login" nav link, edited `apps/website/index.html`
+directly. Committed, deployed, and initially treated it as done.
+
+**Why it happened:** Assumed (based on a partial read of `tools/prerender.mjs` showing it only
+replaces `<div id="root">`'s contents) that everything outside that div in `index.html` was safe
+to hand-edit. Didn't check where `prerender.mjs` actually reads its base template from before
+making that assumption.
+
+**Verification that followed:** Rather than trusting the green "Website - Hostinger governed
+deploy" run, curled the live homepage afterward specifically to confirm the link was really there
+— it wasn't (`grep -c 'login.html'` on the live response returned 0). Checked the local built file
+too, also 0, despite the commit containing the edit. Traced it to `prerender.mjs`'s `shellPath`
+logic: it prefers `tools/index.shell.html` over `index.html` itself when that file exists, so the
+very next `npm run build:site` (which the deploy workflow always runs) silently discarded the
+direct edit and regenerated `index.html` from the unedited template.
+
+**Correction:** Edited the real source (`tools/index.shell.html`), rebuilt, confirmed the built
+`index.html` now carried the link, redeployed, and re-verified live via curl — this time genuinely
+present on all 17 fixed pages including the homepage.
+
+**Standing rule this reinforces:** the existing "verify via direct, authoritative query" habit
+caught this — a green CI/deploy run is evidence the *pipeline* succeeded, not that the *intended
+content change* actually reached production. For any change to a file that might be
+build-generated, confirm which file is the real source before editing (grep the build tooling for
+where it reads its template from, don't infer from a partial read), and always re-check the live
+result after deploying — a passing pipeline is necessary, not sufficient, if there's any templating
+step in front of the change.

@@ -1908,3 +1908,54 @@ verifications on future PRs.
 either the 91-commit line or the resurrected old branch; all 6 categories of findings above are
 fixed, committed, and — where a live surface exists — deployed and independently verified live,
 not just assumed from a clean build.
+
+---
+
+## 2026-09-07 — Login-link accessibility audit across every live page, fixed and verified live
+
+**Audit**: checked all 29 live pages (per `hostinger-publish-manifest.txt`, not just what's in the
+repo) for whether each one actually has a clickable, discoverable link to `login.html`. Found only
+5 did (`about.html`, `directory.html`, `register.html`, `sitemap.html`, `updates.html` — all using
+an "overlay" nav template with a "Member Login" item). 4 more (`auditor.html`, `narrative.html`,
+`validator.html`, `dashboard.html`) only reach login via a forced JS redirect when an
+authenticated action fails — not a proactive nav link. The remaining ~19 pages, **including the
+homepage itself and `pricing.html`**, had zero path to login at all.
+
+Root cause: at least 3 different nav templates coexist on the site. 17 pages use a plain
+`<nav class="nav-links">` template that never got a login item added; the homepage has its own
+`<nav class="lp-nav">` with the same gap.
+
+**Fix**: added a `Login` item to the `nav-links`/`lp-nav-links` list on all 17 affected pages
+(pricing, contact, auditor, benchmarks, cohort, cookies, freedom, get-audit, india-benchmarks,
+intelligence, narrative, privacy, stack-scorer, terms, today, validator, and the homepage),
+matching each page's existing style — no new CSS/template.
+
+**Real mistake made and self-caught, not by the user**: the first attempt edited
+`apps/website/index.html` directly for the homepage. That's wrong — `tools/prerender.mjs`
+regenerates `index.html` from `tools/index.shell.html` on every `npm run build:site` (which the
+deploy workflow's "Build static website" step always runs), so a direct edit to `index.html` gets
+silently discarded on the very next build. Deployed once, then **verified live via curl** rather
+than trusting the green deploy — found the homepage genuinely still had 0 occurrences of
+`login.html`. Traced the cause (`shellPath` in `prerender.mjs` prefers `tools/index.shell.html`
+when it exists), fixed the real source file, rebuilt, confirmed `index.html` now carries the link,
+redeployed, and re-verified live via curl on all 17 pages including the homepage — all now show
+exactly 1 occurrence of `href="login.html"`.
+
+**Side effect, expected and harmless**: running `npm run build:site` locally also re-stamped
+asset-fingerprint `?v=` query params across several pages (`dashboard.html`, `blog.html`,
+`upgrade.html`, `account/integrations.html`'s `gk-shortcut.js` reference), correcting a stale hash
+left over from an earlier session's fix to that file. Committed alongside the nav fix.
+
+**Note for future edits to the homepage**: any change to `index.html`'s static shell (nav, footer,
+anything outside `<div id="root">`) must go into `apps/website/tools/index.shell.html`, never
+`index.html` directly — the latter is a build artifact for this purpose, not a source file, even
+though it's checked into git.
+
+**Local environment quirk, not a repo bug**: `bash scripts/test-stage-hostinger-site.sh` fails
+locally on this Windows machine with "publish file does not exist: 404.html" -- this is a false
+negative caused by `core.autocrlf=true` converting `hostinger-publish-manifest.txt` to CRLF on
+local checkout (confirmed via `git show HEAD:...` showing pure LF in the actual committed blob).
+CI (Linux) is unaffected and is the authoritative check. Don't mistake this for a real failure if
+it recurs.
+
+Deployed and verified live in production (not just a green CI run) for all 17 pages.
