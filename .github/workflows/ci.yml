@@ -110,6 +110,58 @@ jobs:
           npm audit --audit-level=moderate || true
           npm test
 
-      - name: Pipeline syntax check
+      - name: Pipeline syntax check (services/pipeline, dormant)
         working-directory: services/pipeline
         run: python -m py_compile pipeline.py
+
+      # apps/website/pipeline.py is the ACTIVE scheduled pipeline
+      # (daily-pipeline.yml / premium-pipeline.yml) -- services/pipeline
+      # above is the dormant one. Both need a syntax gate; this one was
+      # missing until 2026-09-08.
+      - name: Pipeline syntax check (apps/website, active)
+        working-directory: apps/website
+        run: python -m py_compile pipeline.py
+
+      # No local PHP is available in most dev environments touching this
+      # repo, so a real syntax error here (found once already, 2026-09-06)
+      # can otherwise reach production undetected until a request fails.
+      - name: PHP syntax check
+        run: |
+          fail=0
+          for f in $(find apps/website -name "*.php"); do
+            if ! php -l "$f" > /tmp/phpcheck.txt 2>&1; then
+              echo "SYNTAX ERROR in $f:"
+              cat /tmp/phpcheck.txt
+              fail=1
+            fi
+          done
+          exit $fail
+
+      # Regression guard for the 2026-09-07 login-nav-accessibility fix --
+      # catches a page silently losing its Login link again. Checks BOTH
+      # index.html and tools/index.shell.html (the homepage's real source
+      # template) since editing only the former is exactly the mistake
+      # that shipped once already: prerender.mjs regenerates index.html
+      # from index.shell.html on every build:site, silently discarding a
+      # direct edit to index.html alone.
+      - name: Regression check - Login nav link present on every page that should have one
+        working-directory: apps/website
+        run: |
+          pages="index.html tools/index.shell.html pricing.html contact.html auditor.html benchmarks.html cohort.html cookies.html freedom.html get-audit.html india-benchmarks.html intelligence.html narrative.html privacy.html stack-scorer.html terms.html today.html validator.html about.html directory.html register.html sitemap.html updates.html"
+          fail=0
+          for f in $pages; do
+            grep -q 'href="login.html"' "$f" || { echo "MISSING login link: $f"; fail=1; }
+          done
+          exit $fail
+
+      # Regression guard for the 2026-09-06/08 OpenRouter-fallback work --
+      # catches any of the 4 fallback implementations being silently
+      # removed (e.g. during an unrelated refactor).
+      - name: Regression check - OpenRouter fallback still present on every Anthropic-calling surface
+        run: |
+          fail=0
+          grep -q "_openrouter_fallback" apps/website/pipeline.py || { echo "MISSING: pipeline.py OpenRouter fallback"; fail=1; }
+          grep -q "openrouterFallbackModel" apps/website/pages/api/ai-gateway.php || { echo "MISSING: ai-gateway.php OpenRouter fallback"; fail=1; }
+          grep -q "openRouterComplete" apps/wingcommander-reference/backend/src/routes/chat.ts || { echo "MISSING: chat.ts OpenRouter fallback"; fail=1; }
+          grep -q "openRouterComplete" apps/wingcommander-reference/backend/src/routes/rag.ts || { echo "MISSING: rag.ts OpenRouter fallback"; fail=1; }
+          exit $fail
