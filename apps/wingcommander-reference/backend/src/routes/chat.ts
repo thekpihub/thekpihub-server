@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import Anthropic from "@anthropic-ai/sdk";
 import { openRouterComplete } from "../lib/openrouterFallback.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -82,7 +83,7 @@ function buildCachedMessages(
   });
 }
 
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", requireAuth, async (req: Request, res: Response) => {
   const {
     messages,
     model = "claude-opus-4-7",

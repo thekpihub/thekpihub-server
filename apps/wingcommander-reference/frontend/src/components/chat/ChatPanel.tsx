@@ -17,6 +17,7 @@ import { useChatStore, useAuthStore } from "@/store";
 import { AVAILABLE_MODELS } from "@/lib/models";
 import { copyToClipboard, generateId } from "@/lib/utils";
 import type { Message, AgentMode } from "@/types";
+import { getHandoffToken } from "@/hooks/useAuthHandoff";
 
 const MODE_CONFIG: Record<AgentMode, { icon: React.ElementType; label: string; color: string }> = {
   code: { icon: Code2, label: "Code", color: "text-cyan-400" },
@@ -214,7 +215,10 @@ export default function ChatPanel({ projectId, onFileGenerated, onCacheUpdate }:
       abortRef.current = new AbortController();
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getHandoffToken()}`,
+        },
         body: JSON.stringify({
           messages: [...messages, userMessage].map((m) => ({
             role: m.role,

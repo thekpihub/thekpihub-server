@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { getHandoffToken } from "@/hooks/useAuthHandoff";
 
 interface AgentTask {
   id: string;
@@ -161,7 +162,10 @@ export default function AgentPanel({ projectId, onFileGenerated }: AgentPanelPro
       abortRef.current = new AbortController();
       const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getHandoffToken()}`,
+        },
         body: JSON.stringify({
           messages: [{ role: "user", content: goal }],
           model: "claude-opus-4-7",

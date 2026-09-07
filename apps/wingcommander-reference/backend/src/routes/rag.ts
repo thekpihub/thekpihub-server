@@ -11,8 +11,15 @@ import {
   listDocuments,
   clearProject,
 } from "../services/vectorStore.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
+// Found 2026-09-08 (live-testing the RAG fallback): none of these routes
+// required auth at all -- anyone could upload/query/delete documents on any
+// projectId. The frontend already has a getHandoffToken() helper meant for
+// exactly this that was simply never wired into these fetch() calls (fixed
+// alongside this). Gating every route here, not just some, for consistency.
+router.use(requireAuth);
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB

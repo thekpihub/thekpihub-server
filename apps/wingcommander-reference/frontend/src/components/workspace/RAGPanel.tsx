@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { bytesToSize } from "@/lib/utils";
+import { getHandoffToken } from "@/hooks/useAuthHandoff";
 
 interface DocumentInfo {
   id: string;
@@ -58,7 +59,9 @@ export default function RAGPanel({ projectId }: RAGPanelProps) {
   const loadDocuments = useCallback(async () => {
     setLoadingDocs(true);
     try {
-      const res = await fetch(`/api/rag/${projectId}/documents`);
+      const res = await fetch(`/api/rag/${projectId}/documents`, {
+        headers: { Authorization: `Bearer ${getHandoffToken()}` },
+      });
       const data: { documents: DocumentInfo[] } = await res.json();
       setDocuments(data.documents ?? []);
     } finally {
@@ -81,7 +84,11 @@ export default function RAGPanel({ projectId }: RAGPanelProps) {
       fd.append("projectId", projectId);
 
       try {
-        const res = await fetch("/api/rag/upload", { method: "POST", body: fd });
+        const res = await fetch("/api/rag/upload", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${getHandoffToken()}` },
+          body: fd,
+        });
         const data: { chunks?: number; error?: string } = await res.json();
 
         setUploading((prev) =>
@@ -119,7 +126,10 @@ export default function RAGPanel({ projectId }: RAGPanelProps) {
   };
 
   const handleDelete = async (docId: string) => {
-    await fetch(`/api/rag/${projectId}/documents/${docId}`, { method: "DELETE" });
+    await fetch(`/api/rag/${projectId}/documents/${docId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${getHandoffToken()}` },
+    });
     setDocuments((prev) => prev.filter((d) => d.id !== docId));
   };
 
@@ -136,7 +146,10 @@ export default function RAGPanel({ projectId }: RAGPanelProps) {
       abortRef.current = new AbortController();
       const res = await fetch("/api/rag/query", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getHandoffToken()}`,
+        },
         body: JSON.stringify({ query: currentQuery, projectId, stream: true }),
         signal: abortRef.current.signal,
       });
