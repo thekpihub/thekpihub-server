@@ -2027,6 +2027,9 @@ through the login-nav fix) went several commits without a `servermemory.md` upda
 repo's own standing rule (update after every commit). Caught and backfilled in this entry, on
 direct user request to "save everything." See `mistakesdone.md` for the corresponding
 process-adherence note.
+
+---
+
 ## 2026-09-07 — Login-link accessibility audit across every live page, fixed and verified live
 
 **Audit**: checked all 29 live pages (per `hostinger-publish-manifest.txt`, not just what's in the
