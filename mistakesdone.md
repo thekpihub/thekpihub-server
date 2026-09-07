@@ -229,3 +229,30 @@ build-generated, confirm which file is the real source before editing (grep the 
 where it reads its template from, don't infer from a partial read), and always re-check the live
 result after deploying — a passing pipeline is necessary, not sufficient, if there's any templating
 step in front of the change.
+
+---
+
+## 2026-09-06/07 — Went several commits without updating servermemory.md, against the repo's own
+standing rule
+
+**What happened:** Between the OpenRouter-fallback work (pipeline.py, ai-gateway.php, WingCommander
+chat.ts/rag.ts) and the login-nav accessibility fix, multiple real commits landed on `main` without
+a corresponding `servermemory.md` entry — despite the repo's own standing rule ("after every commit
+made locally or pushed, both servermemory.md and mistakesdone.md must be updated") and the
+PostToolUse hook that reminds of it on every `git commit`/`git push`.
+
+**Why it happened:** Momentum — each fix was verified live and reported to the user in the
+conversation itself, which made the in-chat report feel like it substituted for the durable log
+entry. It doesn't: the whole point of servermemory.md is to survive past this conversation into a
+future session that won't have this transcript.
+
+**Correction:** Backfilled a single comprehensive entry covering the full API-key inventory, the
+Brevo IP-allowlist fix, the OpenRouter/Brevo wiring into Hostinger's `.htaccess`, and the
+OpenRouter-fallback implementation across all three Anthropic-calling surfaces, on direct user
+request ("save everything till here"). Should not have needed that prompt — the hook fires
+regardless of whether the change was already reported in-conversation.
+
+**Standing rule this reinforces:** treat the PostToolUse hook's reminder as non-optional even when
+a fix already feels "reported" via the conversation — the conversation is not durable, the .md
+files are. Update them in the same turn as the commit that needs them, not in a later catch-up
+pass.
