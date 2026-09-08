@@ -31,7 +31,6 @@ import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from types import SimpleNamespace
 from typing import Optional
 
 import feedparser
@@ -39,9 +38,16 @@ import pymysql
 import pymysql.cursors
 import requests
 from dotenv import load_dotenv
-import anthropic
 
 load_dotenv()
+
+# services/llm_gateway is the shared, resilient Claude-calling module (built
+# 2026-09-08 -- see its README and servermemory.md for why). This file used to
+# carry its own get_claude()/_openrouter_fallback()/claude_call() here;
+# duplicated in services/pipeline/pipeline.py (and that copy was missing the
+# fallback entirely). Now both import the same implementation.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "services"))
+from llm_gateway.gateway import claude_call, claude_text  # noqa: E402
 
 # ─── CONFIG ──────────────────────────────────────────────────────────────────
 MODEL            = os.getenv("CLAUDE_MODEL", "claude-sonnet-5")
@@ -60,8 +66,9 @@ PUBLISH_UTC      = PUBLISH_AT.astimezone(timezone.utc)
 PIPELINE_TYPE    = os.getenv("PIPELINE_TYPE", "daily")
 SLUG_SUFFIX      = "" if PIPELINE_TYPE == "daily" else f"-{PIPELINE_TYPE}"
 
-ANTHROPIC_KEY    = os.getenv("ANTHROPIC_API_KEY")
-OPENROUTER_KEY   = os.getenv("OPENROUTER_API_KEY")
+ANTHROPIC_KEY    = os.getenv("ANTHROPIC_API_KEY")  # presence/shape checked in validate_env() below
+# OPENROUTER_API_KEY is read directly by services/llm_gateway/gateway.py, not
+# held as a module-level var here anymore -- nothing else in this file needs it.
 SERPAPI_KEY      = os.getenv("SERPAPI_KEY")
 TELEGRAM_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
@@ -176,98 +183,12 @@ def with_retry(fn, *, retries: int = 3, base_delay: float = 2.0, label: str = ""
 
 
 # ─── CLAUDE CLIENT ───────────────────────────────────────────────────────────
-
-_claude: Optional[anthropic.Anthropic] = None
-
-def get_claude() -> anthropic.Anthropic:
-    global _claude
-    if _claude is None:
-        _claude = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
-    return _claude
-
-
-def _openrouter_fallback(**kwargs):
-    """
-    Last resort when the direct Anthropic account is rate/usage-capped (hit
-    2026-09-05, see servermemory.md): call the exact same Claude model via
-    OpenRouter instead. OpenRouter bills against a completely separate
-    account/balance, so it works even while console.anthropic.com's own
-    usage limit is blocking the direct API key. Returns an object shaped
-    like an Anthropic response (so claude_text() needs no changes), or None
-    if OPENROUTER_API_KEY isn't configured or the fallback call itself fails.
-    """
-    if not OPENROUTER_KEY:
-        return None
-
-    model = kwargs.get("model", MODEL)
-    or_model = model if model.startswith("anthropic/") else f"anthropic/{model}"
-
-    messages = []
-    system = kwargs.get("system")
-    if system:
-        sys_text = system[0]["text"] if isinstance(system, list) else system
-        messages.append({"role": "system", "content": sys_text})
-    for m in kwargs.get("messages", []):
-        content = m["content"]
-        if isinstance(content, list):
-            content = "\n".join(b.get("text", "") for b in content if isinstance(b, dict))
-        messages.append({"role": m["role"], "content": content})
-
-    try:
-        r = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_KEY}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": "https://thekpihub.com",
-                "X-Title": "The KPI Hub Pipeline",
-            },
-            json={"model": or_model, "messages": messages, "max_tokens": kwargs.get("max_tokens", 2048)},
-            timeout=60,
-        )
-        r.raise_for_status()
-        text = r.json()["choices"][0]["message"]["content"]
-        return SimpleNamespace(content=[SimpleNamespace(text=text)])
-    except Exception as exc:
-        log.error("❌ OpenRouter fallback also failed: %s", exc)
-        return None
-
-
-def claude_call(**kwargs):
-    """Wrapper around messages.create with retry + 429 back-pressure handling.
-    Falls back to the same model via OpenRouter (see _openrouter_fallback)
-    if the direct Anthropic account is exhausted after retries."""
-    def _call():
-        try:
-            return get_claude().messages.create(**kwargs)
-        except anthropic.RateLimitError:
-            log.warning("Claude rate-limited — backing off 30s")
-            time.sleep(30)
-            return get_claude().messages.create(**kwargs)
-    resp = with_retry(_call, retries=3, base_delay=5.0,
-                      label=f"claude({kwargs.get('model', MODEL)[:20]})")
-    if resp is None and OPENROUTER_KEY:
-        log.warning("⚠️  Direct Anthropic exhausted — falling back to OpenRouter")
-        resp = _openrouter_fallback(**kwargs)
-    return resp
-
-
-def claude_text(resp) -> str:
-    """
-    Return the first text block's content from a Claude response.
-
-    `resp.content[0]` is not always a TextBlock — extended thinking makes Claude
-    sometimes return a ThinkingBlock first, and indexing straight to [0].text blew
-    up 3 of 7 articles on 2026-09-02 with 'ThinkingBlock' object has no attribute
-    'text'. Scan for the first block that actually has one instead of assuming
-    position 0.
-    """
-    for block in resp.content:
-        text = getattr(block, "text", None)
-        if text is not None:
-            return text
-    raise RuntimeError(f"No text block in Claude response (block types: "
-                       f"{[type(b).__name__ for b in resp.content]})")
+# claude_call()/claude_text() now come from services/llm_gateway/gateway.py
+# (imported above) -- this used to be ~90 lines of get_claude()/
+# _openrouter_fallback()/claude_call()/claude_text() duplicated between this
+# file and services/pipeline/pipeline.py. See that module's README/docstring
+# for what it does and its two honest limitations (no predictive credit
+# check; key-pooling alone doesn't survive an org-wide cap).
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
