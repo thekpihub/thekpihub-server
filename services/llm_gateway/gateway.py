@@ -124,16 +124,8 @@ def _with_retry(fn, *, retries: int = 3, base_delay: float = 5.0, label: str = "
             time.sleep(delay)
 
 
-def _openrouter_fallback(*, model: str, system, messages, max_tokens: int):
-    """Call the same model via OpenRouter — a separate account/billing
-    relationship, proven to keep working while the direct Anthropic account
-    is capped. Returns an object shaped like an Anthropic response (so
-    claude_text() needs no changes), or None if unconfigured/failed."""
-    key = os.getenv("OPENROUTER_API_KEY", "").strip()
-    if not key:
-        return None
-
-    or_model = model if model.startswith("anthropic/") else f"anthropic/{model}"
+def _normalize_messages(system, messages) -> list[dict]:
+    """Anthropic-shaped system/messages -> OpenRouter/OpenAI-shaped messages list."""
     or_messages = []
     if system:
         sys_text = system[0]["text"] if isinstance(system, list) else system
@@ -143,7 +135,17 @@ def _openrouter_fallback(*, model: str, system, messages, max_tokens: int):
         if isinstance(content, list):
             content = "\n".join(b.get("text", "") for b in content if isinstance(b, dict))
         or_messages.append({"role": m["role"], "content": content})
+    return or_messages
 
+
+def _call_openrouter_raw(*, or_model: str, or_messages: list[dict], max_tokens: int) -> Optional[str]:
+    """Low-level OpenRouter HTTP call. Returns the response text, or None if
+    unconfigured/failed. Shared by _openrouter_fallback() (Claude-model
+    fallback) and openrouter_call() (direct routing for non-Claude models,
+    e.g. ai-gateway.php's Gemini/Llama/Mistral/GPT/Grok/DeepSeek options)."""
+    key = os.getenv("OPENROUTER_API_KEY", "").strip()
+    if not key:
+        return None
     try:
         r = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
@@ -151,20 +153,56 @@ def _openrouter_fallback(*, model: str, system, messages, max_tokens: int):
                 "Authorization": f"Bearer {key}",
                 "Content-Type": "application/json",
                 "HTTP-Referer": "https://thekpihub.com",
-                "X-Title": "The KPI Hub Pipeline",
+                "X-Title": "The KPI Hub",
             },
             json={"model": or_model, "messages": or_messages, "max_tokens": max_tokens},
             timeout=60,
         )
         r.raise_for_status()
-        text = r.json()["choices"][0]["message"]["content"]
-        return SimpleNamespace(content=[SimpleNamespace(text=text)])
+        return r.json()["choices"][0]["message"]["content"]
     except Exception as exc:
-        log.error("❌ OpenRouter fallback also failed: %s", exc)
+        log.error("❌ OpenRouter call failed (model=%s): %s", or_model, exc)
         return None
 
 
-def claude_call(**kwargs):
+def _openrouter_fallback(*, model: str, system, messages, max_tokens: int, openrouter_model: Optional[str] = None):
+    """Call the same model via OpenRouter — a separate account/billing
+    relationship, proven to keep working while the direct Anthropic account
+    is capped. `openrouter_model`, when given, is used verbatim instead of
+    guessing the slug by prefixing "anthropic/" -- OpenRouter's naming isn't
+    fully consistent across Claude versions (e.g. "claude-sonnet-4-6" maps to
+    "anthropic/claude-sonnet-4.6", a dot not a dash -- callers that already
+    know the correct slug, like ai-gateway.php, should pass it explicitly
+    rather than rely on this function's generic guess). Returns an object
+    shaped like an Anthropic response (so claude_text() needs no changes),
+    or None if unconfigured/failed."""
+    or_model = openrouter_model or (model if model.startswith("anthropic/") else f"anthropic/{model}")
+    text = _call_openrouter_raw(
+        or_model=or_model, or_messages=_normalize_messages(system, messages), max_tokens=max_tokens
+    )
+    if text is None:
+        return None
+    return SimpleNamespace(content=[SimpleNamespace(text=text)])
+
+
+def openrouter_call(*, model: str, system=None, messages=None, prompt: Optional[str] = None,
+                     max_tokens: int = 2048) -> Optional[str]:
+    """Call a model directly via OpenRouter, no Anthropic attempt at all --
+    for models that only exist on OpenRouter (Gemini, Llama, Mistral, GPT,
+    Grok, DeepSeek, etc.), as opposed to claude_call()'s Anthropic-first,
+    OpenRouter-as-fallback behavior for actual Claude models. `model` must
+    already be a full OpenRouter slug (e.g. "google/gemini-2.0-flash").
+    Accepts either `messages` (Anthropic-shaped) or a plain `prompt` string
+    (converted to a single user message) for convenience. Returns the
+    response text, or None on failure."""
+    if messages is None:
+        messages = [{"role": "user", "content": prompt or ""}]
+    return _call_openrouter_raw(
+        or_model=model, or_messages=_normalize_messages(system, messages), max_tokens=max_tokens
+    )
+
+
+def claude_call(*, openrouter_model: Optional[str] = None, **kwargs):
     """
     Drop-in replacement for `anthropic.Anthropic(...).messages.create(**kwargs)`.
 
@@ -174,6 +212,11 @@ def claude_call(**kwargs):
     shape on fallback), or None if every option failed — same contract as the
     claude_call()/direct client.messages.create() calls this replaces, so
     existing `if resp is None:` handling at call sites needs no changes.
+
+    `openrouter_model`, if given, is a keyword-only param popped out before
+    kwargs ever reaches the real Anthropic SDK call (it isn't a real
+    Anthropic API parameter) -- see _openrouter_fallback()'s docstring for
+    why a caller might need to pass it explicitly.
     """
     model = kwargs.get("model", DEFAULT_MODEL)
     keys = _anthropic_keys()
@@ -207,6 +250,7 @@ def claude_call(**kwargs):
             system=kwargs.get("system"),
             messages=kwargs.get("messages", []),
             max_tokens=kwargs.get("max_tokens", 2048),
+            openrouter_model=openrouter_model,
         )
 
     log.error("❌ All Anthropic keys failed and OPENROUTER_API_KEY is not configured — giving up")
