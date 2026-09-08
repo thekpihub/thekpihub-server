@@ -95,7 +95,7 @@ if ($httpStatus === 200) {
 $input = json_decode(file_get_contents('php://input'), true);
 $prompt = $input['prompt'] ?? '';
 $system = $input['system'] ?? 'You are an expert SaaS metrics analyst for The KPI Hub.';
-$model  = $input['model'] ?? 'google/gemini-2.0-flash-lite:free'; // Default free model
+$model  = $input['model'] ?? 'openrouter/free'; // Default free model
 
 if (empty($prompt)) {
     http_response_code(400);
@@ -122,9 +122,16 @@ if ($model === 'auto') {
     }
 }
 
-// Model access tiers — matches WingCommander backend/src/middleware/auth.ts
+// Model access tiers. Starter's two free-tier slugs were both confirmed
+// DEAD 2026-09-08 via a real live call through this exact endpoint
+// ("not a valid model ID" / "unavailable for free") -- OpenRouter's free
+// catalog turns over; the whole starter tier was silently broken until
+// caught by end-to-end testing while building services/llm_gateway (PR
+// #26 and follow-up). Replaced with two slugs verified working live
+// against OpenRouter's current /api/v1/models list at fix time -- if
+// these go stale too, re-check that endpoint rather than guessing.
 $modelAccess = [
-    'starter'    => ['google/gemini-2.0-flash-lite:free', 'meta-llama/llama-3.1-8b-instruct:free'],
+    'starter'    => ['openrouter/free', 'nvidia/nemotron-3-super-120b-a12b:free'],
     'growth'     => [
         'claude-sonnet-4-6', 'claude-haiku-4-5-20251001',
         'mistral/mistral-large-latest', 'meta-llama/llama-3.3-70b-instruct',
