@@ -2518,3 +2518,21 @@ hit its 250 free-search monthly quota, and separately had been confirmed leaking
 `updatedAt` timestamp). Verified live directly against SerpAPI's `/account.json` endpoint before
 relying on it: valid, correct account email, 249/249 free searches remaining this month.
 Closes the "should SERPAPI_KEY be rotated" open item from the 2026-09-08 leak finding.
+
+---
+
+## 2026-09-09 (cont.) — GitHub classic PAT audit: 5 of 6 tokens are near-full-admin, no
+expiration, never used; left for user review (not revoked)
+
+Checked `github.com/settings/tokens` directly (read-only, browser) while following up on the
+2026-08-27 "PAT exposed, never confirmed revoked" open item. Could not pinpoint which (if any)
+of the 6 current classic tokens matches that specific incident — GitHub's classic-token list
+doesn't show creation dates. But surfaced a broader standing issue regardless: 5 of 6 tokens
+(`Termux-thekpihub-server-access`, `THE_KPI_HUB_REPO_ACCESS_TOKEN`, `Railway read:packages`,
+`Antigravity IDE`, `Hostinger SSH Key`) have near-full admin scopes (several also
+`delete_repo`), **no expiration date**, and are marked **"Never used."** Only
+`KPI Hub Master Automation Token` (moderate scopes, expires May 22 2027) looks deliberately
+scoped/intentional. Did not revoke anything — presented the finding via `AskUserQuestion`;
+**user's decision: review github.com/settings/tokens themselves and decide which to revoke**,
+rather than have me guess or act on tokens that might be wired into an unchecked tool config.
+Not closed — flagged for the user's own follow-up.
