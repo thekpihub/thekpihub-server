@@ -178,6 +178,14 @@ def engine3_verify(article):
         results = resp.json().get('organic_results', [])
         article['content'] += f'\n<!-- VERIFIED: {len(results)} sources -->\n'
         log.info(f'ENGINE 3: Verified ✅ — {len(results)} sources')
+    except requests.exceptions.RequestException as ex:
+        # A connection-level failure here (timeout, retries-exceeded) can
+        # embed the full request URL -- including api_key=... -- in urllib3's
+        # own exception message, which the line below would then log
+        # verbatim into pipeline.log. Confirmed this exact leak shape for the
+        # sibling call in apps/website/pipeline.py 2026-09-08 via a live
+        # artifact; log only the exception type here, not str(ex).
+        log.warning(f'ENGINE 3: SerpAPI request failed: {type(ex).__name__}')
     except Exception as ex:
         log.warning(f'ENGINE 3: SerpAPI error: {ex}')
     return article
@@ -289,10 +297,22 @@ def engine4_publish(article):
 def engine5_notify(published, harvest_count, errors):
     log.info('ENGINE 5: Sending Telegram notification...')
 
-    verify = requests.get(
-        f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getMe',
-        timeout=10
-    )
+    # TELEGRAM_BOT_TOKEN lives directly in the URL path for both calls below.
+    # Neither call site here is wrapped by the caller (main()'s per-article
+    # try/except doesn't cover this function) -- an uncaught connection error
+    # would print a traceback containing the full URL (token included) to
+    # stderr, which GitHub Actions shows in its console. Wrapping both calls
+    # so a Telegram outage degrades gracefully instead of crashing the run
+    # and printing the token. Same finding class as engine3_verify() above
+    # and the sibling leak fixed in apps/website/pipeline.py, 2026-09-08.
+    try:
+        verify = requests.get(
+            f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getMe',
+            timeout=10
+        )
+    except requests.exceptions.RequestException as ex:
+        log.warning(f'ENGINE 5: Telegram bot-verify request failed: {type(ex).__name__}')
+        return
     if verify.status_code != 200:
         log.warning(f'ENGINE 5: Bot token invalid — skipping Telegram')
         return
@@ -327,16 +347,20 @@ def engine5_notify(published, harvest_count, errors):
     message = '\n'.join(lines)
 
     chat_id = TELEGRAM_CHAT_ID.strip()
-    resp = requests.post(
-        f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage',
-        json={
-            'chat_id': chat_id,
-            'text': message,
-            'parse_mode': 'Markdown',
-            'disable_web_page_preview': True
-        },
-        timeout=15
-    )
+    try:
+        resp = requests.post(
+            f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage',
+            json={
+                'chat_id': chat_id,
+                'text': message,
+                'parse_mode': 'Markdown',
+                'disable_web_page_preview': True
+            },
+            timeout=15
+        )
+    except requests.exceptions.RequestException as ex:
+        log.warning(f'ENGINE 5: Telegram send request failed: {type(ex).__name__}')
+        return
 
     if resp.status_code == 200:
         log.info('ENGINE 5: Telegram notification sent ✅')
