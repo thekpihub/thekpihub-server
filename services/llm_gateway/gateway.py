@@ -47,13 +47,20 @@ from typing import Optional
 import anthropic
 import requests
 
+# Library code must never call logging.basicConfig() -- it configures the
+# ROOT logger, and since Python only honors the FIRST basicConfig() call in
+# a process, importing this module before the caller configures its own
+# logging silently wins and locks in this module's format/handlers for
+# EVERYTHING, including the caller's own log lines. This bit exactly that
+# way on first deploy (2026-09-08): apps/website/pipeline.py's FileHandler
+# for pipeline.log was constructed (so the file existed) but never actually
+# received a single record, because this module's basicConfig() had already
+# run during import and won -- pipeline.log came back completely empty from
+# a live run, caught by downloading the artifact and checking, not assumed.
+# Just get the logger; let the application (each pipeline.py) own all
+# handler/format configuration. If nothing ever configures logging, Python's
+# own default "no handlers found" behavior applies -- harmless.
 log = logging.getLogger("llm_gateway")
-if not log.handlers:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s | %(levelname)s | llm_gateway | %(message)s",
-        datefmt="%H:%M:%S",
-    )
 
 DEFAULT_MODEL = "claude-sonnet-5"
 
