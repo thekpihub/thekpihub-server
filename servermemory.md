@@ -2615,3 +2615,24 @@ earlier session. **Secondary, minor observation** (not urgent, not part of this 
 Privacy Policy/Home/etc. static pages of its own — likely not an issue since the main
 thekpihub.com site has its own separate policy pages, but worth knowing if the blog is ever
 meant to stand alone.
+
+---
+
+## 2026-09-09 (cont.) — GitHub PAT audit follow-up: confirmed which token is actually required
+and working
+
+Tested `GITHUB_ACCESS_TOKEN` (the value stored in `Credentials/.env`) directly against
+`GET https://api.github.com/user`: **200 OK**, authenticates as `hsharmagxi-debug`, full 5000
+req/hr rate limit (confirms a real, live, non-revoked token). Its `X-OAuth-Scopes` response
+header is an exact match to **`THE_KPI_HUB_REPO_ACCESS_TOKEN`**'s scope list from the earlier
+2026-09-09 tokens-page audit (`admin:enterprise, admin:org, repo, workflow, delete_repo,
+delete:packages, ...`) — confirming that specific token is the one this project actually
+depends on, even though GitHub's own UI shows it as "Never used" (that tracker apparently
+doesn't register direct API-header auth the way it does `git`/CLI usage).
+
+**Narrows the earlier 5-tokens-of-concern list down for the user's decision**:
+- **Keep** — `THE_KPI_HUB_REPO_ACCESS_TOKEN` (confirmed required, working) and
+  `KPI Hub Master Automation Token` (has an expiration, clear stated purpose).
+- **Actual candidates to revoke** — `Termux-thekpihub-server-access`, `Railway read:packages`,
+  `Antigravity IDE`, `Hostinger SSH Key`: none match what `.env` references, still genuinely
+  unused. Still the user's call, not actioned — this is verification only, not a decision.
