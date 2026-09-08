@@ -1,0 +1,61 @@
+name: One-off - Clear phantom active_plugins in wp_options
+
+# One-off write. All 7 plugins currently listed in wp_options.active_plugins
+# were confirmed MISSING from disk via direct SSH check 2026-09-09
+# (check-wp-phantom-plugins.yml) -- only akismet actually exists, and it
+# isn't in the active list. WordPress already skips missing plugins
+# gracefully (harmless), but this clears wp-admin's plugin screen of ghost
+# entries. Sets active_plugins to an empty serialized PHP array (a:0:{}).
+# Per repo convention, move this file to docs/diagnostics/ after use.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  fix-plugins:
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    env:
+      WP_DB_HOST:     ${{ secrets.WP_DB_HOST }}
+      WP_DB_HOST_IP:  ${{ secrets.WP_DB_HOST_IP }}
+      WP_DB_PORT:     ${{ secrets.WP_DB_PORT }}
+      WP_DB_NAME:     ${{ secrets.WP_DB_NAME }}
+      WP_DB_USER:     ${{ secrets.WP_DB_USER }}
+      WP_DB_PASSWORD: ${{ secrets.WP_DB_PASSWORD }}
+    steps:
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyMySQL
+        run: pip install pymysql
+
+      - name: Clear phantom active_plugins
+        run: |
+          python3 - <<'PYEOF'
+          import os, pymysql
+
+          conn = pymysql.connect(
+              host=os.environ.get("WP_DB_HOST_IP") or os.environ["WP_DB_HOST"],
+              port=int(os.environ["WP_DB_PORT"]),
+              user=os.environ["WP_DB_USER"],
+              password=os.environ["WP_DB_PASSWORD"],
+              database=os.environ["WP_DB_NAME"],
+              connect_timeout=15,
+          )
+          try:
+              with conn.cursor() as cur:
+                  cur.execute("SELECT option_value FROM wp_options WHERE option_name = 'active_plugins'")
+                  before = cur.fetchone()[0]
+                  print("BEFORE:", before)
+
+                  cur.execute("UPDATE wp_options SET option_value = 'a:0:{}' WHERE option_name = 'active_plugins'")
+                  conn.commit()
+
+                  cur.execute("SELECT option_value FROM wp_options WHERE option_name = 'active_plugins'")
+                  after = cur.fetchone()[0]
+                  print("AFTER:", after)
+          finally:
+              conn.close()
+          PYEOF
