@@ -397,18 +397,14 @@ per explicit user decision. Nothing outstanding from this list as of 2026-09-04.
   (pipeline, `ai-gateway.php`, WingCommander chat/RAG) in the meantime — the direct path will
   silently resume everywhere on its own once the cap resets. Full detail:
   `thekpihub-server/servermemory.md`, 2026-09-08 entries.
-- **NEW 2026-09-08 — `SERPAPI_KEY` was confirmed leaking into `pipeline.log` (a GitHub Actions
-  artifact) in cleartext, 63 times, whenever SerpAPI rate-limits a request.** Found via direct
-  artifact inspection (not inferred) while live-verifying the new `services/llm_gateway` module;
-  root-caused to `requests` baking the full request URL — including `api_key=...` — into
-  exception messages that got logged verbatim. **Fixed** (PR #25, `apps/website/pipeline.py` +
-  `services/pipeline/pipeline.py` now sanitize before logging) and **re-verified via a third live
-  artifact — zero occurrences afterward.** `TELEGRAM_BOT_TOKEN` had the same exposure shape
-  (embedded in the URL path) and was fixed alongside it, though not confirmed actually leaked
-  (no Telegram failure occurred in the live runs to trigger it). **Still open: whether
-  `SERPAPI_KEY` itself should be rotated**, given it's now confirmed to have sat in cleartext in
-  a real downloadable artifact — per the standing "don't rotate without being asked" rule, this
-  is the user's call, not actioned. Full detail: `thekpihub-server/servermemory.md`, 2026-09-08.
+- ~~`SERPAPI_KEY` was confirmed leaking into `pipeline.log`~~ — **CLOSED 2026-09-09.** Found
+  2026-09-08 (63 cleartext occurrences in a real artifact, root-caused to `requests` baking
+  `api_key=...` into exception messages); fixed same day (PR #25). `TELEGRAM_BOT_TOKEN` had the
+  same exposure shape, fixed alongside it. Rotation was left as the user's call — **user
+  provided a replacement key 2026-09-09** (coincidentally also needed: the old key had separately
+  hit its 250 free-search monthly quota). New key saved to `Credentials/.env` and the
+  `SERPAPI_KEY` GitHub secret, verified live against SerpAPI's own `/account.json` before
+  relying on it. Full detail: `thekpihub-server/servermemory.md`, 2026-09-08/09.
 - ~~A real-looking Razorpay test secret key is committed~~ in `apps/platform/.env.example` —
   **CLOSED 2026-09-08.** Replaced with a `replace_me` placeholder in the current tree (2026-09-05
   finding, `RAZORPAY_KEY_SECRET=71v7yj6qxuMP5UUiMHW5C8as`). User logged into Razorpay themselves
