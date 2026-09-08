@@ -2506,3 +2506,15 @@ correctly fails closed on missing/wrong secret, 401.
 **Not done**: given all of the above, the `llm_gateway` initiative (both phases, requested by the
 user to "resolve this API keys credit problem in one go forever") is now complete and fully
 live-verified. Nothing further planned unless new gaps surface.
+
+---
+
+## 2026-09-09 — SERPAPI_KEY rotated (user-provided replacement)
+
+User supplied a new SerpAPI key directly (account hsharma.gxi@gmail.com) — the previous key had
+hit its 250 free-search monthly quota, and separately had been confirmed leaking into
+`pipeline.log` on request failure until fixed 2026-09-08 (PR #25). Saved to
+`Credentials/.env` and set as the `SERPAPI_KEY` GitHub Actions secret (verified: new
+`updatedAt` timestamp). Verified live directly against SerpAPI's `/account.json` endpoint before
+relying on it: valid, correct account email, 249/249 free searches remaining this month.
+Closes the "should SERPAPI_KEY be rotated" open item from the 2026-09-08 leak finding.
