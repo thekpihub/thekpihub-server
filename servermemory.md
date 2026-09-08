@@ -2564,3 +2564,22 @@ frontend stub — out of scope for this pass, pre-existing, not user-facing.
 
 Closes the "Dependabot: wingcommander-reference" item from the open-items list (partially — 4
 advisories remain, deliberately deferred pending a real framework-upgrade effort).
+
+---
+
+## 2026-09-09 (cont.) — WP phantom-plugin cleanup: confirmed and fixed
+
+Verified via direct SSH file check: all 7 plugins listed in `wp_options.active_plugins`
+(elementor, hostinger, image-optimization, litespeed-cache, manage, pojo-accessibility,
+wp-webhooks) are missing from disk — only `akismet` actually exists (and isn't in the active
+list). Cleared `active_plugins` from `a:7:{...}` to `a:0:{}` via a one-off Python/PyMySQL
+workflow, matching the established direct-SQL-write pattern used elsewhere in this repo. Site
+verified healthy after (`blog.thekpihub.com`/`thekpihub.com` both 200). Both diagnostic
+workflows archived to `docs/diagnostics/`.
+
+Confirms Elementor specifically was never actually installed on this WP instance — consistent
+with the earlier 2026-09-02 finding that the theme had to be switched to `twentytwentyfive`
+since `hello-elementor` wasn't installed either. This raises the next open item: the ~46
+pre-existing legacy posts (predating this hosting account) may have been authored with
+Elementor's page-builder markup and could be rendering with raw/broken markup now that
+Elementor never processes it — checking this next.
