@@ -159,7 +159,18 @@ def _call_openrouter_raw(*, or_model: str, or_messages: list[dict], max_tokens: 
             timeout=60,
         )
         r.raise_for_status()
-        return r.json()["choices"][0]["message"]["content"]
+        body = r.json()
+        choices = body.get("choices")
+        if not choices:
+            # A 200 with no `choices` happens in practice (observed
+            # 2026-09-08 live, model=nvidia/nemotron-3-super-120b-a12b:free)
+            # -- some free-tier models return an error/empty body inside a
+            # 200 rather than a proper 4xx/5xx. raise_for_status() doesn't
+            # catch this; surface OpenRouter's own error field if present
+            # instead of a bare KeyError('choices').
+            err = body.get("error", {}).get("message") if isinstance(body.get("error"), dict) else body.get("error")
+            raise RuntimeError(f"no choices in response (error={err!r})")
+        return choices[0]["message"]["content"]
     except Exception as exc:
         log.error("❌ OpenRouter call failed (model=%s): %s", or_model, exc)
         return None
