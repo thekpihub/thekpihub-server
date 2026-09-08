@@ -2583,3 +2583,35 @@ since `hello-elementor` wasn't installed either. This raises the next open item:
 pre-existing legacy posts (predating this hosting account) may have been authored with
 Elementor's page-builder markup and could be rendering with raw/broken markup now that
 Elementor never processes it — checking this next.
+
+---
+
+## 2026-09-09 (cont.) — "~46 legacy blog posts" open item resolved: the premise was wrong,
+nothing to clean up
+
+Queried `wp_posts` directly (all types, not just `post`) to finally check this long-carried
+open item. Findings, verified via direct DB inspection + a live fetch:
+
+- **`wp_posts` has 79 rows total, but only 38 are `post_type = 'post'`** — 32 published, 5
+  draft, 1 auto-draft. **All 38 are pipeline-generated content dated 2026-09-02 through
+  2026-09-08** — there are no pre-existing/migrated "legacy" posts predating this hosting
+  account at all. That premise (carried in CLAUDE.md across several sessions) was never
+  actually verified and turns out to be incorrect.
+- The 15 rows with `_elementor_data` postmeta are **not published posts** — they're inert
+  scaffolding from WordPress's initial setup wizard: empty `page` **drafts** (Privacy Policy,
+  Home, Reviews, Compare, Mission, "Hello Theme #42/#45", Intelligence Feed — most 0-length
+  content, dated Nov 2025/March 2026, before this project's real content existed) and old
+  `revision` rows. None are live/published; WordPress never renders them.
+- Every one of the 32 published posts was directly confirmed to contain plain HTML
+  (`<h2>/<p>/<ul>` etc.) with zero Elementor/Divi/shortcode markers — matching exactly what
+  `apps/website/pipeline.py`'s `ARTICLE_SYSTEM` prompt instructs it to generate. Live-fetched
+  one (`market_flash-2026-09-08`) end to end: 200, clean pretty-permalink redirect, zero
+  `elementor`/shortcode traces in the rendered HTML.
+
+**Conclusion: no cleanup needed.** Closing this open item — there was never actually a
+"legacy content" rendering risk; the concern was based on an unverified assumption from an
+earlier session. **Secondary, minor observation** (not urgent, not part of this item): 9
+`page` rows sit permanently in `draft` status, meaning the blog currently has no published
+Privacy Policy/Home/etc. static pages of its own — likely not an issue since the main
+thekpihub.com site has its own separate policy pages, but worth knowing if the blog is ever
+meant to stand alone.
