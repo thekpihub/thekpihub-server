@@ -224,12 +224,23 @@ RSS_FEEDS = [
 
 def serpapi_search(query: str) -> list:
     def _call():
-        r = requests.get(
-            "https://serpapi.com/search",
-            params={"q": query, "api_key": SERPAPI_KEY, "num": 5, "gl": "in", "hl": "en"},
-            timeout=15,
-        )
-        r.raise_for_status()
+        try:
+            r = requests.get(
+                "https://serpapi.com/search",
+                params={"q": query, "api_key": SERPAPI_KEY, "num": 5, "gl": "in", "hl": "en"},
+                timeout=15,
+            )
+            r.raise_for_status()
+        except requests.exceptions.RequestException as exc:
+            # requests bakes the full request URL -- including api_key=... --
+            # into an HTTPError's message via response.url. That then gets
+            # logged verbatim by with_retry() below, leaking SERPAPI_KEY into
+            # pipeline.log (a GitHub Actions artifact). Confirmed leaking
+            # 2026-09-08 via a live dry-run's downloaded log artifact -- not
+            # hypothetical. Re-raise sanitized so the key never reaches a log
+            # line, whichever requests exception type it came from.
+            status = getattr(getattr(exc, "response", None), "status_code", None)
+            raise RuntimeError(f"SerpAPI request failed (status={status}): {type(exc).__name__}") from None
         results = r.json().get("organic_results", [])
         return [
             {"title": x.get("title", ""), "snippet": x.get("snippet", ""), "link": x.get("link", "")}
@@ -816,12 +827,21 @@ def publish_all_articles(articles: list, dry_run: bool = False) -> list:
 
 def send_telegram(message: str) -> bool:
     def _send():
-        r = requests.post(
-            f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
-            json={"chat_id": TELEGRAM_CHAT_ID, "text": message, "parse_mode": "Markdown"},
-            timeout=10,
-        )
-        r.raise_for_status()
+        try:
+            r = requests.post(
+                f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
+                json={"chat_id": TELEGRAM_CHAT_ID, "text": message, "parse_mode": "Markdown"},
+                timeout=10,
+            )
+            r.raise_for_status()
+        except requests.exceptions.RequestException as exc:
+            # TELEGRAM_TOKEN lives directly in the URL path here -- same leak
+            # pattern as serpapi_search() above (requests bakes the full URL
+            # into an HTTPError's message), same fix: sanitize before it can
+            # reach with_retry()'s logging. See that function's comment for
+            # the 2026-09-08 finding this was fixed alongside.
+            status = getattr(getattr(exc, "response", None), "status_code", None)
+            raise RuntimeError(f"Telegram request failed (status={status}): {type(exc).__name__}") from None
         return True
     result = with_retry(_send, retries=3, base_delay=2.0, label="telegram")
     if result is None:
