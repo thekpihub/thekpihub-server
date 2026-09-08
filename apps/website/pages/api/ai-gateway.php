@@ -29,8 +29,11 @@ if (empty($token)) {
 // ─── 2. LOAD ENVIRONMENT CONFIGS ─────────────────────────────────────────────
 $supabaseUrl       = getenv('SUPABASE_URL');
 $serviceRoleKey    = getenv('SUPABASE_SERVICE_ROLE_KEY');
-$anthropicApiKey   = getenv('ANTHROPIC_API_KEY');
-$openrouterApiKey  = getenv('OPENROUTER_API_KEY');
+// Direct-Anthropic/OpenRouter cURL logic used to live here, duplicated
+// against apps/website/pipeline.py's own version -- now both call sites
+// route through services/llm_gateway instead. See that module's README.
+$gatewayUrl        = getenv('LLM_GATEWAY_URL');
+$gatewaySecret     = getenv('GATEWAY_SHARED_SECRET');
 
 if (!$supabaseUrl || !$serviceRoleKey) {
     http_response_code(500);
@@ -136,46 +139,31 @@ $modelAccess = [
     ],
 ];
 
-// Direct-Anthropic models (bypass OpenRouter)
-$directAnthropicModels = ['claude-sonnet-4-6', 'claude-haiku-4-5-20251001', 'claude-opus-4-7'];
+// Which models get a direct-Anthropic attempt (with automatic OpenRouter
+// fallback) vs. going straight to OpenRouter is now the gateway service's
+// own decision (services/llm_gateway/server.py's DIRECT_ANTHROPIC_MODELS +
+// OPENROUTER_SLUG) -- this file used to duplicate that table and the actual
+// cURL-to-Anthropic/cURL-to-OpenRouter implementation here. 2026-09-08.
 
-// Fallback route when the direct Anthropic account is rate/usage-capped
-// (hit 2026-09-05) -- same model via OpenRouter, which bills against a
-// completely separate account/balance. Names differ slightly from
-// OpenRouter's own catalog (dots vs dashes, no date suffix on haiku).
-$openrouterFallbackModel = [
-    'claude-sonnet-4-6'          => 'anthropic/claude-sonnet-4.6',
-    'claude-haiku-4-5-20251001'  => 'anthropic/claude-haiku-4.5',
-    'claude-opus-4-7'            => 'anthropic/claude-opus-4.7',
-];
-
-function call_openrouter($openrouterApiKey, $model, $system, $prompt, $maxTokens) {
-    $ch = curl_init('https://openrouter.ai/api/v1/chat/completions');
+function call_llm_gateway($gatewayUrl, $gatewaySecret, $model, $system, $prompt, $maxTokens) {
+    $ch = curl_init(rtrim($gatewayUrl, '/') . '/v1/chat');
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
         'model'      => $model,
-        'messages'   => [
-            ['role' => 'system', 'content' => $system],
-            ['role' => 'user', 'content' => $prompt],
-        ],
+        'system'     => $system,
+        'prompt'     => $prompt,
         'max_tokens' => $maxTokens,
     ]));
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $openrouterApiKey,
         'Content-Type: application/json',
-        'HTTP-Referer: https://thekpihub.com',
-        'X-Title: The KPI Hub',
+        'X-Gateway-Secret: ' . $gatewaySecret,
     ]);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
     $response = curl_exec($ch);
     $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-    if ($httpStatus !== 200) {
-        return null;
-    }
-    $data = json_decode($response, true);
-    return $data['choices'][0]['message']['content'] ?? null;
+    return ['status' => $httpStatus, 'body' => $response];
 }
 
 $allowedModels = $modelAccess[$plan] ?? $modelAccess['starter'];
@@ -190,104 +178,28 @@ if (!in_array($model, $allowedModels, true)) {
     exit;
 }
 
-// ─── 6. ROUTE AND CALL THE CHOSEN AI ENDPOINT ────────────────────────────────
-if (in_array($model, $directAnthropicModels, true)) {
-    // ➔ Call direct Anthropic Messages API -- but only if a key is actually
-    // configured. Missing the key entirely (confirmed 2026-09-07: it never
-    // was set on Hostinger's live .htaccess, despite the template
-    // documenting it) used to hard-fail here before ever attempting the
-    // OpenRouter fallback below -- go straight to the fallback instead.
-    $httpStatus = 0;
-    $response = null;
-
-    if ($anthropicApiKey) {
-        $url = 'https://api.anthropic.com/v1/messages';
-        $payload = [
-            'model'      => $model,
-            'max_tokens' => 2048,
-            'system'     => [['type' => 'text', 'text' => $system, 'cache_control' => ['type' => 'ephemeral']]],
-            'messages'   => [['role' => 'user', 'content' => $prompt]]
-        ];
-
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'x-api-key: ' . $anthropicApiKey,
-            'anthropic-version: 2023-06-01',
-            'anthropic-beta: prompt-caching-2024-07-31',
-            'Content-Type: application/json'
-        ]);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 45);
-        $response = curl_exec($ch);
-        $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-    }
-
-    if ($httpStatus !== 200) {
-        // Direct Anthropic failed or was never configured (missing key,
-        // usage/spend limit, rate limit) -- fall back to the same model via
-        // OpenRouter before giving up, since that's a separate
-        // account/balance entirely.
-        if ($openrouterApiKey && isset($openrouterFallbackModel[$model])) {
-            $fallbackText = call_openrouter($openrouterApiKey, $openrouterFallbackModel[$model], $system, $prompt, 2048);
-            if ($fallbackText !== null) {
-                echo json_encode(['text' => $fallbackText, 'model' => $model, 'via' => 'openrouter-fallback']);
-                exit;
-            }
-        }
-        http_response_code($httpStatus ?: 500);
-        echo json_encode(['error' => 'Direct Claude API error', 'details' => $response ? json_decode($response, true) : 'ANTHROPIC_API_KEY not configured']);
-        exit;
-    }
-
-    $data = json_decode($response, true);
-    echo json_encode(['text' => $data['content'][0]['text'] ?? '', 'model' => $model]);
-    exit;
-
-} else {
-    // ➔ Call OpenRouter Chat Completions API
-    if (!$openrouterApiKey) {
-        http_response_code(500);
-        echo json_encode(['error' => 'OpenRouter connection is not configured on the server']);
-        exit;
-    }
-
-    $url = 'https://openrouter.ai/api/v1/chat/completions';
-    $payload = [
-        'model'      => $model,
-        'messages'   => [
-            ['role' => 'system', 'content' => $system],
-            ['role' => 'user', 'content' => $prompt]
-        ],
-        'max_tokens' => 1500
-    ];
-
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $openrouterApiKey,
-        'Content-Type: application/json',
-        'HTTP-Referer: https://thekpihub.com',
-        'X-Title: The KPI Hub'
-    ]);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-    $response = curl_exec($ch);
-    $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    if ($httpStatus !== 200) {
-        http_response_code($httpStatus);
-        echo json_encode(['error' => 'OpenRouter completions failure', 'details' => json_decode($response, true)]);
-        exit;
-    }
-
-    $data = json_decode($response, true);
-    echo json_encode(['text' => $data['choices'][0]['message']['content'] ?? '', 'model' => $model]);
+// ─── 6. ROUTE AND CALL THE CHOSEN AI ENDPOINT (via services/llm_gateway) ────
+// Both direct-Anthropic (with automatic OpenRouter fallback) and pure-
+// OpenRouter models now go through one shared gateway service instead of
+// this file duplicating cURL-to-Anthropic + cURL-to-OpenRouter logic
+// directly (previously ~100 lines here, kept in sync by hand with the same
+// logic in apps/website/pipeline.py -- now both call one implementation).
+// See services/llm_gateway/README.md. 2026-09-08.
+if (!$gatewayUrl || !$gatewaySecret) {
+    http_response_code(500);
+    echo json_encode(['error' => 'LLM gateway is not configured on the server']);
     exit;
 }
+
+$result = call_llm_gateway($gatewayUrl, $gatewaySecret, $model, $system, $prompt, 2048);
+$data = json_decode($result['body'], true);
+
+if ($result['status'] !== 200) {
+    http_response_code($result['status'] ?: 502);
+    echo json_encode(['error' => 'LLM gateway error', 'details' => $data]);
+    exit;
+}
+
+echo json_encode(['text' => $data['text'] ?? '', 'model' => $model, 'via' => $data['via'] ?? 'unknown']);
 exit;
 ?>

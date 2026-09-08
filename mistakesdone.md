@@ -308,3 +308,35 @@ Succeeded on the second attempt; key created with the intended name/expiration/s
 opened, take a screenshot to confirm it actually rendered at the expected position — don't chain
 open-click sequences on faith, especially in dialogs where a missed click can dismiss the whole
 flow silently.
+
+---
+
+## 2026-09-08 — llm_gateway's own logging.basicConfig() call silently broke pipeline.log
+
+**What happened:** When building `services/llm_gateway/gateway.py`, added a module-level
+`if not log.handlers: logging.basicConfig(...)` to give the module sensible default logging if
+used standalone. Didn't consider that Python only honors the FIRST `basicConfig()` call in a
+process — since both pipeline files import this module before their own later `basicConfig()`
+call, the module's config silently won every time, and `pipeline.py`'s intended
+`FileHandler("pipeline.log")` (with IST/RUN_ID format) never actually got attached to receive
+records. The file still got created (a side effect of being constructed as an argument to the
+no-op'd call), so nothing about a normal code review or the green CI run would have revealed
+this — only downloading the actual artifact and checking its content did.
+
+**Why it happened:** Applied a "make the module usable standalone" convenience pattern
+(`basicConfig()` as a default) without checking the specific interaction with the two callers'
+own logging setup — a classic library-vs-application logging-configuration mistake (library code
+should never call `basicConfig()`, only get a named logger).
+
+**Correction:** Removed the `basicConfig()` call entirely. Caught this only because a live
+dry-run's artifact was actually downloaded and its `pipeline.log` inspected directly, rather than
+trusting the green run + console log output (which looked completely normal, since gateway.py's
+own default StreamHandler was still printing everything to stderr — just not to the file).
+Re-verified the fix the same way: downloaded a second live run's artifact and confirmed
+`pipeline.log` had real, correctly-formatted content this time.
+
+**Standing rule this reinforces:** never let a shared/library module call
+`logging.basicConfig()` — only get `logging.getLogger(name)` and let the application own all
+handler/format configuration. And per the existing "passing pipeline is necessary, not
+sufficient" lesson: for any change touching logging output specifically, download and read the
+actual log artifact, don't just trust the green run or the live console output.

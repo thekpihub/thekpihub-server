@@ -2386,3 +2386,57 @@ a follow-up but not built without confirming first, since it would change a live
 environment to run `python -m py_compile` locally before pushing — verification is manual (full
 read-through of both diffs + the new module for balanced syntax) plus CI's own `py_compile` gate
 on the PR. Flagging this rather than claiming local verification that didn't happen.
+
+---
+
+## 2026-09-08 (cont.) — Two real bugs found via live verification of the llm_gateway module,
+both fixed and re-verified via downloaded artifacts (not assumed)
+
+After merging `llm_gateway` (PR #23), ran a real dry-run of `daily-pipeline.yml` to prove it
+works live, not just that it compiles. It did — 7/7 articles generated and verified, 7 clean
+`CAP_HIT → OpenRouter fallback` cycles logged exactly as designed. But downloading the
+`pipeline-logs` artifact and inspecting it directly (rather than trusting the green run) surfaced
+two real problems:
+
+**Bug 1 — `pipeline.log` was completely empty (0 bytes).** Root cause: `llm_gateway/gateway.py`
+called `logging.basicConfig()` at import time. Python only honors the FIRST `basicConfig()` call
+in a process; since both pipeline files import `llm_gateway` near the top (before their own later
+`basicConfig()` call), the module's config silently won and the intended `FileHandler("pipeline.log")`
++ format string (with IST/RUN_ID traceability) never actually got attached — the file existed
+(constructed as a side effect of being in the `handlers=[...]` list) but received zero records.
+**Fixed (PR #24):** removed the `basicConfig()` call from the module entirely — library code
+should never configure the root logger, only get a named logger and let the application own
+handler/config. **Re-verified via a second live dry-run + artifact download**: `pipeline.log` came
+back with 277 lines / 47.8KB, correctly formatted (`HH:MM:SS IST | run=<RUN_ID> | LEVEL | msg`),
+all 30 CAP_HIT lines and 15 fallback lines present and correctly attributed.
+
+**Bug 2 — SERPAPI_KEY (and TELEGRAM_BOT_TOKEN) were leaking into `pipeline.log` in cleartext.**
+Found while inspecting that same log for Bug 1: `SERPAPI_KEY` appeared 63 times in plaintext.
+Root cause, pre-existing (not something today's llm_gateway work introduced, but only directly
+observed today via a real artifact): `requests` bakes the full request URL — including query
+params — into an `HTTPError`'s message via `response.url` when `raise_for_status()` fails (and
+urllib3 can do similarly for connection-level failures). Both pipeline files pass `SERPAPI_KEY` as
+a query param and embed `TELEGRAM_BOT_TOKEN` directly in the URL path, then logged the raw
+exception on failure. A SerpAPI 429 (exactly what happened during both dry-runs today — SerpAPI's
+own rate limit, unrelated to Anthropic's) was enough to print the key straight into the log every
+single time. **Fixed (PR #25):** `serpapi_search()`/`send_telegram()` in `apps/website/pipeline.py`,
+and `engine3_verify()`/`engine5_notify()` in `services/pipeline/pipeline.py` (whose two Telegram
+calls were previously uncaught entirely — a connection error there would have crashed the run
+*and* printed a token-bearing traceback) now catch `requests.exceptions.RequestException` and log
+only the status code + exception type, never the raw exception string. **Re-verified via a third
+live dry-run + artifact download**: `grep -c "api_key="` on the fresh `pipeline.log` returns `0`
+(was 63); 63 sanitized "request failed" messages present instead; CAP_HIT/fallback logging and
+article generation (7/7, zero errors) both still work correctly, confirming the fix didn't break
+anything else.
+
+**Not done, flagged for the user**: whether `SERPAPI_KEY` should be rotated, given it's now
+confirmed to have been sitting in cleartext in a downloadable GitHub Actions artifact (private
+repo, but still real exposure) — left to the user per the standing "don't rotate without being
+asked" policy. This fix stops the *ongoing* leak; it doesn't retroactively do anything about
+whatever's already in past artifacts/log history.
+
+**Process note, matching this repo's own established lesson** ("a passing pipeline is necessary,
+not sufficient" — see the 2026-09-05 index.html mistake in mistakesdone.md): neither of these two
+bugs would have been caught by a green CI run or a "the dry-run succeeded" report. Both were only
+found by actually downloading the artifact and reading its real content. Continuing to do this
+for any future pipeline-logging change.
