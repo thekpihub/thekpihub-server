@@ -423,8 +423,15 @@ per explicit user decision. Nothing outstanding from this list as of 2026-09-04.
   leave the credential as-is** — the placeholder swap already stops the tree from displaying it
   as a template value; no further rotation action needed. Full detail:
   `thekpihub-server/servermemory.md`, 2026-09-08 entry.
-- A GitHub PAT (classic) was exposed on 2026-08-27 per this repo's own `URGENT-READ-FIRST.md`
-  — never confirmed revoked in any later doc. Ask the user directly if unsure; don't assume.
+- **UPDATED 2026-09-09** — the 2026-08-27 exposed-PAT question couldn't be pinned to a specific
+  token (GitHub's classic-token list has no creation dates), but a broader audit surfaced 6
+  current classic tokens, 5 of them near-full-admin/no-expiry/never-used. Verified directly which
+  one this project actually needs: `GITHUB_ACCESS_TOKEN` in `Credentials/.env` authenticates
+  live (200, `hsharmagxi-debug`) and its scopes match **`THE_KPI_HUB_REPO_ACCESS_TOKEN`** exactly
+  — that one is required, keep it (along with `KPI Hub Master Automation Token`, which has an
+  expiration and a clear purpose). The other 4 (`Termux-thekpihub-server-access`,
+  `Railway read:packages`, `Antigravity IDE`, `Hostinger SSH Key`) are the real candidates for
+  revocation — still the user's call, not actioned. Full detail: `servermemory.md`, 2026-09-09.
 - Hostinger billing shows **every subscription set to `is_auto_renewed: false`**, including the
   **.COM domain itself, expiring 2026-11-22**. Also non-renewing: "Reach 500" (exp.
   2026-11-22), "Starter Business Email" (exp. 2027-03-25). Business Web Hosting prepaid through
@@ -506,6 +513,54 @@ HEAD` in the new location restored every missing file from the object database, 
 the old folder. If a future rename is needed, don't trust an in-place move on this machine —
 either fresh-clone into the new name, or rename then immediately `git reset --hard HEAD` and
 verify `git status` is clean before deleting the old folder.
+
+## Session log — 2026-09-08 → 2026-09-09 (full detail in `thekpihub-server/servermemory.md`,
+these are pointers, not the full record)
+
+- **Root-caused "WingCommander's key is invalid" to something bigger**: live-tested a
+  brand-new Anthropic key end to end and it *still* fell back to OpenRouter — checked the
+  Anthropic Console's Billing page directly and found the real cause is an **org-wide spend
+  cap** ("You have reached your specified API usage limits. You will regain access on
+  2026-10-01 at 00:00 UTC.") blocking *every* key on the account, not one bad key. Reclassified
+  and merged what had been tracked as two separate problems (WingCommander's key + the
+  pipeline's cap) into one. Nothing actionable except waiting for the reset or the user raising
+  their own spend limit — not something to act on unprompted.
+- **Built `services/llm_gateway`**, on direct user request ("resolve this API keys credit
+  problem in one go forever"), in two phases: (1) a shared Python module both pipeline scripts
+  now import instead of each carrying its own (in one case entirely missing) retry/OpenRouter-
+  fallback logic; (2) a FastAPI HTTP wrapper deployed as a new Railway service (`llm-gateway`)
+  that `ai-gateway.php` now calls instead of ~100 lines of duplicated PHP cURL logic.
+  WingCommander's `chat.ts`/`rag.ts` deliberately NOT migrated (they stream; the gateway
+  doesn't; their existing TS fallback already works — see `services/llm_gateway/README.md`).
+  **Found and fixed 4 real bugs via actual live testing along the way** (not assumed from a
+  green build): an empty `pipeline.log` (a `logging.basicConfig()` collision the module
+  introduced), `SERPAPI_KEY`/`TELEGRAM_BOT_TOKEN` leaking into log output on request failure
+  (pre-existing, unrelated to the gateway work, just surfaced by it), both of
+  `ai-gateway.php`'s starter-tier free OpenRouter models being dead on the current catalog
+  (the free AI tools were broken by default for every starter-plan user), and the gateway
+  itself swallowing OpenRouter's real error on a malformed 200 response. Fully re-verified
+  end-to-end afterward through the actual live endpoint with a real session, not just the
+  gateway in isolation.
+- **Self-caught mistake**: transcribed a new Anthropic key off a screenshot via vision and got
+  it wrong (a real "API key is invalid" 401, not the expected account-wide cap). Fixed by
+  creating a second key and extracting its value via DOM text extraction instead of visual
+  reading — confirmed correct via live logs afterward. Logged in `mistakesdone.md`.
+- **Razorpay rotation investigated and closed per user decision**: the leaked test-mode secret
+  turned out to be an orphaned key unrelated to the account's current single live-key model —
+  didn't touch the live key (unrelated, irreversible, no confirmed dependency). User's call:
+  leave the credential as-is.
+- **Recommended-cleanup pass, user-directed ("let's start closing all of the above one by
+  one")**: SerpAPI rotated (user supplied a replacement, old key had hit its 250-search quota);
+  a GitHub classic-PAT audit surfaced 5 near-admin/no-expiry/never-used tokens, narrowed down by
+  directly testing which one this project's `.env` actually authenticates with (keep
+  `THE_KPI_HUB_REPO_ACCESS_TOKEN` + the expiring Master Automation Token; the other 4 are real
+  revoke candidates) — left the actual revocation decision to the user; `npm audit fix` on
+  `apps/wingcommander-reference` (7/11 resolved, redeployed, live-verified — surfaced one
+  pre-existing unrelated Railway misconfiguration on an already-unused frontend stub, not
+  caused by this fix); WordPress's 7 phantom "active" plugins confirmed missing from disk via
+  direct SSH check and cleared from `wp_options`; the long-carried "~46 legacy blog posts"
+  open item turned out to be based on a **false premise** — there are no legacy posts at all,
+  just 38 pipeline-generated ones, all confirmed clean HTML with zero Elementor/Divi markers.
 
 ## Standing rule for thekpihub-server specifically
 
