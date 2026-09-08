@@ -155,13 +155,27 @@ jobs:
           exit $fail
 
       # Regression guard for the 2026-09-06/08 OpenRouter-fallback work --
-      # catches any of the 4 fallback implementations being silently
-      # removed (e.g. during an unrelated refactor).
+      # catches any of the fallback implementations being silently removed
+      # (e.g. during an unrelated refactor).
+      #
+      # 2026-09-08: the two Python pipeline files no longer carry their own
+      # fallback code -- both now import services/llm_gateway/gateway.py,
+      # a shared module built after finding services/pipeline/pipeline.py
+      # had NO fallback at all (a gap this same check couldn't have caught
+      # before, since it only ever looked at apps/website/pipeline.py). Now
+      # checks both call sites import the shared module, plus the module
+      # itself, instead of grepping for fallback code inline in each file.
       - name: Regression check - OpenRouter fallback still present on every Anthropic-calling surface
         run: |
           fail=0
-          grep -q "_openrouter_fallback" apps/website/pipeline.py || { echo "MISSING: pipeline.py OpenRouter fallback"; fail=1; }
+          grep -q "_openrouter_fallback" services/llm_gateway/gateway.py || { echo "MISSING: llm_gateway/gateway.py OpenRouter fallback"; fail=1; }
+          grep -q "from llm_gateway.gateway import" apps/website/pipeline.py || { echo "MISSING: apps/website/pipeline.py no longer uses llm_gateway"; fail=1; }
+          grep -q "from llm_gateway.gateway import" services/pipeline/pipeline.py || { echo "MISSING: services/pipeline/pipeline.py no longer uses llm_gateway"; fail=1; }
           grep -q "openrouterFallbackModel" apps/website/pages/api/ai-gateway.php || { echo "MISSING: ai-gateway.php OpenRouter fallback"; fail=1; }
           grep -q "openRouterComplete" apps/wingcommander-reference/backend/src/routes/chat.ts || { echo "MISSING: chat.ts OpenRouter fallback"; fail=1; }
           grep -q "openRouterComplete" apps/wingcommander-reference/backend/src/routes/rag.ts || { echo "MISSING: rag.ts OpenRouter fallback"; fail=1; }
           exit $fail
+
+      - name: Pipeline syntax check (services/llm_gateway, shared module)
+        working-directory: services/llm_gateway
+        run: python -m py_compile gateway.py

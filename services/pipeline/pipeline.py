@@ -11,12 +11,21 @@ import json
 import time
 import logging
 import hashlib
+from pathlib import Path
 import feedparser
 import pymysql
 import pymysql.cursors
 import requests
 from datetime import datetime, timezone
-from anthropic import Anthropic
+
+# services/llm_gateway is the shared, resilient Claude-calling module (built
+# 2026-09-08 -- see its README and servermemory.md). This file used to call
+# `Anthropic(...).messages.create()` directly with NO retry/fallback at all --
+# any Claude failure (including the account-wide usage cap hit 2026-09-05)
+# crashed the whole run. apps/website/pipeline.py had its own separate
+# fallback; both now share this one implementation instead.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from llm_gateway.gateway import claude_call, claude_text  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
@@ -50,24 +59,11 @@ WP_DB_USER      = os.environ.get('WP_DB_USER', '')
 WP_DB_PASSWORD  = os.environ.get('WP_DB_PASSWORD', '')
 WP_AUTHOR_ID    = int(os.environ.get('WP_AUTHOR_ID', '1'))  # sharmahimanshu1178.hs92@gmail.com
 
-client = Anthropic(api_key=ANTHROPIC_API_KEY)
-
-
-def claude_text(resp) -> str:
-    """
-    Return the first text block's content from a Claude response.
-
-    resp.content[0] is not always a TextBlock — extended thinking makes Claude
-    sometimes return a ThinkingBlock first, and indexing straight to [0].text blew
-    up article generation on 2026-09-02 with 'ThinkingBlock' object has no
-    attribute 'text'. Scan for the first block that actually has one.
-    """
-    for block in resp.content:
-        text = getattr(block, 'text', None)
-        if text is not None:
-            return text
-    raise RuntimeError(f'No text block in Claude response (block types: '
-                       f'{[type(b).__name__ for b in resp.content]})')
+# claude_call()/claude_text() come from services/llm_gateway/gateway.py
+# (imported above). This file used to construct its own `Anthropic(...)`
+# client here and call `.messages.create()` directly with no retry/fallback
+# -- claude_call() replaces that call site below (ENGINE 2) and handles
+# retry + the OpenRouter fallback internally.
 
 
 RSS_FEEDS = [
@@ -147,11 +143,19 @@ RULES:
 - Return ONLY HTML: <h2> <p> <ul> <li> <strong> tags only
 - Start directly with content, no preamble"""
 
-    resp = client.messages.create(
+    resp = claude_call(
         model='claude-sonnet-5',
         max_tokens=2000,
         messages=[{'role': 'user', 'content': prompt}]
     )
+    if resp is None:
+        # Every configured Anthropic key AND the OpenRouter fallback failed --
+        # see llm_gateway's logs above for which (a CAP_HIT line means the
+        # account-wide usage cap; anything else is a genuine call failure).
+        # Caller (main loop) already wraps this in a try/except per article
+        # type, so raising here just skips this one article, not the whole run.
+        raise RuntimeError(f'Claude call failed for article "{article_type["slug"]}" '
+                           f'(direct Anthropic + OpenRouter fallback both exhausted)')
     content = claude_text(resp)
     log.info(f'ENGINE 2: Generated {len(content)} chars for {article_type["slug"]}')
     return {

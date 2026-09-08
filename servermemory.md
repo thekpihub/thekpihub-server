@@ -2220,3 +2220,169 @@ there regardless) and does **not** rotate anything live — purely stops the cur
 displaying a real secret as if it were a template value. Rotating the actual key (if it's ever
 been used for anything real) is still a separate, user-owned decision per the standing
 "don't rotate without being asked" rule.
+
+---
+
+## 2026-09-08 (cont.) — New non-expiring Anthropic API key created + wired into WingCommander's
+Railway backend (via Claude in Chrome); Razorpay rotation still blocked
+
+**Context**: the existing Railway `ANTHROPIC_API_KEY` (named
+`ANTHROPIC_API_KEY_railway_dittowingm[an]` on Anthropic's side) shows "Active" on the Anthropic
+console but "Last used: —" — i.e. it has *never* successfully authenticated a real request,
+consistent with everything this session has observed calling `/api/chat`/`/api/rag` always
+falling through to the OpenRouter fallback. Almost certainly a copy-paste error at original
+setup, not a revoked/expired key.
+
+**Fix, done via Chrome browser automation on the user's already-authenticated Anthropic Console
+session** (`platform.claude.com/settings/keys`, org: the account's default org, workspace:
+Default): created a new key named `wingcommander-railway-2026-09-08`, **expiration set to
+Never**, scope **Default workspace** (matching the existing keys' scope). Captured the one-time
+key value, then set it as `ANTHROPIC_API_KEY` on Railway service `ditto-wingman-backend`
+(project `jubilant-growth` / `66edf16e-bf68-48e3-8af2-65643b228a23`, service
+`316a65cd-c7e7-4214-92c9-b92a4fb405c4`) via `set-variables`. Railway auto-triggered a redeploy on
+the variable change (deployment `90f26bf3`) — confirmed `SUCCESS`, and `/api/health` still
+returns 200 post-deploy.
+
+**Live re-verification attempted, partially completed**: re-ran the exact real handoff flow used
+in the prior fix's live test (Supabase magiclink+verify for the account owner, POST to
+`open-wingman.php`) — this time the account's plan is back to `starter` (correctly reverted after
+the last test), so `open-wingman.php` correctly denied access (`requiredPlan` error) rather than
+minting a handoff token. Did **not** re-elevate the production profile's plan a second time to
+force past this gate — that was a one-off explicitly-approved action for the previous test, and
+re-doing a production data mutation without asking again isn't something to default into. Net
+result: the new key is deployed and Railway's own build/health check passed, but a full
+authenticated round-trip proving the new key itself authenticates successfully against Anthropic
+(vs. still silently falling back to OpenRouter) has **not** been re-confirmed live. If this
+matters, the fastest path is either a real user login through the actual site, or another
+explicit go-ahead to temporarily re-elevate the plan for a test.
+
+**Old broken key**: left as-is on Anthropic's side (not revoked) — the user hasn't said whether
+to clean it up; it's harmless to leave since nothing points to it anymore on Railway's side.
+
+**Razorpay test-secret rotation — still blocked, unchanged from the earlier attempt.**
+Re-checked `dashboard.razorpay.com` in the same Chrome session: no active session, redirects to
+the login page (email/phone or "Continue with Google"). Per the standing safety rule, did not
+enter an email/phone or proceed through the Google account picker on the user's behalf. This
+needs the user to either log into Razorpay themselves in this browser first, or rotate the key
+manually and hand over the new value.
+
+---
+
+## 2026-09-08 (cont.) — Razorpay rotation attempt: logged in successfully, found the leaked
+secret isn't actually reachable/rotatable from the account's current dashboard; user decided to
+leave it as-is
+
+**User logged into Razorpay themselves** in the shared Chrome session (resolving the earlier
+block). Confirmed real account: Himanshu Sharma, Merchant ID `SiChGAauKLx91P`, website
+`thekpihub.com` approved.
+
+**Finding**: this account's current dashboard (Account & Settings → Website & API keys) shows
+only **one** API key pair — a **live** key, `rzp_live_TRgvHEnUNegwWQ`, generated 19 Aug 2026 —
+under Razorpay's newer "universal key" model. No separate Test Mode toggle or test-key page
+exists anywhere in the current UI (checked sidebar, Account & Settings, in-dashboard search —
+nothing). The secret actually exposed in this repo's git history
+(`apps/platform/.env.example`, pre-2026-09-08 placeholder fix) is a **test-mode** pair
+(`rzp_test_TVRO90Zju7EZ01` / `71v7yj6qxuMP5UUiMHW5C8as`) that doesn't match this live key at all
+and appears to predate the business's live/KYC approval — it's not reachable or regeneratable
+from the current dashboard.
+
+**Did not click "Regenerate Key"** — that control only rotates the live key, a different,
+currently-active production credential with no confirmed relationship to the leaked test secret.
+Regenerating it would be irreversible and could break any live checkout depending on it, with no
+evidence doing so fixes the actual exposure. Surfaced this distinction to the user via
+`AskUserQuestion` rather than guessing.
+
+**User's decision: leave the Razorpay credential as-is.** The `.env.example` placeholder swap
+(2026-09-05 finding, fixed 2026-09-08) already stops the current tree from displaying a real
+secret as a template value; no further action requested. This closes out the Razorpay item from
+the RE-AUDIT/open-items list — not a rotation, but a deliberate, informed user decision after the
+actual rotation path turned out to be non-applicable (orphaned test key, no live dependency
+confirmed either way).
+
+---
+
+## 2026-09-08 (cont.) — CORRECTION: the "invalid WingCommander key" diagnosis was wrong; root
+cause is the account-wide spend cap, which no new key can fix
+
+**What was tested**: with user approval, temporarily re-elevated the account owner's profile
+plan to `growth`, minted a real session, got a genuine WingCommander handoff token via
+`open-wingman.php`, and called `/api/chat` on the live Railway backend using the brand-new
+`wingcommander-railway-2026-09-08` key set earlier today. Result: `{"type":"text","content":"OK"}`
+came back, but `usage` showed `inputTokens:0` — the tell-tale sign (per `chat.ts`'s own code)
+that the OpenRouter fallback path ran, not direct Anthropic. Profile plan reverted to `starter`
+immediately after.
+
+**Root-caused, not guessed**: checked the Anthropic Console's Billing page directly
+(`platform.claude.com/settings/billing`) and found the org-wide banner: *"You have reached your
+specified API usage limits. You will regain access on 2026-10-01 at 00:00 UTC."* This is an
+**organization-level spend cap that blocks every API key on the account**, old and new alike —
+not a property of any individual key. Confirmed the new `wingcommander-railway-2026-09-08` key
+still shows "Last used: —" on the console, exactly like the old
+`ANTHROPIC_API_KEY_railway_dittowingm[an]` key did.
+
+**Correction to the earlier framing**: this session (and the summarized portion before it) had
+concluded "WingCommander's Railway `ANTHROPIC_API_KEY` is invalid (401 authentication_error)" and
+treated it as a key-specific problem distinct from "the pipeline's separate usage-cap issue."
+That distinction was wrong — it's very likely the *same* org-wide cap causing both all along,
+not two separate root causes. The new key created today is correctly configured (verified: set on
+Railway, service redeployed successfully, `/api/health` 200) but is equally blocked by the cap
+until 2026-10-01 — creating additional keys will not change this.
+
+**No further action taken or recommended on the Anthropic-key side.** The OpenRouter fallback
+(already proven working across pipeline, `ai-gateway.php`, and WingCommander chat/RAG) correctly
+covers the gap until the cap resets on its own. Raising the org's spend limit or buying credits
+sooner is a billing decision for the user to make directly in the Anthropic Console — not
+something to act on unprompted.
+
+---
+
+## 2026-09-08 (cont.) — Built services/llm_gateway, a shared resilient Claude-calling module,
+per user request ("resolve this API keys credit problem in one go forever in future as well")
+
+**Context**: after the org-wide spend-cap discovery above, the user asked for a Python-based
+permanent fix. Scoped into two phases (Phase 1 now, Phase 2 offered separately since it changes
+a live paid feature's core dependency): Phase 1 consolidates the duplicated/incomplete Python
+fallback logic into one shared, tested module.
+
+**What was found while building this**: `services/pipeline/pipeline.py` (the "dormant"/simpler
+pipeline, still manually dispatchable via `pipeline.yml`) had **no fallback logic at all** — it
+called `Anthropic(...).messages.create()` directly and would crash the entire run on any Claude
+failure, including the exact usage-cap condition this whole investigation started from. This had
+gone unnoticed because the CI regression check added 2026-09-06/08 only ever grepped
+`apps/website/pipeline.py` (the actively-scheduled one) for `_openrouter_fallback` — it never
+covered this second file at all.
+
+**Fix**: new module `services/llm_gateway/gateway.py` (+ `README.md`, `__init__.py`) —
+`claude_call(**kwargs)` as a drop-in replacement for `anthropic_client.messages.create(**kwargs)`:
+tries every configured Anthropic key in turn (`ANTHROPIC_API_KEY` + optional comma-separated
+`ANTHROPIC_API_KEYS`), then falls back to OpenRouter if all fail; logs a loud `🛑 CAP_HIT` line
+the instant a usage/spend-limit-shaped error is detected. `claude_text(resp)` (the
+ThinkingBlock-safe text extractor) moved here too. Both honest limitations stated directly in the
+module's docstring rather than oversold: (1) no predictive credit-balance check is possible —
+Anthropic has no public API for it, only the Console UI, so this is detect-on-failure, not
+prediction; (2) pooling multiple same-org Anthropic keys does NOT survive an org-wide cap like
+the one that started this investigation — only OpenRouter (a separate billing account) actually
+does. Both pipeline files were refactored to import this module instead of carrying their own
+copies — `apps/website/pipeline.py` lost ~90 lines of duplicated
+`get_claude()`/`_openrouter_fallback()`/`claude_call()`/`claude_text()`; `services/pipeline/pipeline.py`
+lost its unguarded direct `client.messages.create()` call and gained the fallback it never had,
+plus an explicit `if resp is None: raise RuntimeError(...)` (previously would have thrown a
+confusing `NoneType` error deep in `claude_text()` instead of a clear message).
+
+**CI updated to match**: the OpenRouter-fallback regression check now greps
+`services/llm_gateway/gateway.py` for the actual fallback code, and both pipeline files for
+`from llm_gateway.gateway import` (catching either file silently reverting to a direct call) —
+previously the check only covered `apps/website/pipeline.py` and would never have caught the
+`services/pipeline/pipeline.py` gap. Added a syntax-check step for the new module itself.
+
+**Not yet done, deliberately** ("Phase 2", offered not assumed): WingCommander's backend
+(TypeScript/Node) and `ai-gateway.php` (PHP) still carry their own separate fallback
+implementations — they can't import a Python module directly. Wrapping `llm_gateway` as a small
+HTTP service those two could call instead of hitting Anthropic/OpenRouter inline was proposed as
+a follow-up but not built without confirming first, since it would change a live paid feature's
+(WingCommander's) core dependency path.
+
+**Verification caveat, not glossed over**: no Python interpreter is available in this session's
+environment to run `python -m py_compile` locally before pushing — verification is manual (full
+read-through of both diffs + the new module for balanced syntax) plus CI's own `py_compile` gate
+on the PR. Flagging this rather than claiming local verification that didn't happen.

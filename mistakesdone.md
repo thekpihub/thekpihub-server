@@ -286,3 +286,25 @@ is invisible to code review and can only be confirmed by testing that exact surf
 report says "not independently tested," treat that as "unverified," not "probably fine by
 analogy" — and prefer to close that gap before reporting a fix as done, rather than waiting to be
 asked.
+
+---
+
+## 2026-09-08 — Accidentally closed the "Create API key" dialog on Anthropic Console mid-flow
+
+**What happened:** While creating a new Anthropic API key via Chrome browser automation
+(`platform.claude.com/settings/keys`), clicked a coordinate intended to select "Never" in the
+Expires dropdown; it instead closed the entire dialog with no key created (verified via
+screenshot — key count still at 13, no new row).
+
+**Why it happened:** Clicked a fixed coordinate without first confirming the dropdown had
+actually reopened/rendered at that position — the click likely landed outside the dropdown's
+actual bounds and registered as an outside-click dismissal instead.
+
+**Correction:** Restarted the "+ Create key" flow from scratch, and this time took a screenshot
+to confirm the dropdown was genuinely open with its options visible before clicking "Never".
+Succeeded on the second attempt; key created with the intended name/expiration/scope.
+
+**Standing rule this reinforces:** before clicking an option inside a dropdown/menu that was just
+opened, take a screenshot to confirm it actually rendered at the expected position — don't chain
+open-click sequences on faith, especially in dialogs where a missed click can dismiss the whole
+flow silently.
