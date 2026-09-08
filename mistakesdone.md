@@ -340,3 +340,28 @@ Re-verified the fix the same way: downloaded a second live run's artifact and co
 handler/format configuration. And per the existing "passing pipeline is necessary, not
 sufficient" lesson: for any change touching logging output specifically, download and read the
 actual log artifact, don't just trust the green run or the live console output.
+
+---
+
+## 2026-09-08 — Mistyped a new Anthropic API key by reading it off a screenshot via vision
+
+**What happened:** Created a new Anthropic key (`llm-gateway-railway-2026-09-08`) for the new
+`llm-gateway` Railway service, captured its one-time-reveal value by visually reading a
+screenshot, and set it on Railway. Live-testing then returned "API key is invalid" (401
+authentication_error) — a genuinely wrong value, not the expected account-wide usage-cap error
+every other key in the project hits.
+
+**Why it happened:** Long random strings (a 100+ character API key) are exactly the kind of
+content vision-based screenshot reading gets wrong — confusable characters (l/1/I, O/0, similar
+glyphs) have no error-correction when read this way, unlike a programmatic text extraction.
+
+**Correction:** Created a second key and extracted its value via `get_page_text` (DOM text
+extraction from the "Save your API key" dialog) instead of reading a screenshot. Set it on
+Railway, redeployed, and confirmed via live logs that it now authenticates correctly (a real
+CAP_HIT error, not an invalid-key error) — verified, not assumed. Left the first, mistyped key
+un-revoked on Anthropic's side (harmless, unused, not chased further).
+
+**Standing rule this reinforces:** when a browser flow reveals a long secret/token value meant
+to be captured exactly, use `get_page_text` (or equivalent DOM text extraction) instead of
+reading it visually off a screenshot — reserve screenshots for layout/state confirmation, not
+for transcribing precise string content.

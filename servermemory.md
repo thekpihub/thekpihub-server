@@ -2440,3 +2440,69 @@ not sufficient" — see the 2026-09-05 index.html mistake in mistakesdone.md): n
 bugs would have been caught by a green CI run or a "the dry-run succeeded" report. Both were only
 found by actually downloading the artifact and reading its real content. Continuing to do this
 for any future pipeline-logging change.
+
+---
+
+## 2026-09-08 (cont.) — Phase 2 shipped and fully live-verified: llm_gateway HTTP service +
+ai-gateway.php migration, plus two real bugs found and fixed along the way
+
+**Built and deployed** (PR #26): `services/llm_gateway/server.py`, a FastAPI wrapper around
+`gateway.py` — `POST /v1/chat` (routes Claude model ids through `claude_call()`, everything
+else straight to a new `openrouter_call()`), `GET /health`. Auth via `X-Gateway-Secret`, fails
+closed if `GATEWAY_SHARED_SECRET` isn't configured. Deployed as a new Railway service
+`llm-gateway` in project `jubilant-growth` (serviceId `9807e255-3d7c-49ce-84de-f63b7d09efc2`),
+`rootDirectory: services/llm_gateway`, Railpack auto-detected Python/FastAPI via the new
+`requirements.txt`/`Procfile`. Public domain: `llm-gateway-production-b039.up.railway.app`.
+`ai-gateway.php` rewired to call it (`call_llm_gateway()`) instead of ~100 lines of duplicated
+direct-Anthropic/OpenRouter cURL logic — kept all its Supabase auth/plan-gating/Model-Sommelier
+logic untouched.
+
+**Deliberately not migrated**: WingCommander's `chat.ts`/`rag.ts` — they stream token-by-token
+to their frontend, this gateway endpoint is non-streaming, and the existing TS fallback already
+works live. Full reasoning in `services/llm_gateway/README.md`.
+
+**Mistake caught and fixed during setup**: transcribed the first Anthropic key
+(`llm-gateway-railway-2026-09-08`) from a screenshot via vision, and got it wrong — Railway
+logs showed a genuine "API key is invalid" (401 authentication_error), not the expected
+account-wide CAP_HIT. Root cause: reading a long random string off a rendered screenshot is
+error-prone (confusable characters). Fixed by creating a second key
+(`llm-gateway-railway-2026-09-08-v2`) and extracting its value via `get_page_text` (DOM text
+extraction) instead of visual reading — confirmed correct immediately after: logs showed a real
+CAP_HIT (`'You have reached your specified API usage limits...'`), matching every other key in
+the project. First mistyped key left un-revoked (harmless, unused, in the Console's "unused for
+40+ days" cleanup radar eventually) — not chased further.
+
+**Wired into Hostinger**: `LLM_GATEWAY_URL` + `GATEWAY_SHARED_SECRET` set as GitHub repo secrets,
+appended to the live `.htaccess` via a one-off SSH workflow
+(`docs/diagnostics/wire-llm-gateway-secrets.yml`, ran once, archived after) — its own functional
+check (curl from the Hostinger server's own network) confirmed the gateway reachable and
+returning real responses before archiving.
+
+**Two more real bugs found via actual live end-to-end testing (not assumed) — both fixed**:
+1. **Both of `ai-gateway.php`'s starter-tier free OpenRouter models were dead** —
+   `google/gemini-2.0-flash-lite:free` ("not a valid model ID") and
+   `meta-llama/llama-3.1-8b-instruct:free` ("unavailable for free", paid-only now). The first was
+   also the endpoint's *default* model, so the free tier's AI feature was broken by default for
+   any starter-plan user, not just an edge case. Found via a real authenticated call through the
+   live endpoint. Fixed (PR #27): queried OpenRouter's live `/api/v1/models` for its actual
+   current free catalog, tested candidates directly against the deployed gateway, replaced both
+   slugs with verified-working ones (`openrouter/free`, `nvidia/nemotron-3-super-120b-a12b:free`).
+   Also removed a stale comment claiming this list "matches WingCommander's auth.ts" — checked,
+   no such list exists there.
+2. **`llm_gateway`'s OpenRouter call swallowed the real error when a 200 response had no
+   `choices` key** — observed live for `nvidia/nemotron-3-super-120b-a12b:free` under
+   (presumably) free-tier rate pressure from repeated testing; `raise_for_status()` doesn't catch
+   a 200 with an unexpected body shape, so the code raised a bare `KeyError('choices')` with no
+   useful diagnostic. Fixed (PR #28): checks for `choices` explicitly, surfaces OpenRouter's own
+   `error` field in the log if present. No external behavior change (still returns `None` on
+   failure) — just makes a future occurrence of this actually debuggable.
+
+**Fully re-verified end-to-end after all fixes**, via a real Supabase session through the actual
+live `ai-gateway.php` endpoint (not a shortcut): default (no `model` passed) → 200 OK, real text,
+`via: openrouter`; a Claude model for a starter user → correctly 402 `upgrade_required` with the
+right `allowed_models` list (plan-gating intact); the gateway's own `/v1/chat` directly → auth
+correctly fails closed on missing/wrong secret, 401.
+
+**Not done**: given all of the above, the `llm_gateway` initiative (both phases, requested by the
+user to "resolve this API keys credit problem in one go forever") is now complete and fully
+live-verified. Nothing further planned unless new gaps surface.

@@ -351,6 +351,21 @@ this list.** Status now:
   mirroring `deploy-vercel-platform.yml`. Live-verified: `https://kpihub-assembled.vercel.app`
   → 200. Full writeup in `thekpihub-server/servermemory.md`.
 
+**`llm_gateway` initiative — DONE, both phases, fully live-verified (2026-09-08).** Built per user
+request ("resolve this API keys credit problem in one go forever"): a shared Python module
+(`services/llm_gateway/gateway.py`, resilient multi-key Anthropic calling + OpenRouter fallback,
+used in-process by both pipeline scripts) plus a FastAPI HTTP wrapper
+(`services/llm_gateway/server.py`, deployed as Railway service `llm-gateway`) that
+`ai-gateway.php` now calls instead of its own duplicated direct-Anthropic/OpenRouter logic.
+WingCommander's `chat.ts`/`rag.ts` deliberately NOT migrated (they stream; this endpoint doesn't;
+their existing TS fallback already works — see the module's README). Along the way, found and
+fixed 4 real bugs via actual live testing rather than trusting green builds: an empty
+`pipeline.log` (a logging.basicConfig() collision), `SERPAPI_KEY`/`TELEGRAM_BOT_TOKEN` leaking
+into log output on request failure, both of `ai-gateway.php`'s starter-tier free models being
+dead on OpenRouter's current catalog, and the gateway swallowing OpenRouter's real error on a
+200-with-no-`choices` response. Full detail: `servermemory.md`, 2026-09-08 entries (search
+"llm_gateway" / "Phase 2").
+
 **The RE-AUDIT FINDINGS list is now fully closed** — every item above is either done, correctly
 identified as not actionable from this account (the `thekpihub.vercel.app` case), or resolved
 per explicit user decision. Nothing outstanding from this list as of 2026-09-04.
