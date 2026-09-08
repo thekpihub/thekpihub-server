@@ -2536,3 +2536,31 @@ scoped/intentional. Did not revoke anything — presented the finding via `AskUs
 **user's decision: review github.com/settings/tokens themselves and decide which to revoke**,
 rather than have me guess or act on tokens that might be wired into an unchecked tool config.
 Not closed — flagged for the user's own follow-up.
+
+---
+
+## 2026-09-09 (cont.) — Dependabot cleanup on wingcommander-reference: 7/11 fixed, redeployed,
+live-verified; one pre-existing unrelated Railway misconfiguration surfaced (not caused by this)
+
+**Fix** (PR #29): `npm audit fix` (no `--force`) on `apps/wingcommander-reference` resolved 7 of
+11 vulnerabilities (body-parser, brace-expansion, browserslist, js-yaml, nanoid, postcss,
+postcss-selector-parser). Both backend (`tsc`) and frontend (`tsc` + `vite build`) verified
+building clean. Remaining 4 (moderate: `qs` via express's internal pin, `react-router` 6→7)
+deliberately NOT force-fixed — both need a framework major-version bump (Express 4→5,
+react-router v6→v7) with real code changes and regression testing on a live paid feature, not
+just a lockfile update.
+
+**Redeployed both Railway services** to actually pick up the fix (a lockfile-only PR doesn't
+auto-deploy). `ditto-wingman-backend` — **SUCCESS**, `/api/health` still 200 post-deploy.
+`ditto-wingman-frontend` — **FAILED**, but confirmed via logs this is a pre-existing,
+unrelated misconfiguration: the crash is `Error: JWT_SECRET must be set in production` thrown
+from `backend/dist/lib/env.js` — this Railway service is somehow running *backend* code, not
+frontend code at all. Matches what's already documented in CLAUDE.md: this specific Railway
+service was never properly configured (no domain, no env vars) and the real production frontend
+has always been served from Vercel (`wingcommander.thekpihub.com`), not this Railway service.
+**Confirmed the actual live surfaces are unaffected**: `wingcommander.thekpihub.com` → 200,
+`ditto-wingman-backend`'s `/api/health` → 200. Did not attempt to fix the broken Railway
+frontend stub — out of scope for this pass, pre-existing, not user-facing.
+
+Closes the "Dependabot: wingcommander-reference" item from the open-items list (partially — 4
+advisories remain, deliberately deferred pending a real framework-upgrade effort).
