@@ -147,12 +147,19 @@ design). Full root-cause writeup in this repo's `servermemory.md`.
   (exit 255) roughly every other run — a same-workflow retry fixed it every time. Treat one red
   run as "retry once" before assuming a real regression.
 
-**Still open:** `wp_options` lists 7 "active" plugins that aren't installed (harmless — WP
-skips missing ones gracefully — but worth cleaning up so wp-admin's plugin screen isn't
-confusing); the ~46 pre-existing older posts (predating this hosting account, likely migrated
-in from elsewhere) haven't been checked post-by-post for how they render without Elementor;
-`apps/website/CLAUDE.md`'s Design System section lists the wrong fonts (stale) and should be
-corrected to match `colors_and_type.css`.
+**Resolved 2026-09-09** (was "still open" here): ~~`wp_options` lists 7 "active" plugins that
+aren't installed~~ — confirmed via direct SSH check all 7 are genuinely missing from disk, then
+cleared `active_plugins` to `a:0:{}`. ~~the ~46 pre-existing older posts... haven't been checked
+for how they render without Elementor~~ — checked directly via `wp_posts`: **that premise was
+wrong**, there are no pre-existing/migrated legacy posts at all — `wp_posts` has only 38
+`post_type='post'` rows, all pipeline-generated 2026-09-02 onward, all confirmed plain HTML with
+zero Elementor/Divi markers. Full detail: `servermemory.md`, 2026-09-09 entries. (The third item
+once listed here — stale fonts in `apps/website/CLAUDE.md` — turned out to already be fixed in
+an earlier session; that file already correctly lists Source Serif 4/Beiruti/Manrope/JetBrains
+Mono, this note was just itself stale.)
+zero Elementor/Divi markers. The 15 rows with `_elementor_data` postmeta are inert, unpublished
+`page` drafts and revisions from WordPress's initial setup wizard, not live content. Full
+detail: `servermemory.md`, 2026-09-09 entries.
 
 **What was confirmed, for the record:**
 - `u117990013_Thekpihub` (4 MB, created 2026-06-28) is the real, current WP DB — hPanel
