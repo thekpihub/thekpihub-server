@@ -1,0 +1,45 @@
+name: Diagnostic - Check which active WP plugins actually exist on disk
+
+# One-off, read-only. Lists whether each plugin file listed in wp_options'
+# active_plugins actually exists under the WordPress install's
+# wp-content/plugins directory. Per repo convention, move to
+# docs/diagnostics/ after use.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    env:
+      HOSTINGER_HOST: ${{ secrets.HOSTINGER_HOST }}
+      HOSTINGER_PORT: ${{ secrets.HOSTINGER_PORT }}
+      HOSTINGER_USERNAME: ${{ secrets.HOSTINGER_USERNAME }}
+      HOSTINGER_SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      HOSTINGER_SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$HOSTINGER_SSH_KEY" > ~/.ssh/hostinger_deploy_key
+          printf '%s\n' "$HOSTINGER_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/hostinger_deploy_key
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Check plugin file existence
+        run: |
+          PLUGDIR="/home/$HOSTINGER_USERNAME/domains/thekpihub.com/public_html/blog-wordpress/wp-content/plugins"
+          SSH_CMD="ssh -i ~/.ssh/hostinger_deploy_key -p $HOSTINGER_PORT -o BatchMode=yes -o StrictHostKeyChecking=yes $HOSTINGER_USERNAME@$HOSTINGER_HOST"
+
+          for f in "elementor/elementor.php" "hostinger/hostinger.php" "image-optimization/image-optimization.php" "litespeed-cache/litespeed-cache.php" "manage/manage.php" "pojo-accessibility/pojo-accessibility.php" "wp-webhooks/wp-webhooks.php"; do
+            if $SSH_CMD "test -f '$PLUGDIR/$f'"; then
+              echo "EXISTS: $f"
+            else
+              echo "MISSING: $f"
+            fi
+          done
+
+          echo "--- full plugins directory listing (for reference) ---"
+          $SSH_CMD "ls -la '$PLUGDIR' 2>&1 || echo 'plugins directory itself does not exist'"
