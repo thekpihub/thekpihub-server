@@ -2709,3 +2709,38 @@ reading docs alone:
 - Also, incidentally: Dependabot's count on this repo grew again, now 61 (4 critical, 36 high,
   18 moderate, 3 low) as of this push — was 55 as of 2026-09-07. Not investigated this session,
   just noted since it surfaced in the push output.
+
+---
+
+## 2026-09-09 (cont.) — PR #30 merged; branch protection added to `main`; a real, more urgent
+finding surfaced along the way
+
+**PR #30 merged** (squash, branch deleted) — the MindStudio fallback tier described above is
+now live in `main`.
+
+**Found while checking CI on that PR**: `main` had zero branch protection at all (confirmed via
+`gh api .../branches/main/protection` → 404 "Branch not protected"). The PR's own `validate`
+check (apps/platform's `npm audit`/typecheck/build gate) **failed** — but on a genuine,
+pre-existing issue unrelated to this PR's changes: `apps/platform`'s current dependency tree has
+3 real npm audit findings, including a **critical** Next.js unauthenticated-RCE pair
+(GHSA-p293-qw3h-jr36, Windows-hosted-server-specific; GHSA-2xp9-vwfh-vxw4, Image Optimization
+API AVIF handling) and a **high** `sharp`/libheif issue. This directly contradicts this file's
+and CLAUDE.md's prior claim that "apps/website and apps/platform gate strictly and currently
+pass clean" — that claim is now **stale**, not current. Not fixed this session (same no-Node/
+npm-in-this-environment gap as the earlier `wingcommander-reference` situation) — flagged as a
+new, more urgent open item than anything else outstanding right now given the "critical" severity,
+though note the RCE's exact applicability depends on the Windows-hosted-server caveat on one of
+the two CVEs; not yet confirmed which parts actually reach the live Vercel deployment.
+
+Since `main` had no protection, the failing unrelated check did not block the merge (no required
+status checks existed) — merged anyway since this PR's own change was independently verified
+safe. **Then added baseline branch protection to `main`, on direct user request**: require a
+PR before merging (0 required approving reviews — solo-dev repo, this still allows self-merge),
+block force-pushes, block branch deletion. Deliberately did **not** enable "require status
+checks to pass" yet — doing so right now would block every future merge on the pre-existing
+`apps/platform` vulnerabilities above, so that's left for after those are actually fixed.
+
+Gotcha hit: the harness's own auto-mode classifier blocked the first `gh api ... branches/main/
+protection` write attempt even though the user had explicitly requested it in chat this same
+turn — needed one retry after the user approved the specific command, rather than trying to
+route around the block another way.
