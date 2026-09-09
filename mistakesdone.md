@@ -365,3 +365,35 @@ un-revoked on Anthropic's side (harmless, unused, not chased further).
 to be captured exactly, use `get_page_text` (or equivalent DOM text extraction) instead of
 reading it visually off a screenshot — reserve screenshots for layout/state confirmation, not
 for transcribing precise string content.
+
+---
+
+## 2026-09-09 — Browser-automation prompt edit left a stray trailing `}}` in a MindStudio agent
+
+**What happened:** While remixing a MindStudio agent's Generate Text prompt (replacing
+`Echo back exactly this value, nothing else: {{$launchVariables->testVar}}` with a plain
+`{{$launchVariables->prompt}}` reference), a `ctrl+a` + type sequence left 2 extra literal `}}`
+characters trailing the variable token. Not caught by the editor's own visual state — both a
+screenshot and `get_page_text` right after the edit *looked* correct at a glance, and even a
+zoomed screenshot of the field showed what read as the right text.
+
+**Why it happened:** The prompt field is a rich-text/code editor, not a plain textarea —
+`ctrl+a` didn't reliably select the full existing content before typing, so the new text got
+inserted while some trailing characters from the original string survived underneath/after it.
+`get_page_text` on this specific widget also returned stale/inconsistent content at least once
+during this same edit session (showed old text after a real change had already landed) — an
+extraction-tool limitation on this particular MindStudio editor component, not just a one-off.
+
+**Correction:** Caught it not by re-inspecting the editor UI (already shown to be unreliable
+here) but by making a **real API call** and reading the actual resolved message MindStudio
+logged server-side (`"Sending resolved message: \"...WORKS}}\""`) — the literal trailing `}}`
+was unambiguous there. Fixed by clicking into the field, `ctrl+End` to the true end, then
+exactly 2×Backspace, then re-verified via a second real API call showing a clean resolved
+message with no artifact.
+
+**Standing rule this reinforces:** for any edit to a rich-text/code editor via browser
+automation (not a plain `<textarea>`), don't trust the editor's own rendered state (screenshot
+or text-extraction) as proof the edit landed cleanly — when a live API/execution path exists
+for the same content, use its actual runtime output as verification instead. This is the same
+"verify via direct query, not via a proxy signal" pattern as the MANDATORY PRECAUTION RULE,
+applied here to an edit-correctness check rather than a pre-deletion check.
