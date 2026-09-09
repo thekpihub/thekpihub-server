@@ -2636,3 +2636,76 @@ doesn't register direct API-header auth the way it does `git`/CLI usage).
 - **Actual candidates to revoke** — `Termux-thekpihub-server-access`, `Railway read:packages`,
   `Antigravity IDE`, `Hostinger SSH Key`: none match what `.env` references, still genuinely
   unused. Still the user's call, not actioned — this is verification only, not a decision.
+
+---
+
+## 2026-09-09 (cont.) — MindStudio.ai integrated as a third llm_gateway fallback tier (PR #30)
+
+User provided real MindStudio.ai Pro ($20/mo) API credentials and asked whether it could
+route around the Anthropic org-wide spend cap. Answered by direct, live test rather than
+reading docs alone:
+
+- Ran a real API call through MindStudio's `/developer/v2/apps/run` (their "Variable Binding
+  Test" app, model `claude-4-6-sonnet`). It failed with
+  `user_organization::insufficient_credits/balance` — **MindStudio's own balance error, never
+  the Anthropic account**. Confirms MindStudio draws from its own prepaid credit pool
+  (`app.mindstudio.ai/services/balance`), structurally separate from Anthropic Console
+  billing — same shape of proof as the earlier OpenRouter-fallback verification.
+- Checked MindStudio's live "AI Models" BYOK page: 24 supported providers (Alibaba, Amazon
+  Bedrock, Anthropic, Google, OpenAI, etc.) — **no OpenRouter**. Since MindStudio passes every
+  provider's cost through at-cost with zero markup in both Managed and Custom-Key modes, BYOK
+  buys nothing over Managed for this use case — dropped that detour.
+- Found the org already had **12 pre-built MindStudio agents from 2026-08-12** — 4 weeks
+  before this session — spanning KPI Hub, Lumina-SaaS, and two projects with zero record
+  anywhere in this repo's memory ("AI-ForgeStream", "Interview Integrity Lab" — user confirmed
+  these are other projects of theirs, just not documented here). 3 are KPI-Hub-specific
+  (Anomaly Detector: GPT-5.1; Daily Insights: Claude 4.6 Sonnet, `kpiData` JSON-array schema
+  matching `apps/platform/scripts/publish-signals.ts`'s real v1 signal rules; Change Explainer:
+  Gemini 2.5 Flash, `metric` variable) — all on Managed billing, all blocked purely by the
+  same negative MindStudio balance regardless of underlying model.
+- **Real, separate finding**: `apps/platform/.github/workflows/publish-signals.yml` (the
+  consumer for those 3 KPI-Hub agents) has **never actually run** — verified via
+  `gh workflow list`, it's not registered at all, because the file sits at
+  `apps/platform/.github/workflows/` instead of the repo-root `.github/workflows/` GitHub
+  actually scans. A prior session's "fails daily" note in this file was itself wrong — it
+  never fired, pass or fail. It also depends on a separate `kpihub-backend` (Cloud Run +
+  Postgres) with zero credentials/evidence in this environment — out of scope to stand up
+  today. **Not fixed this session** — flagged for whenever that's prioritized.
+- Pivoted to the actually-live target instead: built a dedicated MindStudio agent, **"KPI Hub
+  Pipeline Generic Completion"** (`appId 2b72f155-d841-4957-971b-3bcdd30e3648`, a Make-a-Copy
+  remix of "Variable Binding Test" with its `testVar` renamed to `prompt`, model left at Claude
+  4.6 Sonnet) — none of the 12 pre-existing agents accept arbitrary prompts, all are
+  purpose-built with fixed schemas. Wired it into `services/llm_gateway/gateway.py` as
+  `claude_call()`'s third fallback tier (Anthropic → OpenRouter → MindStudio), verified via a
+  real API call that the prompt resolves cleanly (only blocked by the same unfunded balance).
+- **Self-caught mistake during the build**: the browser-automation prompt edit left a stray
+  trailing `}}` in the agent's Generate Text step (`{{$launchVariables->prompt}}}}`) — caught
+  by a live API test showing the literal resolved message ending in `}}`, not by trusting the
+  editor's visual state (which itself rendered inconsistently between screenshot and
+  `get_page_text`). Fixed with a precise cursor-to-end + 2×Backspace, re-verified clean.
+- **Bonus fix found while wiring env vars**: `pipeline.yml` (`services/pipeline`) imports and
+  calls `claude_call()` but never set `OPENROUTER_API_KEY` in its env block — that fallback
+  tier had been silently unreachable in every run of that specific workflow (unrelated to
+  MindStudio; caught only because I was adding vars to the same block). Fixed alongside.
+- `MINDSTUDIO_API_KEY`/`MINDSTUDIO_APP_ID` set as real repo secrets (`gh secret set`, confirmed
+  via `gh secret list`) and wired into all 3 pipeline workflows (`daily-pipeline.yml`,
+  `premium-pipeline.yml`, `pipeline.yml`). PR #30 opened, not yet merged.
+- **Still open**: MindStudio's own balance is at -$0.30 — the new tier fails through cleanly
+  (same contract as an unconfigured OpenRouter tier) until topped up; a real end-to-end
+  dry-run through the actual pipeline still needs doing once funded, per this repo's usual
+  "verify live, don't trust the green build" pattern. Also declined, correctly, to enter any
+  payment details myself (prohibited) — top-up is the user's action to take at
+  `app.mindstudio.ai/services/balance`.
+- Also flagged, not actioned: a previously-unknown GCP organization (`nitro0dust-org`) with a
+  dedicated "thekpihub" GCP project (real spend, ₹18.31 in August) and a "lumina-numerology"
+  GCP project, both with recurring Google Developer Program monthly credits — surfaced via
+  user-provided screenshots, not investigated further (Vertex AI Model Garden's Claude
+  availability was never confirmed) since the MindStudio path already solved the immediate
+  need with no added engineering.
+- Clarified for the record: ChatGPT Plus/Pro, Gemini Advanced, and Claude Pro (claude.ai) are
+  consumer chat subscriptions with no included API access on any of the three providers — not
+  something that can be "integrated" into a pipeline without separate, separately-billed API
+  keys. No such keys were provided for OpenAI; declined to attempt anything there.
+- Also, incidentally: Dependabot's count on this repo grew again, now 61 (4 critical, 36 high,
+  18 moderate, 3 low) as of this push — was 55 as of 2026-09-07. Not investigated this session,
+  just noted since it surfaced in the push output.
