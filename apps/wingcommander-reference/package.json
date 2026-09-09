@@ -15,7 +15,8 @@
   },
   "overrides": {
     "esbuild": "0.28.1",
-    "monaco-editor": "0.53.0"
+    "monaco-editor": "0.53.0",
+    "qs": "6.16.0"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
