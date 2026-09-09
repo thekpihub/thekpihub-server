@@ -33,9 +33,18 @@ Full story in `servermemory.md`, 2026-09-08 entries.
    `openrouter_model` if the caller already knows the exact OpenRouter slug
    (OpenRouter's Claude-model naming isn't consistently derivable — some
    versions use a dot, some a dash).
-3. Logs clearly which provider/key served each request, and flags a
+3. Falls back to MindStudio.ai's Service Router (`MINDSTUDIO_API_KEY` +
+   `MINDSTUDIO_APP_ID`) if OpenRouter also fails/is unconfigured — a *third*
+   independent billing relationship, verified live 2026-09-09 (a real call
+   hit MindStudio's own balance error, never this account's Anthropic cap).
+   Calls a small dedicated agent ("KPI Hub Pipeline Generic Completion")
+   built specifically as a generic prompt-in/text-out passthrough — none of
+   the workspace's other MindStudio agents accept arbitrary prompts. Needs a
+   funded MindStudio balance (Workspace → Service Router → Balance) to
+   actually return text, not just be configured.
+4. Logs clearly which provider/key served each request, and flags a
    cap-shaped failure loudly (`🛑 CAP_HIT`) the moment it happens.
-4. Returns `None` if everything failed — same contract callers already
+5. Returns `None` if everything failed — same contract callers already
    handle (`if resp is None: ...`).
 
 `openrouter_call(**kwargs)` calls OpenRouter directly with no Anthropic

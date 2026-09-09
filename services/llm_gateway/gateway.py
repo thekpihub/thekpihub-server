@@ -16,9 +16,21 @@ Built 2026-09-08 after two separate discoveries in the same investigation:
 
 This module exists so the fix lives in one place: a resilient `claude_call()`
 that (a) tries every configured Anthropic key in turn, then (b) falls back to
-OpenRouter — a genuinely separate billing account — if all of them fail, and
-(c) logs clearly which provider/key served each request so a cap-type failure
-is visible the instant it happens.
+OpenRouter — a genuinely separate billing account — then (c) falls back to
+MindStudio.ai's Service Router (a third, independent billing relationship —
+verified live 2026-09-09 via a real API call that hit MindStudio's own
+"insufficient_credits/balance" error, never the Anthropic account, proving
+Managed-tier calls never touch this account's spend cap) if all of them fail,
+and (d) logs clearly which provider/key served each request so a cap-type
+failure is visible the instant it happens.
+
+The MindStudio tier calls a small dedicated agent ("KPI Hub Pipeline Generic
+Completion", appId in MINDSTUDIO_APP_ID) built specifically as a generic
+prompt-in/text-out passthrough for this purpose -- none of the other MindStudio
+agents in this workspace accept arbitrary prompts. Requires MINDSTUDIO_API_KEY
+and a funded MindStudio balance (Workspace -> Service Router -> Balance); until
+topped up it fails the same way the other two tiers fail when unconfigured/
+exhausted, i.e. cleanly falls through (or returns None if it's the last tier).
 
 Honest limitation, stated up front rather than glossed over: Anthropic has no
 public API to check remaining credit balance ahead of time (only the Console
@@ -213,6 +225,67 @@ def openrouter_call(*, model: str, system=None, messages=None, prompt: Optional[
     )
 
 
+_MINDSTUDIO_RUN_URL = "https://api.mindstudio.ai/developer/v2/apps/run"
+
+
+def _flatten_prompt(system, messages) -> str:
+    """Collapse Anthropic-shaped system/messages into one plain-text prompt --
+    what the MindStudio agent's single `prompt` launch variable expects (it
+    passes the string straight to Claude in one Generate Text step, no
+    separate system-role concept)."""
+    parts = []
+    if system:
+        parts.append(system[0]["text"] if isinstance(system, list) else system)
+    for m in messages:
+        content = m["content"]
+        if isinstance(content, list):
+            content = "\n".join(b.get("text", "") for b in content if isinstance(b, dict))
+        parts.append(content)
+    return "\n\n".join(p for p in parts if p)
+
+
+def _mindstudio_fallback(*, system, messages, max_tokens: int):
+    """Third fallback tier: MindStudio.ai's Service Router, via the dedicated
+    'KPI Hub Pipeline Generic Completion' agent (see module docstring).
+    Returns an Anthropic-response-shaped object (so claude_text() needs no
+    changes), or None if unconfigured/failed -- same contract as
+    _openrouter_fallback()."""
+    key = os.getenv("MINDSTUDIO_API_KEY", "").strip()
+    app_id = os.getenv("MINDSTUDIO_APP_ID", "").strip()
+    if not key or not app_id:
+        return None
+    try:
+        r = requests.post(
+            _MINDSTUDIO_RUN_URL,
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json={
+                "appId": app_id,
+                "variables": {"prompt": _flatten_prompt(system, messages)},
+                "includeBillingCost": True,
+            },
+            timeout=120,
+        )
+        r.raise_for_status()
+        body = r.json()
+        thread = body.get("thread", {})
+        error = thread.get("error")
+        if error:
+            # Same shape MindStudio returns for "insufficient_credits/balance"
+            # (workspace balance exhausted) -- observed live 2026-09-09. Not a
+            # cap-type failure on OUR Anthropic account, just this tier's own
+            # unfunded balance; log plainly and let the caller know to top up.
+            log.error("❌ MindStudio call failed (%s): %s", error.get("errorCode"), error.get("errorText"))
+            return None
+        text = body.get("result")
+        if not text:
+            log.error("❌ MindStudio call returned no result (thread=%s)", thread.get("id"))
+            return None
+        return SimpleNamespace(content=[SimpleNamespace(text=text)])
+    except Exception as exc:
+        log.error("❌ MindStudio call failed: %s", exc)
+        return None
+
+
 def claude_call(*, openrouter_model: Optional[str] = None, **kwargs):
     """
     Drop-in replacement for `anthropic.Anthropic(...).messages.create(**kwargs)`.
@@ -254,17 +327,29 @@ def claude_call(*, openrouter_model: Optional[str] = None, **kwargs):
             "more keys under the same org will not help. See this module's docstring."
         )
 
+    system = kwargs.get("system")
+    messages = kwargs.get("messages", [])
+    max_tokens = kwargs.get("max_tokens", 2048)
+
     if os.getenv("OPENROUTER_API_KEY", "").strip():
         log.warning("⚠️  All %d Anthropic key(s) exhausted — falling back to OpenRouter", len(keys))
-        return _openrouter_fallback(
-            model=model,
-            system=kwargs.get("system"),
-            messages=kwargs.get("messages", []),
-            max_tokens=kwargs.get("max_tokens", 2048),
+        resp = _openrouter_fallback(
+            model=model, system=system, messages=messages, max_tokens=max_tokens,
             openrouter_model=openrouter_model,
         )
+        if resp is not None:
+            return resp
+        log.warning("⚠️  OpenRouter also failed/unconfigured — falling back to MindStudio")
+    else:
+        log.warning("⚠️  All %d Anthropic key(s) exhausted, OPENROUTER_API_KEY not configured — "
+                    "falling back to MindStudio", len(keys))
 
-    log.error("❌ All Anthropic keys failed and OPENROUTER_API_KEY is not configured — giving up")
+    resp = _mindstudio_fallback(system=system, messages=messages, max_tokens=max_tokens)
+    if resp is not None:
+        return resp
+
+    log.error("❌ All Anthropic keys failed and both OpenRouter and MindStudio are "
+              "unconfigured/exhausted — giving up")
     return None
 
 

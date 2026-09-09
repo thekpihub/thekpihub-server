@@ -30,6 +30,15 @@ jobs:
       - run: python pipeline.py
         env:
           ANTHROPIC_API_KEY:    ${{ secrets.ANTHROPIC_API_KEY }}
+          # Fallback chain when the direct Anthropic account is rate/usage-capped --
+          # pipeline.py's claude_call() (services/llm_gateway) retries direct Anthropic
+          # first, then OpenRouter (separate billing), then MindStudio.ai's Service
+          # Router (a third, independent billing relationship). Found 2026-09-09: this
+          # workflow imports and calls claude_call() but never set OPENROUTER_API_KEY,
+          # so that fallback tier had been silently unreachable in every run here.
+          OPENROUTER_API_KEY:   ${{ secrets.OPENROUTER_API_KEY }}
+          MINDSTUDIO_API_KEY:   ${{ secrets.MINDSTUDIO_API_KEY }}
+          MINDSTUDIO_APP_ID:    ${{ secrets.MINDSTUDIO_APP_ID }}
           SERPAPI_KEY:          ${{ secrets.SERPAPI_KEY }}
           TELEGRAM_BOT_TOKEN:   ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID:     ${{ secrets.TELEGRAM_CHAT_ID }}
