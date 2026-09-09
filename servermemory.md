@@ -2744,3 +2744,71 @@ Gotcha hit: the harness's own auto-mode classifier blocked the first `gh api ...
 protection` write attempt even though the user had explicitly requested it in chat this same
 turn — needed one retry after the user approved the specific command, rather than trying to
 route around the block another way.
+
+---
+
+## 2026-09-09 (cont.) — Repo visibility bug found and fixed; full vulnerability remediation
+pass across everything live (PRs #31-#34)
+
+**Found while checking CI on PR #30**: `main` had **zero branch protection** (confirmed via
+`gh api .../branches/main/protection` -> 404). More importantly, `gh repo view` showed the
+repo was **PRIVATE** — contradicting this file's own prior claim that it was "deliberately
+made public to unblock Vercel's Hobby-plan private-org-repo restriction." Both `platform` and
+`kpihub-assembled` Vercel deployments were failing with exactly that error, confirming this had
+been silently broken since whenever it flipped back to private (not investigated when/how/who).
+Re-verified no secrets are in the current tree (targeted grep for real key-prefix patterns
+across `.py`/`.ts`/`.js`/`.php`/`.env`/`package-lock.json` — all hits were false positives:
+format-validation code checking for `sk-ant-` prefixes, or lockfile hash noise) before
+restoring it to public on direct user confirmation. **Verified fixed, not just assumed**: both
+Vercel projects' latest deployments went QUEUED -> BUILDING -> READY within minutes, confirmed
+via the Vercel API directly.
+
+Also added baseline branch protection to `main` on direct user request: PR required (0 required
+approving reviews — solo-dev repo), force-push blocked, deletion blocked. Deliberately did NOT
+require status checks yet (see below for why). Hit a real harness gotcha: the auto-mode
+classifier blocked the first `gh api .../protection` write even though the user had explicitly
+asked for it this same turn — needed one retry after explicit re-approval of that exact command.
+
+**Then did a full pass on real, live-code vulnerabilities** (explicitly NOT touching
+`apps/legacy-app`/`tools/automated-website-builder` — confirmed via a manifest-path breakdown
+of every open Dependabot alert that 100% of what's left after this pass sits in those two
+already-correctly-triaged reference-only paths):
+
+- **PR #31** (`apps/platform`): `npm audit fix` (no `--force`) resolved all 3 findings incl. a
+  **critical** Next.js unauthenticated-RCE pair (16.0.0-16.3.2 -> 16.3.4) and a high `sharp`
+  issue. Corrected this file's own stale "apps/platform ... currently passes clean" claim —
+  it did not, as of this PR's own `validate` failure surfacing it. Verified via `tsc --noEmit`
+  + a full `next build` (Turbopack), not just the green audit output.
+- **PR #32** (`apps/wingcommander-reference`): `qs`/`express` moderate DoS + bypass findings.
+  Plain `npm audit fix` couldn't resolve it — `express@4.22.2` hard-pins `qs: ~6.15.1`,
+  excluding the patched `6.16.0`. Added `"qs": "6.16.0"` to the existing `overrides` block.
+  Needed a full clean reinstall (`rm -rf node_modules` + lockfile) for the override to actually
+  apply everywhere — an incremental `npm install` left a stale nested vulnerable copy. Verified
+  via both workspaces' builds (backend `tsc`, frontend `tsc && vite build`).
+- **PR #33** (`apps/wingcommander-reference`): `multer` 1.x -> 2.3.0, resolving **9** separate
+  high-severity DoS advisories in one bump (1.x is broadly deprecated for exactly this reason —
+  npm prints its own warning on every install). Only one usage site (`backend/src/routes/
+  rag.ts`), vanilla `memoryStorage()` + `fileFilter` + `.single()` — none of the APIs that
+  changed in 2.x. Bumped `@types/multer` to match. Verified via both workspace builds again.
+- **PR #34** (`services/pipeline`): `requests` 2.32.3 -> 2.34.2 (2 CVEs: .netrc credential
+  leak, insecure temp file reuse) and `python-dotenv` 1.0.1 -> 1.2.3 (symlink-following file
+  overwrite). **Honestly flagged limitation**: no Python/pip in this environment to
+  install-test directly — verified instead by reading actual usage (`pipeline.py`'s `requests`
+  calls are vanilla `.get()`/`.post()`/`RequestException`; `python-dotenv` isn't even imported
+  anywhere in the file, so this specific bump is zero-risk regardless of compatibility).
+  `apps/website/requirements.txt` already uses open-ended `>=` for both — never flagged,
+  correctly left untouched.
+
+**Corrects a carried environment assumption**: multiple entries in this file and CLAUDE.md
+claimed "no Node/npm available in this environment" (used to justify not fixing
+`wingcommander-reference`'s Dependabot alerts earlier, and to justify the `llm_gateway` design
+choice of no local dependency testing). **That's no longer true** (or was never re-checked) —
+this session confirmed Node v24.19.0 / npm 11.17.0 are both present and used them for all 4
+PRs above. Python/pip remains genuinely unavailable, confirmed by direct check.
+
+**Net effect on Dependabot's count across this session**: 61 (4 critical, 36 high, 18 moderate,
+3 low) at session start -> 27 (2 critical, 9 high, 15 moderate, 1 low) after PR #34, with the
+entire remaining critical/high count now concentrated in the two paths already correctly
+triaged as reference-only, non-blocking. Zero critical/high vulnerabilities remain in any
+actually-live code path (apps/website, apps/platform, apps/wingcommander-reference,
+services/pipeline, services/llm_gateway).
