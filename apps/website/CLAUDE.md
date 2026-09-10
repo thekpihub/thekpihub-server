@@ -9,13 +9,17 @@ Live at: https://thekpihub.com
 - Hosting: Hostinger (static files + PHP, git webhook deploy)
 - Frontend: Vanilla HTML/CSS + inline React 18 via unpkg CDN
 - Auth: Supabase (https://eeuwkislidznpgdbvvbo.supabase.co)
-- Billing: **`upgrade.html`'s Stripe flow was retired 2026-09-04 — see the caveat below.**
-  - **Razorpay Payment Link — the only live one-time revenue path.** The ₹2,999 KPI Audit.
+- Billing: **`upgrade.html`'s Stripe flow was retired 2026-09-04; relaunched 2026-09-10 as a
+  real session hand-off — see the `/upgrade.html` section below.**
+  - **Razorpay Payment Link — the one-time revenue path.** The ₹2,999 KPI Audit.
     Hardcoded as `PAYMENT_LINK_URL` in `get-audit.html`; does not touch `config.js`.
-  - **Subscriptions (Growth/Enterprise) now live in `apps/platform`**, not this site — real
-    Razorpay + PayPal checkout at `/dashboard/billing` on the platform's own Vercel deployment
-    (`https://thekpihub-platform.vercel.app`), wired in PR #12. `config.js`'s Stripe keys are
-    now dead weight (nothing on this site calls them any more) — not yet removed from
+  - **Subscriptions (Growth live, Enterprise custom) are in `apps/platform`**, not this site's
+    own code — real Razorpay + PayPal checkout at `/dashboard/billing` on the platform's own
+    Vercel deployment, now domain-mapped to `https://app.thekpihub.com` (2026-09-10 — the old
+    `thekpihub-platform.vercel.app` claim here was stale/wrong, that URL was never live), wired
+    in PR #12. This site's own `pricing.html`/homepage "Upgrade to Growth" buttons link to
+    `upgrade.html`, which hands off the signed-in session there. `config.js`'s Stripe keys are
+    still dead weight (nothing on this site calls them any more) — not yet removed from
     `config.js`/`config.example.js`, just unused.
 - AI: Anthropic API (browser-side via api-key-modal.js)
 - Blog: WordPress on thekpihub.com
@@ -98,24 +102,43 @@ shipped three different schemes at the same time.
 
 | Tier | Price | Status |
 |---|---|---|
-| KPI Audit Lite | **₹2,999 one-time** | **Live.** The only thing that can be bought today. Razorpay, INR. |
-| Growth | **₹5,999/mo** | Coming Q3 2026. Not purchasable — CTA is "Express Interest". |
+| KPI Audit Lite | **₹2,999 one-time** | **Live.** Razorpay, INR. |
+| Growth | **₹5,999/mo** | **Live as of 2026-09-10** — CTA is "Upgrade to Growth →", routes through `upgrade.html`'s session hand-off to `apps/platform`'s real checkout. Was gated "Coming Q3 2026" until this date; see below for why that gate existed and why it was deliberately lifted. |
 | Enterprise | Custom | Contact sales. |
 
 The earlier ₹999 / ₹2,499 / ₹7,999 monthly scheme recorded here was never published and
 conflicted with the live site. Removed 2026-08-19.
 
-### `/upgrade.html` — retired 2026-09-04, now redirects (was: could sell what pricing pages said wasn't for sale)
+### `/upgrade.html` — now the real session hand-off to Growth checkout (relaunched 2026-09-10)
 
-Previously `/upgrade.html` returned **200** (unlisted, `noindex`, but not access-controlled) and
-wired a real Stripe embedded checkout for three plans — `starter` (removed from public pricing
-on 2026-08-19 but still selectable here), `growth` (advertised as not purchasable until Q3 2026,
-yet payable at whatever price Stripe's dashboard held, unpinned to the published ₹5,999/mo), and
-`enterprise` (marketed as Custom/contact-only, yet had a fixed Stripe price). User decision
-2026-09-04: redirect rather than gate-and-fix, since a real replacement now exists. The page is
-now a static redirect (meta-refresh + JS) to `apps/platform`'s `/dashboard/billing`, which has
-its own auth gate and real Razorpay/PayPal checkout (PR #12). All Stripe/Supabase/plan-fetch
-logic was removed from the page. 17 other files in this repo still link to `upgrade.html` by URL
-(nav CTAs, docs, sitemap) — left as-is since the redirect keeps every one of those links working
-without a 17-file find-and-replace; update them directly to the platform URL only if/when the
-redirect itself is removed.
+**History**: originally wired a real Stripe embedded checkout for three plans, one of which
+(`growth`) was purchasable at an unpinned Stripe-dashboard price *before* pricing.html said it
+was for sale — treated as a bug and fixed 2026-09-04 by retiring it to a **dumb** redirect
+(meta-refresh + JS, no session logic) to `apps/platform`'s `/dashboard/billing`, since Growth
+still wasn't meant to be purchasable yet at that point.
+
+**Relaunched 2026-09-10, deliberately**: the Q3 2026 gate above was a real, documented decision,
+not stale copy — flagged directly to the user before touching anything, and the decision to move
+the Growth launch up was made explicitly with that context, not assumed. Domain-mapping
+`apps/platform` to `app.thekpihub.com` the same day exposed a real gap the dumb redirect always
+had: this site's Supabase client is `localStorage`-based (origin-scoped to thekpihub.com);
+`apps/platform`'s is `@supabase/ssr` cookies (host-only, no domain sharing configured) — a
+session from one never existed on the other, so every "Upgrade" click was silently dropping
+signed-in users at a second login. Fixed by giving `upgrade.html` real session-aware logic
+again (Supabase JS re-added): signed-in users hand off their access/refresh token pair (both
+apps share the same Supabase project, so the tokens are portable) via
+`app.thekpihub.com/auth/handoff#access_token=...&refresh_token=...` (hash fragment, never sent
+to any server); signed-out users go to this site's own `login.html` first. The stale
+`thekpihub-platform.vercel.app` destination (never a real live domain — see
+`thekpihub-server/README.md`'s own correction the same day) was also fixed to the real
+`app.thekpihub.com`.
+
+17 other files in this repo still link to `upgrade.html` by URL (nav CTAs, docs, sitemap) — that
+was fine when it was a dumb redirect and is still fine now that it does more: none of them need
+touching, they all benefit from the real hand-off automatically.
+
+**Known minor gap, not fixed in this pass**: a signed-out user who logs in via `login.html`
+lands on `dashboard.html` (that page's hardcoded redirect), not back on `upgrade.html` — they'd
+need to click "Upgrade" a second time after signing in. Adding `next`-param support to
+`login.html` would close this, but wasn't done here to avoid widening this change into a
+shared, foundational file. Worth doing if this friction turns out to matter in practice.

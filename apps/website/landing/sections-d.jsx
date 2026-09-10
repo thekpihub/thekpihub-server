@@ -202,7 +202,7 @@ function SectionFaq() {
     },
     {
       q: 'Is there a free trial?',
-      a: 'No trial, because there is no subscription to trial yet. What is live is the ₹2,999 KPI Audit — one-time, delivered in 48 hours, and covered by the guarantee: if you don’t find at least one fix worth more than the fee, I’ll refund it. The Growth plan (₹5,999/mo) is coming Q3 2026; audit clients get priority access.',
+      a: 'No trial on the Growth subscription (₹5,999/mo, live now) — but the ₹2,999 KPI Audit is one-time, delivered in 48 hours, and covered by the guarantee: if you don’t find at least one fix worth more than the fee, I’ll refund it. A great low-risk way to try things out before subscribing to Growth.',
     },
   ];
   return (

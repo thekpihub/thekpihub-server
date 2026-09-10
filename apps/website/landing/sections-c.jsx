@@ -57,10 +57,10 @@ function SectionPricing() {
     {
       name: 'Growth',
       for: 'Ongoing KPI tracking & monthly intelligence for growing teams.',
-      tag: '₹5,999 / mo · coming Q3 2026',
+      tag: '₹5,999 / mo',
       pop: false,
-      cta: 'Express Interest',
-      href: 'get-audit.html',
+      cta: 'Upgrade to Growth →',
+      href: 'upgrade.html',
       feats: [
         'Monthly KPI intelligence feed',
         'Ongoing benchmarking updates',
@@ -95,7 +95,7 @@ function SectionPricing() {
           <span className="lp-eyebrow">Simple pricing. Serious intelligence.</span>
           <h2 className="lp-h2 mt-4">One audit, priced once. <em>No retainer, no lock-in.</em></h2>
           <p className="lp-lead mx-auto mt-5 max-w-2xl">
-            The ₹2,999 KPI Audit is live today — it is the only plan you can buy right now. Growth and Enterprise are still being built; register interest and you&rsquo;ll hear first.
+            The ₹2,999 KPI Audit and the ₹5,999/mo Growth plan are both live today. Enterprise is custom pricing — reach out and we&rsquo;ll talk through your needs.
           </p>
         </div>
 
