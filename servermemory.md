@@ -2896,3 +2896,39 @@ time rather than force-fixing blind:
   re-added it without checking for the existing one first — small self-caught slip, not a real
   mistake requiring a `mistakesdone.md` entry, but worth noting the "check before you add"
   discipline here).
+
+---
+
+## 2026-09-10 (cont.) — publish-signals.yml actually fixed and confirmed live, PR #36
+
+Per the user's request for a full step-by-step task list scoped to this repo/thekpihub.com,
+executed the one zero-decision item immediately:
+
+- **Moved** `apps/platform/.github/workflows/publish-signals.yml` to the repo-root
+  `.github/workflows/` GitHub actually scans — it had never run once since being written.
+- **Found and fixed a second real bug while doing it**: this repo has no root `package.json` at
+  all, but the workflow ran plain `npm ci`/`npm run publish-signals` with no working-directory
+  set — only works from `apps/platform`, where the actual `package.json` and the
+  `publish-signals` script (`tsx scripts/publish-signals.ts`) live. Added
+  `defaults: run: working-directory: apps/platform` (matching `daily-pipeline.yml`/
+  `premium-pipeline.yml`'s existing pattern for `apps/website`), fixed `cache-dependency-path`
+  to match.
+- **Verified locally before pushing, not just assumed**: `npm ci` + `npm run publish-signals`
+  from `apps/platform` runs and compiles cleanly (tsx, zero syntax/import errors), failing only
+  at its first real `requireEnv("KPIHUB_API_URL")` check — exactly the expected/correct failure
+  with no backend configured, proving the workflow logic itself is sound.
+- PR #36 merged, fully green. **Confirmed via `gh workflow list` after merge: "Publish KPI
+  Signals" now shows `active`** — the first time ever, not just theoretically fixed.
+- **Also identified, via direct grep, the real identity of "kpihub-backend"**: `apps/legacy-app`
+  is the actual candidate code — its own `ci.yml` Docker-builds an image literally tagged
+  `kpihub-backend`. But it has never been deployed anywhere (checked for Cloud Run
+  references/deploy workflows — none exist; its README is unmodified `create-next-app`
+  boilerplate). This resolves what "kpihub-backend" actually refers to (a real, previously
+  unanswered question) without resolving whether it should be deployed — that's still the
+  user's call, not actioned.
+- Also confirmed **no `gcloud` CLI is available in this environment** — relevant context for
+  anyone considering the GCP/Vertex AI path later; that route would need either browser-based
+  console work (slow, canvas-rendered UI, hard to verify) or a proper `gcloud`-capable
+  environment.
+- Updated `CLAUDE.md` and the global `/thekpihub` skill to close out this item with the same
+  detail.

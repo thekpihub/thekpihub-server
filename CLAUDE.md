@@ -410,14 +410,22 @@ repo secrets and wired into all 3 pipeline workflows.
 documented anywhere in this repo previously). 3 are KPI-Hub-specific: "KPI Hub Anomaly
 Detector" (GPT-5.1), "KPI Hub Daily Insights" (Claude 4.6 Sonnet, `kpiData` JSON-array input
 matching `apps/platform/scripts/publish-signals.ts`'s real v1 signal-rule schema), "KPI Hub
-Change Explainer" (Gemini 2.5 Flash, `metric` input) — all currently unusable for the same
-unfunded-balance reason above. **Their actual consumer, `publish-signals.yml`, has never
-run at all** — found via `gh workflow list` (not in the registered list), because the file sits
-at `apps/platform/.github/workflows/publish-signals.yml` instead of the repo-root
+Change Explainer" (Gemini 2.5 Flash, `metric` input) — currently unusable for a different reason
+than the MindStudio balance (that's funded now): **their actual consumer, `publish-signals.yml`,
+had never run at all** — found via `gh workflow list` (not in the registered list), because the
+file sat at `apps/platform/.github/workflows/publish-signals.yml` instead of the repo-root
 `.github/workflows/` GitHub actually scans. A prior servermemory.md note calling it "fails
-daily" was itself wrong. It also depends on a separate `kpihub-backend` (Cloud Run + Postgres)
-with zero credentials/evidence in this environment — standing this up is a real, separate,
-not-yet-scoped piece of work, not attempted. The other 9 agents in that same workspace span
+daily" was itself wrong. **Fixed 2026-09-10, PR #36**: moved to the repo root, plus a second bug
+found while fixing it — no root `package.json` exists, so the workflow's `npm ci`/
+`npm run publish-signals` needed `working-directory: apps/platform` added (same pattern
+`daily-pipeline.yml`/`premium-pipeline.yml` use for `apps/website`). Verified locally: runs and
+compiles clean, failing only at its first real `requireEnv("KPIHUB_API_URL")` check — confirmed
+`active` in `gh workflow list` after merge (first time ever). **Still blocked, genuinely
+unsolved**: it depends on a separate `kpihub-backend` (Cloud Run + Postgres) that doesn't exist
+anywhere live — `apps/legacy-app` is the actual candidate code (its own CI even Docker-builds an
+image literally named `kpihub-backend`), but it has never been deployed. Standing it up is a
+real, scoped decision (new GCP resource, new secrets, ongoing cost) for the user to make, not
+something to do unprompted. The other 9 agents in that same MindStudio workspace span
 Lumina-SaaS and two projects with no prior record in this repo at all ("AI-ForgeStream",
 "Interview Integrity Lab" — user-confirmed to be other projects of theirs, not investigated
 further here).
