@@ -1,8 +1,9 @@
 /**
  * Scheduled worker: reads KPI data from kpihub-backend (Cloud Run, separate
  * Postgres) and publishes global decision-feed signals into Supabase
- * module_snapshots. See SIGNAL_WIRING_DESIGN_20260713.md for the full design
- * and rationale.
+ * module_snapshots. See ../SIGNAL_WIRING_DESIGN_20260713.md for the full design and rationale
+ * (recreated 2026-09-10 — the original was never committed to this repo; see that file's own
+ * header note).
  *
  * Deliberately standalone (not part of the Next.js app's build/runtime) so
  * it can be run from a GitHub Actions workflow with its own scoped
