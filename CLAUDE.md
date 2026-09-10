@@ -476,15 +476,17 @@ this wasn't pursued, not because it's a dead end.
   leave the credential as-is** — the placeholder swap already stops the tree from displaying it
   as a template value; no further rotation action needed. Full detail:
   `thekpihub-server/servermemory.md`, 2026-09-08 entry.
-- **UPDATED 2026-09-09** — the 2026-08-27 exposed-PAT question couldn't be pinned to a specific
-  token (GitHub's classic-token list has no creation dates), but a broader audit surfaced 6
-  current classic tokens, 5 of them near-full-admin/no-expiry/never-used. Verified directly which
-  one this project actually needs: `GITHUB_ACCESS_TOKEN` in `Credentials/.env` authenticates
-  live (200, `hsharmagxi-debug`) and its scopes match **`THE_KPI_HUB_REPO_ACCESS_TOKEN`** exactly
-  — that one is required, keep it (along with `KPI Hub Master Automation Token`, which has an
-  expiration and a clear purpose). The other 4 (`Termux-thekpihub-server-access`,
-  `Railway read:packages`, `Antigravity IDE`, `Hostinger SSH Key`) are the real candidates for
-  revocation — still the user's call, not actioned. Full detail: `servermemory.md`, 2026-09-09.
+- ~~The 2026-08-27 exposed-PAT question~~ — **CLOSED 2026-09-09 (cont.), user's explicit
+  decision: do NOT revoke any of them.** Couldn't pin the specific Aug-27 token (no creation
+  dates in GitHub's classic-token list), but a broader audit surfaced 6 current classic tokens,
+  5 near-full-admin/no-expiry/never-used from this project's own vantage point. `GITHUB_ACCESS_TOKEN`
+  in `Credentials/.env` matches **`THE_KPI_HUB_REPO_ACCESS_TOKEN`**'s scopes exactly (keep,
+  confirmed required) along with `KPI Hub Master Automation Token` (has an expiration, clear
+  purpose). The other 4 (`Termux-thekpihub-server-access`, `Railway read:packages`,
+  `Antigravity IDE`, `Hostinger SSH Key`) were flagged as revocation candidates from *this
+  project's* perspective — **user confirmed 2026-09-09 (cont.) they're actually connected to
+  separate projects and must NOT be touched.** Do not re-flag or revoke these 4 in a future
+  session just because they look unused/over-scoped from this repo's own vantage point.
 - Hostinger billing shows **every subscription set to `is_auto_renewed: false`**, including the
   **.COM domain itself, expiring 2026-11-22**. Also non-renewing: "Reach 500" (exp.
   2026-11-22), "Starter Business Email" (exp. 2027-03-25). Business Web Hosting prepaid through

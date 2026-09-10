@@ -2823,3 +2823,34 @@ relevant .md files"), did a full pass over `CLAUDE.md` rather than just appendin
 Dependabot count) instead of leaving them alongside newer contradicting notes, plus a proper
 session-log section tying today's work together. Dependabot's count settled at exactly 24 (2
 critical, 9 high, 12 moderate, 1 low) after this push — matches what's now documented.
+
+---
+
+## 2026-09-09 (cont.) — MindStudio verified fully working; PAT revocation reversed on user
+correction; Rocket.new repo archived
+
+**MindStudio top-up confirmed live**, not just taken on the user's word: re-ran the exact same
+API call as the earlier failed test (`KPI Hub Pipeline Generic Completion`, appId
+`2b72f155-d841-4957-971b-3bcdd30e3648`) — `"result":"PIPELINE FALLBACK WORKS"`,
+`"billingCost":"$0.000210"`. The third `llm_gateway` fallback tier is now genuinely usable, not
+just correctly wired.
+
+**GitHub PAT revocation reversed — important correction, not just a decision.** Prior sessions
+(2026-09-09 earlier entries) had narrowed 4 tokens (`Termux-thekpihub-server-access`,
+`Railway read:packages`, `Antigravity IDE`, `Hostinger SSH Key`) as revoke candidates, based
+entirely on this project's own vantage point (unused by `thekpihub-server`, near-admin scope,
+no expiry). **User corrected this directly: all 4 are actively connected to separate projects
+and must NOT be touched.** Updated `CLAUDE.md`, the global `/thekpihub` skill, and this file to
+say so explicitly — the earlier "revoke candidate" framing was accurate only from this one
+repo's perspective and should never have been generalized into a standing recommendation.
+Lesson: a token looking unused/over-scoped from inside one project's audit doesn't mean it's
+actually unused — always ask before recommending revocation of anything not 100%
+self-contained to the project being audited.
+
+**`hsharmagxi-debug/thekpihub-server` (the Rocket.new credential-exposure repo) archived**, per
+explicit user decision ("archive it separately to review later" — not deleted, not kept active).
+`gh repo archive hsharmagxi-debug/thekpihub-server --yes`, confirmed `isArchived: true`
+afterward. Its credential-rotation checklist (see the
+`rocketnew-thekpihub-server-credential-exposure` memory file) is unaffected by the archive and
+was NOT re-verified as complete this session — still worth a real check next time, not an
+assumption.
