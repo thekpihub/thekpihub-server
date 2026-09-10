@@ -3234,3 +3234,32 @@ push` on this session's branch reported GitHub Dependabot now shows **22 vulnera
 new regression (a dependency version currently pinned has a newly-disclosed CVE) or Dependabot
 re-scanning turned up something the last pass's manifest didn't cover — not diagnosed this
 session, purely out of scope for a GA-tag change. Worth a fresh look.
+
+---
+
+## 2026-09-10 (cont. 3) — Dependabot's "22 vulnerabilities" traced: not a regression, 100% archived/dead code
+
+Follow-up on the count surfaced by PR #40's push output. Queried `gh api
+repos/thekpihub/thekpihub-server/dependabot/alerts` directly (not inferred from the push
+warning's summary numbers) for every open alert's exact `manifest_path`. **All 22 open alerts
+are under `archive/apps/legacy-app/` (`package-lock.json` and `backend/package-lock.json`) or
+`archive/tools/automated-website-builder/package-lock.json`** — the same two directories the
+2026-09-10 archive pass (PR #37) moved out of the live tree, and which the 2026-09-09/10
+Dependabot remediation pass (PRs #31-#35) deliberately left unremediated as genuinely
+reference-only/never-deployed. Zero open alerts touch `apps/website`, `apps/platform`,
+`apps/wingcommander-reference`, `services/pipeline`, or `services/llm_gateway` — those remain
+at zero, confirmed by the same query (no rows for any of those paths).
+
+**Conclusion: not a regression at all.** The count grew from whatever it was at the time of the
+archive pass to 22 purely because Dependabot keeps re-scanning those two lockfiles and surfacing
+newly-disclosed CVEs over time (this pass's list includes a `js-yaml` CVE dated 2026, plus fresh
+`browserslist`/`nodemailer`/`qs`/`morgan`/`body-parser`/`brace-expansion`/`sharp`/`next`
+findings) — no code in this repo changed, and nothing any of this touches is installed, run, or
+served anywhere. Confirmed the two critical findings specifically (`next` — image-optimization
+RCE, Windows RCE) are also under `archive/apps/legacy-app/package-lock.json`, not `next`'s
+actual live consumer, `apps/platform`.
+
+**No action taken, none needed** unless `apps/legacy-app`'s backend deployment (still
+deliberately deferred per the 2026-09-10 `kpihub-backend` decision above) is ever revisited — at
+that point it would need its own real remediation pass, same treatment the live paths already
+got.
