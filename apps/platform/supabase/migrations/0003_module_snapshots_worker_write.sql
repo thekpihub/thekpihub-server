@@ -1,12 +1,20 @@
--- DRAFT — NOT YET APPLIED. See SIGNAL_WIRING_DESIGN_20260713.md.
+-- ALREADY APPLIED IN PRODUCTION — confirmed live 2026-09-10 via a direct query against the
+-- eeuwkislidznpgdbvvbo project (pg_policies / pg_indexes), not assumed from this file. This
+-- file had been sitting at "DRAFT — NOT YET APPLIED" with the placeholder UUID below despite
+-- the real thing being live for an unknown time before that — whoever/whatever applied it
+-- never came back to update the source file. Keeping this file (idempotent: `drop policy if
+-- exists` / `create index if not exists` throughout) as the accurate record of what's live,
+-- rather than deleting it, so a future `supabase db push`-style diff doesn't reintroduce drift.
 --
 -- Adds the write-side surface needed for the scheduled signal-publishing
 -- worker (GitHub Actions) to insert global (organization_id is null) rows
 -- into module_snapshots, without granting it the service_role key.
 --
--- Before applying: replace WORKER_SUPABASE_USER_ID below with the actual
--- auth.users.id of the dedicated Supabase Auth account created for the
--- worker (see design doc §6). Do not apply until that account exists.
+-- WORKER_SUPABASE_USER_ID below is the real, live auth.users.id of the dedicated Supabase Auth
+-- account (2ef527c0-0bf6-408e-a31a-ede0055de3b4) — confirmed to exist via the same direct
+-- query. Its login credentials (SUPABASE_WORKER_EMAIL / SUPABASE_WORKER_PASSWORD, the two repo
+-- secrets publish-signals.yml still needs) are not recorded anywhere in this repo or
+-- Credentials/.env as of 2026-09-10 — still an open item, see servermemory.md.
 
 -- One global snapshot per module per day. Without this, a re-run of the
 -- worker on the same day would insert a duplicate row instead of updating
@@ -31,7 +39,7 @@ create policy "module_snapshots_insert_worker"
   to authenticated
   with check (
     organization_id is null
-    and auth.uid() = 'WORKER_SUPABASE_USER_ID'::uuid
+    and auth.uid() = '2ef527c0-0bf6-408e-a31a-ede0055de3b4'::uuid
   );
 
 drop policy if exists "module_snapshots_update_worker" on public.module_snapshots;
@@ -41,9 +49,9 @@ create policy "module_snapshots_update_worker"
   to authenticated
   using (
     organization_id is null
-    and auth.uid() = 'WORKER_SUPABASE_USER_ID'::uuid
+    and auth.uid() = '2ef527c0-0bf6-408e-a31a-ede0055de3b4'::uuid
   )
   with check (
     organization_id is null
-    and auth.uid() = 'WORKER_SUPABASE_USER_ID'::uuid
+    and auth.uid() = '2ef527c0-0bf6-408e-a31a-ede0055de3b4'::uuid
   );

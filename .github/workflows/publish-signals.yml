@@ -2,7 +2,8 @@ name: Publish KPI Signals
 
 # Scheduled worker that reads KPI data from kpihub-backend and publishes
 # global decision-feed signals into Supabase module_snapshots.
-# See SIGNAL_WIRING_DESIGN_20260713.md for the full design.
+# See apps/platform/SIGNAL_WIRING_DESIGN_20260713.md for the full design (recreated
+# 2026-09-10 — the original was never committed to this repo; see that file's own header note).
 #
 # Defaults to dry-run (logs computed signals, writes nothing) until the two
 # required credentials exist as repo secrets and DRY_RUN is deliberately
