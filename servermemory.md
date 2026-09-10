@@ -3066,3 +3066,47 @@ Note for whoever next runs `npm ci`/`npm audit` against `archive/apps/legacy-app
 their new `archive/...` manifest paths — archiving moves files, it doesn't fix or dismiss their
 existing vulnerability findings. That's expected and intentional; the point of this pass was
 organizational clarity (what's live vs. dead), not a vulnerability fix for code nobody runs.
+
+---
+
+## 2026-09-10 (cont.) — apps/platform domain-mapped to app.thekpihub.com
+
+Per direct user request, connected the one thing deliberately left untouched in the archive
+pass: `apps/platform` now has a real thekpihub.com subdomain.
+
+- **Domain chosen**: `app.thekpihub.com` — the standard convention for a SaaS dashboard
+  (marketing site at the apex, app at `app.*`), matching the existing pattern already used for
+  WingCommander's subdomains. Not asked first since it's a low-stakes, easily-changed default,
+  not a hard-to-reverse decision.
+- **Vercel side**: found the real project id (`prj_BiGJMYSHuiVQk4rkEpuUVHl1gd8J`, team
+  `team_tu9mNsxlpoUVyUnkIMGWhk1C`) after an initial wrong attempt — grabbed the *user* id
+  (`axi886XhYeQgo0CGsD0mM1Y5`, coincidentally present in the same JSON payload) instead of the
+  project's own `prj_...` id on the first try, and hit "Project not found" as a result; also
+  needed the `?teamId=` query param since this project belongs to a team, not the personal
+  account. `POST /v10/projects/{id}/domains` returned a pending TXT-verification requirement
+  (`_vercel.thekpihub.com`) rather than going straight to CNAME-only — this happens because
+  `thekpihub.com`'s apex is already verified under a different Vercel project in the same
+  account, so ownership of a *new* subdomain needs proving separately.
+- **DNS side (Hostinger)**: added both the TXT verification record and the routing CNAME
+  (`app` → `cname.vercel-dns.com.`) via `PUT /api/dns/v1/zones/thekpihub.com` with
+  `overwrite: false`. Verified before assuming safety: `_vercel` was already a multi-value TXT
+  record (carrying verification strings for portfolio/wingcommander/wingman/dittowingman) — the
+  additive PUT correctly merged in the new value alongside all the existing ones rather than
+  replacing them (confirmed via a before/after diff of the full zone, not just checking the new
+  record landed).
+- **Verified live end-to-end**, not just "API said success": public DNS resolution confirmed
+  (`nslookup` against 8.8.8.8 resolved the CNAME chain to real Vercel edge IPs), then Vercel's
+  own `/verify` endpoint flipped `verified: true`, then real HTTP requests against the actual
+  IP (`--resolve`, since this sandbox's own local resolver hadn't cached the brand-new record
+  yet — a local environment quirk, not a real propagation problem) confirmed `/` → 200,
+  `/login` → 200, `/dashboard` → 307 (correct auth-gate behavior for an unauthenticated
+  request, not a bug).
+- **Deliberately not done**: adding a nav link from `apps/website` to `app.thekpihub.com`. The
+  user's ask was specifically domain-mapping; linking users there from the live site is a
+  separate product/nav decision with its own considerations (where in the site, what label,
+  whether it replaces or supplements the existing `apps/website`-native dashboard flow) that
+  wasn't part of this request.
+- Updated `docs/ARCHITECTURE.md` (the authoritative current-vs-archived model written earlier
+  today), `README.md`, `CLAUDE.md`, and the global `/thekpihub` skill to reflect this — all of
+  which had said "not domain-mapped" as of a few hours earlier in this same session, so this
+  closes that loop within the same day rather than leaving it stale until a future session.

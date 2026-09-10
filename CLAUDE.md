@@ -215,7 +215,8 @@ Dependabot note below for why).
 
 **Monorepo layout (current, as of the 2026-09-10 archive pass — see that session-log entry for
 full reasoning)**: `apps/website` (live public site), `apps/platform` (live Next.js + Supabase
-product, real but not domain-mapped to thekpihub.com — see "Deployment topology" below),
+product, domain-mapped to `app.thekpihub.com` as of 2026-09-10, later the same day — see
+"Deployment topology" below),
 `apps/wingcommander-reference` (**NOT reference-only — see Ditto Wingman correction below**),
 `services/pipeline` (Python KPI pipeline, dormant), `services/llm_gateway` (shared Claude-calling
 module). **`archive/apps/legacy-app`** (moved from `apps/legacy-app` 2026-09-10 — its `backend/`
@@ -233,9 +234,11 @@ of its "safe to exclude/delete" verdicts.**
 ### Deployment topology (verified, not assumed)
 
 - **Vercel**: connected directly to `thekpihub/thekpihub-server` (proven by an open bot PR from
-  `app/vercel`). Two Vercel projects exist — `platform` (`apps/platform`, live) and a redundant
-  whole-repo `kpihub-assembled` project (cleanup candidate). Unblocked 2026-09-02 by making the
-  repo public.
+  `app/vercel`). Two Vercel projects exist — `platform` (`apps/platform`, live, project id
+  `prj_BiGJMYSHuiVQk4rkEpuUVHl1gd8J`, team `team_tu9mNsxlpoUVyUnkIMGWhk1C` — domain-mapped to
+  **`app.thekpihub.com`** 2026-09-10, verified live: `/`, `/login` → 200, `/dashboard` → 307
+  auth-gate redirect) and a redundant whole-repo `kpihub-assembled` project (cleanup candidate).
+  Unblocked 2026-09-02 by making the repo public.
 - **Hostinger** (thekpihub.com): deploys via `thekpihub-server`'s own GitHub Actions workflow,
   `.github/workflows/deploy-website-hostinger.yml` (gitleaks-scanned, checksum-verified,
   non-destructive rsync-over-SSH, `workflow_dispatch` modes `dry-run`/`deploy`). Secrets in the

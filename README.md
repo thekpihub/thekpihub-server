@@ -9,8 +9,9 @@ Wing Commander reference material with source provenance.
 
 - `apps/website`: live public TheKPIHub.com static/PHP website from `thekpihub/thekpihub-website`.
 - `apps/platform`: live Next.js + Supabase KPI Hub product (dashboard, billing) from
-  `thekpihub/thekpihub-platform` — real and deployed, but not domain-mapped to thekpihub.com
-  (Vercel-generated URLs only) and not linked from the live site. See `docs/ARCHITECTURE.md`.
+  `thekpihub/thekpihub-platform` — domain-mapped to `app.thekpihub.com` (2026-09-10), verified
+  live (`/`, `/login` 200; `/dashboard` correctly auth-gates). Not yet linked from
+  `apps/website`'s own pages. See `docs/ARCHITECTURE.md`.
 - `apps/wingcommander-reference`: **NOT** reference-only despite the name — Ditto Wingman,
   load-bearing for `apps/website`'s free tools (via a Cloudflare Worker) and the live
   WingCommander premium feature at wingcommander.thekpihub.com.
@@ -69,10 +70,9 @@ Prisma and SQL migration history under `archive/apps/legacy-app`.
 
 ## Deployment
 
-The live website points to `https://thekpihub.com`. The platform app is deployed on Vercel but
-has no thekpihub.com domain attached (verified 2026-09-10 via the Vercel API — only
-Vercel-generated URLs like `platform-hs-debugs.vercel.app` exist; the old
-`thekpihub-platform.vercel.app` claim here was stale/wrong). See
+The live website points to `https://thekpihub.com`. The platform app is domain-mapped to
+`https://app.thekpihub.com` (added 2026-09-10 via the Vercel + Hostinger DNS APIs, verified
+live) — not yet linked from the main site's own pages. See
 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Source Provenance

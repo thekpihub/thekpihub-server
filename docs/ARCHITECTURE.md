@@ -25,10 +25,17 @@ https://thekpihub.com
 |                                     pipeline above via direct MySQL writes
 |
 |-- wingcommander.thekpihub.com       apps/wingcommander-reference frontend (Vercel), the
-    wingman.thekpihub.com             real WingCommander premium feature. Reached from
-    dittowingman.thekpihub.com        apps/website's dashboard.html "Open WingCommander"
-                                      button via apps/website/open-wingman.php (root, not
-                                      the dead pages/api/ copy).
+|   wingman.thekpihub.com             real WingCommander premium feature. Reached from
+|   dittowingman.thekpihub.com        apps/website's dashboard.html "Open WingCommander"
+|                                     button via apps/website/open-wingman.php (root, not
+|                                     the dead pages/api/ copy).
+|
+`-- app.thekpihub.com                 apps/platform (Vercel), domain-mapped 2026-09-10. The
+                                      KPI Hub dashboard/billing product -- verified live
+                                      (/, /login return 200; /dashboard 307-redirects an
+                                      unauthenticated request, correct auth-gate behavior).
+                                      Not yet linked from apps/website's own pages -- adding
+                                      that nav link is a separate, not-yet-made decision.
 ```
 
 `services/pipeline` (the *other* Python pipeline, `services/pipeline/pipeline.py`) is a second,
@@ -37,16 +44,21 @@ simpler implementation of the same content-pipeline idea — kept `workflow_disp
 Not part of the live serving path; a candidate for archiving if it's never revived, but not
 touched in this pass since it's still occasionally dispatched manually.
 
-## Live, real, but NOT reachable at thekpihub.com
+## `apps/platform` — now domain-mapped (2026-09-10)
 
-- **`apps/platform`** — a genuinely live Next.js + Supabase product (dashboard, billing via
-  Razorpay/PayPal, intelligence-hub). Deployed to Vercel, but **has no thekpihub.com domain
-  attached** (only `platform-hs-debugs.vercel.app` and similar Vercel-generated URLs), and
-  **thekpihub.com does not link to it anywhere** (checked directly — zero references). Kept in
-  scope deliberately (user decision, 2026-09-10) as part of the KPI Hub product family even
-  though it's domain-disconnected from the live site today. If it's ever meant to be the
-  product users land in from thekpihub.com, that's a real product decision (custom domain +
-  a link from the site) — not made here.
+**`apps/platform`** is the KPI Hub dashboard/billing product (Next.js + Supabase, Razorpay/
+PayPal, intelligence-hub). Kept in scope 2026-09-10 as part of the KPI Hub product family
+despite having no thekpihub.com domain at the time; **later the same day, domain-mapped to
+`app.thekpihub.com`** — added via the Vercel API (`prj_BiGJMYSHuiVQk4rkEpuUVHl1gd8J`,
+team `team_tu9mNsxlpoUVyUnkIMGWhk1C`), verified via a TXT record on `_vercel.thekpihub.com`
+(merged into the existing multi-value TXT record alongside wingcommander/wingman/dittowingman's
+entries — did not overwrite them) plus a CNAME (`app` → `cname.vercel-dns.com.`), both added
+via Hostinger's DNS API with `overwrite: false`. Verified live end-to-end: `/` → 200,
+`/login` → 200, `/dashboard` → 307 (correct auth-gate redirect for an unauthenticated request).
+
+**Still not linked from `apps/website`** — no page on the live site points to
+`app.thekpihub.com` yet. That's a separate, deliberate product/nav decision (where does a user
+click to get there?), not made as part of this domain-mapping step.
 
 ## Archived — confirmed dead, kept for reference only, not CI-tested, not deployed
 
@@ -81,9 +93,9 @@ code, which is what made them easy to mistake for something maintained):
    `apps/website/pipeline.py` one), and `services/llm_gateway` as the actual thekpihub.com
    product surface — these are what CI gates strictly and what gets debugged first when
    something's wrong with the live site.
-2. Treat `apps/platform` as a related-but-currently-standalone product — don't assume it's
-   reachable from thekpihub.com in any troubleshooting or user-facing claim until it's actually
-   domain-mapped and linked.
+2. `apps/platform` is now reachable at `app.thekpihub.com` — but still not linked from
+   `apps/website`'s own pages, so a real user still has no way to click there from the live
+   site. Don't claim it's "part of the user journey" until that nav link exists too.
 3. Treat everything under `archive/` as frozen: read for history/reference, never treat a
    change there as needing to reach production, and don't let it block CI or count toward
    "is thekpihub.com healthy" checks.
