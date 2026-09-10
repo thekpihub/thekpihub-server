@@ -24,6 +24,11 @@ so this repo's history stops loading into every session on this machine, not jus
   This is a personal/learning project, not production — the earlier "rotate immediately" framing
   was miscalibrated to that. Keep flagging real findings, but don't treat them as urgent
   incidents or push for rotation unprompted; let the user decide pace and priority.
+- **2026-09-09: a "SHARED / CROSS-PROJECT INFRA" section was added to `Credentials/.env`**
+  (Squarespace, Cloudflare incl. R2 S3-compatible storage, a second Google/Gemini key,
+  MindStudio.ai keys + MCP endpoint) — not specific to KPI Hub, not yet tied to any concrete use
+  here. See that file's own comments for provenance/verification status of each. MindStudio's
+  keys ARE used by this repo now (see `services/llm_gateway` below).
 
 ## ⏸️ SESSION HANDOFF (2026-09-02, resolved) — WordPress admin URL hunt closed: no WP install exists
 
@@ -194,10 +199,19 @@ unassigned/older — not relevant.
 ## The KPI Hub project
 
 **Canonical repo (single source of truth, as of 2026-09-02): `thekpihub/thekpihub-server`**
-(renamed from `thekpihub/kpihub-assembled` — GitHub redirects the old name). Public repo
+(renamed from `thekpihub/kpihub-assembled` — GitHub redirects the old name). **Public repo**
 (deliberately made public to unblock Vercel's Hobby-plan private-org-repo restriction; no
-real secrets are committed to it — verified). Local clone: `C:\Projects\thekpihub-server` (folder renamed to match 2026-09-02; `git pull` to
-sync after any session touches it).
+real secrets are committed to it — verified, most recently re-verified 2026-09-09). **Gotcha,
+found and fixed 2026-09-09: this had silently flipped back to PRIVATE at some point** (when/how/
+who unknown — not investigated, since restoring it was the priority), breaking both `platform`
+and `kpihub-assembled` Vercel deployments with "Cannot deploy from a private GitHub organization
+repository on the Hobby plan." Confirmed via `gh repo view --json visibility` directly (don't
+trust this file's own claim alone) before assuming either state — this has now drifted once
+already. Local clone: `C:\Projects\thekpihub-server` (folder renamed to match 2026-09-02; `git pull` to
+sync after any session touches it). **`main` now has baseline branch protection** (added
+2026-09-09): PR required (0 required approving reviews — solo-dev repo, self-merge still works),
+force-push blocked, deletion blocked. Status checks deliberately NOT required yet (see
+Dependabot note below for why).
 
 Monorepo layout: `apps/website` (live public site), `apps/platform` (canonical Next.js +
 Supabase app), `apps/legacy-app` (reference-only), `apps/wingcommander-reference` (**NOT
@@ -243,9 +257,10 @@ Earlier analysis (mine and the prior session's `docs/SOURCE-PROVENANCE.md`) wron
 **Status: DONE end-to-end (2026-09-02).** Code fold-in: PR #8 merged — `apps/wingcommander-reference`
 now holds current `thekpihub/ditto-wingman` code (was stale, merged 2026-07-08 pre-dating the
 Worker-wiring commit); `docs/provenance/source-manifest.md` corrected. CI's audit gate for it
-is temporarily non-blocking — not because it's reference-only (it isn't), but because no
-Node/npm is available in this environment to run `npm audit fix` on its 9 real (pre-existing,
-DoS-class) transitive-dep advisories.
+was temporarily non-blocking pending `npm audit fix` — **that fix is now done, see the
+2026-09-09 vulnerability-remediation session log below.** (The "no Node/npm in this
+environment" premise behind the original deferral was itself wrong/stale by 2026-09-09 — Node
+v24.19.0/npm 11.17.0 are both actually available here.)
 
 **Railway repoint: DONE and verified live.** Both `ditto-wingman-backend` and
 `ditto-wingman-frontend` (project `jubilant-growth`) now deploy from `thekpihub/thekpihub-server`.
@@ -377,6 +392,44 @@ dead on OpenRouter's current catalog, and the gateway swallowing OpenRouter's re
 identified as not actionable from this account (the `thekpihub.vercel.app` case), or resolved
 per explicit user decision. Nothing outstanding from this list as of 2026-09-04.
 
+**`llm_gateway` got a third fallback tier: MindStudio.ai (2026-09-09, PR #30).** `claude_call()`'s
+chain is now Anthropic → OpenRouter → **MindStudio.ai's Service Router** (a third, independent
+billing relationship — proven live via a real API call that hit MindStudio's own
+`insufficient_credits/balance` error, never the Anthropic account). Calls a dedicated agent,
+"KPI Hub Pipeline Generic Completion" (MindStudio appId `2b72f155-d841-4957-971b-3bcdd30e3648`),
+built specifically as a generic prompt-in/text-out passthrough since none of the workspace's
+other pre-built MindStudio agents (see below) accept arbitrary prompts. **Still not actually
+usable yet** — MindStudio's own workspace balance is unfunded (-$0.30 as of 2026-09-09); the
+tier fails through cleanly (same contract as an unconfigured OpenRouter tier) until the user
+tops it up at `app.mindstudio.ai/services/balance` (I cannot do this myself — entering payment
+details is a hard-prohibited action). `MINDSTUDIO_API_KEY`/`MINDSTUDIO_APP_ID` are set as real
+repo secrets and wired into all 3 pipeline workflows.
+
+**A pre-existing MindStudio.ai workspace was discovered with 12 agents already built
+2026-08-12** — a full month before this was found, by some other means (not this session, not
+documented anywhere in this repo previously). 3 are KPI-Hub-specific: "KPI Hub Anomaly
+Detector" (GPT-5.1), "KPI Hub Daily Insights" (Claude 4.6 Sonnet, `kpiData` JSON-array input
+matching `apps/platform/scripts/publish-signals.ts`'s real v1 signal-rule schema), "KPI Hub
+Change Explainer" (Gemini 2.5 Flash, `metric` input) — all currently unusable for the same
+unfunded-balance reason above. **Their actual consumer, `publish-signals.yml`, has never
+run at all** — found via `gh workflow list` (not in the registered list), because the file sits
+at `apps/platform/.github/workflows/publish-signals.yml` instead of the repo-root
+`.github/workflows/` GitHub actually scans. A prior servermemory.md note calling it "fails
+daily" was itself wrong. It also depends on a separate `kpihub-backend` (Cloud Run + Postgres)
+with zero credentials/evidence in this environment — standing this up is a real, separate,
+not-yet-scoped piece of work, not attempted. The other 9 agents in that same workspace span
+Lumina-SaaS and two projects with no prior record in this repo at all ("AI-ForgeStream",
+"Interview Integrity Lab" — user-confirmed to be other projects of theirs, not investigated
+further here).
+
+**Also surfaced, not investigated further**: a GCP organization (`nitro0dust-org`) with a
+dedicated **"thekpihub" GCP project** (real spend, ₹18.31 in August 2026) and a
+"lumina-numerology" GCP project, both with recurring Google Developer Program monthly credits.
+Found via user-provided screenshots, not this repo's own records. Whether Vertex AI / Claude
+Model Garden access exists on the "thekpihub" project was never confirmed — the MindStudio path
+above already solved the immediate need (a non-Anthropic billing route) with far less setup, so
+this wasn't pursued, not because it's a dead end.
+
 ### Other open items
 
 - ~~WingCommander's `/api/rag` and `/api/chat` routes have no auth gate~~ — **CLOSED 2026-09-08.**
@@ -435,15 +488,27 @@ per explicit user decision. Nothing outstanding from this list as of 2026-09-04.
 - Hostinger billing shows **every subscription set to `is_auto_renewed: false`**, including the
   **.COM domain itself, expiring 2026-11-22**. Also non-renewing: "Reach 500" (exp.
   2026-11-22), "Starter Business Email" (exp. 2027-03-25). Business Web Hosting prepaid through
-  2030, no near-term risk. Verify who controls DNS/nameservers before assuming the auto-renew
-  flag is the whole picture either way.
-- Dependabot reports 55 vulnerabilities (39 high, 13 moderate, 3 low, as of 2026-09-07 — was
-  25/21-high on 2026-09-02, grew after the PR #21/#22 history reconciliation below folded in an
-  older branch) on `thekpihub-server`'s default branch. `apps/website` and `apps/platform` gate
-  strictly and currently pass clean; `apps/legacy-app` and `tools/automated-website-builder` are
-  genuinely reference-only (non-blocking gate is correct there); `apps/wingcommander-reference`'s
-  non-blocking gate is a stopgap (see correction above) pending `npm audit fix` from an
-  environment with Node/npm.
+  2030, no near-term risk. Re-verified 2026-09-09 via direct Hostinger API + registry RDAP
+  queries — DNS itself is fine (Hostinger's own nameservers, ns1/ns2.dns-parking.com, confirmed
+  authoritative via the registry and actively serving the real DNS zone; not an external-
+  nameserver risk). A one-time scheduled reminder routine fires **2026-11-10** (~12 days before
+  expiry) to nudge a manual renewal check — see `claude.ai/code/routines` (routine id
+  `trig_01M6RPgGqKKmTUBjoXLJ3t7V`), a plain reminder with no credentials embedded in it.
+- ~~Dependabot reports 55 vulnerabilities...~~ — **MASSIVELY REDUCED 2026-09-09, PRs #31-#34.**
+  Was 61 (4 critical, 36 high, 18 moderate, 3 low) at the start of that session's remediation
+  pass; now ~24 open, **zero critical/high in any actually-live code path**. Fixed: `apps/platform`
+  (critical Next.js RCE + `sharp` + `baseline-browser-mapping`, PR #31), `apps/wingcommander-
+  reference` (`qs`/`express` override + **9** separate high-severity `multer` 1.x DoS CVEs
+  resolved by one version bump to 2.3.0, PRs #32/#33), `services/pipeline` (`requests` +
+  `python-dotenv`, PR #34). Deliberately left open, tracked: `react-router` in
+  `wingcommander-reference` (major-version breaking change on a live frontend — `6.26.0` →
+  `7.18.3`, needs real regression testing, not a blind force-fix). Everything else remaining is
+  now 100% concentrated in `apps/legacy-app` and `tools/automated-website-builder` — both
+  already correctly documented as genuinely reference-only with a deliberately non-blocking
+  gate; not worth chasing. **This is also when the stale "no Node/npm in this environment"
+  premise was finally re-checked and found wrong** — Node v24.19.0/npm 11.17.0 are both
+  available, which is what made all 4 fixes possible in one session instead of needing a
+  different environment. Full detail: `servermemory.md`, 2026-09-09 entries.
 
 ## Session log — 2026-09-05 → 2026-09-07 (full detail in `thekpihub-server/servermemory.md`,
 these are pointers, not the full record)
@@ -561,6 +626,45 @@ these are pointers, not the full record)
   direct SSH check and cleared from `wp_options`; the long-carried "~46 legacy blog posts"
   open item turned out to be based on a **false premise** — there are no legacy posts at all,
   just 38 pipeline-generated ones, all confirmed clean HTML with zero Elementor/Divi markers.
+
+## Session log — 2026-09-09 (cont. 2) — MindStudio integration, repo-visibility bug, full
+vulnerability remediation pass (full detail in `servermemory.md`, these are pointers)
+
+Started as a "let's talk through the growth-side plan" request that turned into a MindStudio.ai
+Pro subscription evaluation, then a full infrastructure-hardening pass once real gaps started
+surfacing. Roughly in order:
+
+- **MindStudio.ai evaluated and integrated as a genuine third `llm_gateway` fallback tier** —
+  see the dedicated section above for the technical detail (agent discovery, the generic
+  passthrough agent built, PR #30, the still-unfunded balance blocker).
+- **Domain/DNS re-verified via direct API + registry queries** (not carried-over claims) — see
+  the Dependabot/domain bullet above. A scheduled one-time reminder now exists for the Nov 22
+  domain expiry.
+- **New shared/cross-project credentials saved** to `Credentials/.env` (Squarespace, Cloudflare,
+  a second Google key, MindStudio) — see the Credentials section above.
+- **Clarified for the record**: ChatGPT Plus/Pro, Gemini Advanced, and Claude Pro (claude.ai)
+  are consumer chat subscriptions with **no bundled API access** on any of the three providers —
+  not something that can be "integrated" into a pipeline without separate, separately-billed API
+  keys. No such keys were provided; nothing attempted there.
+- **Repo-visibility bug found and fixed** (silently flipped to private, breaking both Vercel
+  deployments) — see the top of "The KPI Hub project" section above. Re-verified no secrets in
+  the tree before restoring to public; confirmed both deployments went QUEUED→READY afterward via
+  the Vercel API directly, not assumed.
+- **Baseline branch protection added to `main`** on direct user request — see same section
+  above. Hit a real harness gotcha: the auto-mode classifier blocked the first `gh api .../
+  protection` write even though the user had explicitly asked for it that same turn; needed one
+  retry after explicit re-approval of the exact command, rather than trying to route around it.
+- **Full vulnerability remediation pass, PRs #31-#34** — see the Dependabot bullet above for the
+  summary; per-PR technical detail in `servermemory.md`. This is also when the stale "no
+  Node/npm in this environment" premise (which had been used to justify deferring
+  `wingcommander-reference`'s fixes, among other things) was finally re-checked and found
+  wrong — Node/npm are both actually available here.
+- **User feedback taken on board**: reduce checking in on every small step; only stop for things
+  that are genuinely hard-gated (spending real money, entering payment/financial credentials —
+  both structurally impossible for the assistant to do regardless of instruction) or a real fork
+  in approach with materially different consequences (e.g. the repo-visibility restore, a public-
+  exposure decision). Routine build/fix/PR/merge work proceeded without per-step confirmation
+  once the overall direction was set.
 
 ## Standing rule for thekpihub-server specifically
 
