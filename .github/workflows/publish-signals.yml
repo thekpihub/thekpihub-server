@@ -1,9 +1,15 @@
 name: Publish KPI Signals
 
-# Scheduled worker that reads KPI data from kpihub-backend and publishes
-# global decision-feed signals into Supabase module_snapshots.
+# Scheduled worker that reads KPI data from this project's own Supabase database
+# (apps/platform's kpis/kpi_values/kpi_targets tables) and publishes global
+# decision-feed signals into Supabase module_snapshots.
 # See apps/platform/SIGNAL_WIRING_DESIGN_20260713.md for the full design (recreated
 # 2026-09-10 — the original was never committed to this repo; see that file's own header note).
+#
+# Rewritten 2026-09-10 to drop KPIHUB_API_URL / KPIHUB_SERVICE_JWT entirely — the
+# external kpihub-backend this originally called was never deployed; KPI data now
+# lives directly in this same Supabase project instead (see apps/platform's own
+# dashboard/kpi-monitor UI + /api/kpis routes).
 #
 # Defaults to dry-run (logs computed signals, writes nothing) until the two
 # required credentials exist as repo secrets and DRY_RUN is deliberately
@@ -41,8 +47,6 @@ jobs:
       - run: npm ci
       - run: npm run publish-signals
         env:
-          KPIHUB_API_URL: ${{ vars.KPIHUB_API_URL }}
-          KPIHUB_SERVICE_JWT: ${{ secrets.KPIHUB_SERVICE_JWT }}
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
           SUPABASE_WORKER_EMAIL: ${{ secrets.SUPABASE_WORKER_EMAIL }}
