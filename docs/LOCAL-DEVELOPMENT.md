@@ -16,7 +16,7 @@ npm run dev
 ```
 
 ```bash
-cd apps/legacy-app
+cd archive/apps/legacy-app
 npm install
 npm run build
 ```
@@ -28,7 +28,7 @@ python -m py_compile pipeline.py
 ```
 
 ```bash
-cd tools/automated-website-builder
+cd archive/tools/automated-website-builder
 npm install
 npm test
 ```

@@ -2983,3 +2983,64 @@ before touching any infrastructure — and the findings changed the recommendati
 - Updated `CLAUDE.md` and the global `/thekpihub` skill to correct the "reference-only" label on
   `apps/legacy-app` (undersold its actual `backend/` content) and to record this decision so it
   isn't re-litigated from scratch in a future session.
+
+---
+
+## 2026-09-10 (cont.) — Full repo archive/cleanup pass: apps/legacy-app,
+tools/automated-website-builder, and ~70 root-level docs moved to archive/
+
+Per the user's request to archive everything unrelated to thekpihub.com or map the whole repo
+onto it, did a full inventory before touching anything (this repo's own history includes a
+near-miss wrongful deletion of `thekpihub-wing-commander` on an unverified inference — treated
+that as the standing lesson here, not a formality):
+
+**Verified classification, not guessed:**
+- `apps/website`, `apps/wingcommander-reference`, `services/pipeline`, `services/llm_gateway` —
+  confirmed live/load-bearing for thekpihub.com (already established this session).
+- `apps/platform` — checked its actual Vercel project directly: **no thekpihub.com domain
+  attached** (only `platform-hs-debugs.vercel.app` and similar Vercel-generated URLs), and
+  **thekpihub.com doesn't link to it anywhere** (grepped the whole live site, zero hits). Real,
+  live, billing-integrated product, just domain-disconnected from thekpihub.com today. Presented
+  this exact fork to the user rather than guessing either way — **user's decision: keep it in
+  scope, it's part of KPI Hub even though not domain-mapped yet.** Left completely untouched.
+- `apps/legacy-app` — already confirmed 2026-09-10 (earlier same day) to be dead/unused (see
+  the `kpihub-backend` investigation entry above).
+- `tools/automated-website-builder` — checked its `SESSION_STATE.md`: a local WSL/Ollama
+  experiment ("AMSDV Pipeline"), last touched 2026-05-31, its own "Next Tasks" list included
+  "Deploy engine to Hostinger VPS" which was never done. Confirmed via `ci.yml`'s own existing
+  comment that it's already documented as `REFERENCE_ONLY` there too.
+- **~70 root-level markdown/txt files** (SPRINT-0/1/5-*, PHASE-A/B/C/D-*, RAZORPAY-*,
+  MIGRATION-VERIFICATION-*, DEPLOYMENT-AUDIT/REPORT-*, a stale root `MEMORY.md` about Razorpay
+  dated 2026-08-29, etc.) — verified via repo-wide grep across every code/CI file extension:
+  **zero references from anything live.** Pure historical session documentation.
+
+**Executed** (branch `archive-unrelated-content`, PR pending at time of writing):
+- `git mv apps/legacy-app archive/apps/legacy-app`
+- `git mv tools/automated-website-builder archive/tools/automated-website-builder`
+- `git mv` all ~70 loose root docs (plus the stale root `MEMORY.md`) into `archive/session-docs/`
+- Added `archive/README.md` explaining what's there and why, and why it stays frozen.
+- **Fixed `.github/workflows/ci.yml`** so it doesn't break: removed the "Legacy app install,
+  audit, lint, build" and "Builder install, audit, typecheck" job steps entirely (archived code
+  isn't actively tested going forward) and their `cache-dependency-path` entries. Verified via a
+  full repo-wide grep that no other workflow, script, or code path referenced either old
+  location before finishing.
+- **Rewrote `docs/ARCHITECTURE.md` as the actual current-vs-archived model** (also fixed a
+  pre-existing typo bug in it, `pps/legacy-app` x5, missing the "a") — this doubles as the
+  "recommended model for the deployed website" deliverable the user asked for. Fixed 5 other
+  docs (`docs/DEPLOYMENT.md`, `docs/ENVIRONMENT.md`, `docs/LOCAL-DEVELOPMENT.md`,
+  `docs/VALIDATION.md`, `README.md`) with corrected paths — several of these are practical "how
+  to run this locally" instructions that would otherwise have silently broken.
+- **Annotated (not rewrote) the historical provenance docs** (`docs/REPOSITORY-MAP.md`,
+  `docs/provenance/source-manifest.md`) with inline "moved to archive/... 2026-09-10" notes,
+  following the same pattern already established there for the 2026-09-02 Ditto Wingman
+  correction — preserves the historical record of the original merge decision rather than
+  rewriting it.
+- **Also fixed two unrelated stale claims found while doing this**: README.md claimed
+  `apps/platform` was live at `https://thekpihub-platform.vercel.app` — checked directly via the
+  Vercel API, that's wrong, only Vercel-generated URLs exist. And `apps/wingcommander-reference`
+  was still described as "reference" in README's architecture list despite the 2026-09-02
+  correction elsewhere in this repo establishing it's load-bearing — fixed to match.
+- Did **not** touch `servermemory.md`'s own historical entries that reference the old
+  `apps/legacy-app`/`tools/automated-website-builder` paths (they're a point-in-time log,
+  accurate for when they were written) — only appended this new entry, per the established
+  "append, don't rewrite history" convention for this file specifically.

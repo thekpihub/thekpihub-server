@@ -16,7 +16,7 @@ Component examples:
 
 - `apps/website/.env.example`
 - `apps/platform/.env.example`
-- `apps/legacy-app/backend/.env.example`
+- `archive/apps/legacy-app/backend/.env.example`
 - `apps/wingcommander-reference/backend/.env.example`
 - `apps/wingcommander-reference/frontend/.env.example`
 

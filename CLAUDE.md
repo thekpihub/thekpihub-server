@@ -213,14 +213,18 @@ sync after any session touches it). **`main` now has baseline branch protection*
 force-push blocked, deletion blocked. Status checks deliberately NOT required yet (see
 Dependabot note below for why).
 
-Monorepo layout: `apps/website` (live public site), `apps/platform` (canonical Next.js +
-Supabase app), `apps/legacy-app` (not deployed anywhere and not currently planned to be — but
-**"reference-only" undersold it**: its `backend/` subfolder is a complete, separate SaaS
-implementation (auth, RBAC, Stripe+Razorpay billing, admin panel, a real 12-migration schema),
-not inert boilerplate; see the `kpihub-backend` deployment-investigation entry below before
-assuming it's safe to delete or ignore casually), `apps/wingcommander-reference` (**NOT
-reference-only — see Ditto Wingman correction below**), `services/pipeline` (Python KPI
-pipeline), `tools/automated-website-builder`. A prior session (2026-08-24→29) surveyed ~13
+**Monorepo layout (current, as of the 2026-09-10 archive pass — see that session-log entry for
+full reasoning)**: `apps/website` (live public site), `apps/platform` (live Next.js + Supabase
+product, real but not domain-mapped to thekpihub.com — see "Deployment topology" below),
+`apps/wingcommander-reference` (**NOT reference-only — see Ditto Wingman correction below**),
+`services/pipeline` (Python KPI pipeline, dormant), `services/llm_gateway` (shared Claude-calling
+module). **`archive/apps/legacy-app`** (moved from `apps/legacy-app` 2026-09-10 — its `backend/`
+subfolder turned out to be a complete, separate SaaS implementation, not inert boilerplate; see
+the `kpihub-backend` deployment-investigation entry below) and **`archive/tools/automated-
+website-builder`** (moved from `tools/automated-website-builder` 2026-09-10 — confirmed a local,
+never-deployed WSL/Ollama experiment) are both frozen reference material now, not part of the
+active tree — see `docs/ARCHITECTURE.md` for the full current-vs-archived model. A prior session
+(2026-08-24→29) surveyed ~13
 KPI-Hub-related repos and merged 6 in with provenance — see `docs/provenance/source-manifest.md`
 and `docs/SOURCE-PROVENANCE.md`, but **that provenance audit made at least one confirmed
 wrong call (Ditto Wingman) and likely more — see RE-AUDIT FINDINGS below before trusting any

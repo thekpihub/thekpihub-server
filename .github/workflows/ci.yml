@@ -21,9 +21,7 @@ jobs:
           cache-dependency-path: |
             apps/website/package-lock.json
             apps/platform/package-lock.json
-            apps/legacy-app/package-lock.json
             apps/wingcommander-reference/package-lock.json
-            tools/automated-website-builder/package-lock.json
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -74,18 +72,11 @@ jobs:
           npm run typecheck
           npm run build
 
-      # legacy-app / automated-website-builder are documented as REFERENCE_ONLY
-      # (not deployed) — their `npm audit` runs stay informational (`|| true`)
-      # so a transitive advisory in unused code doesn't block CI. Deployed
-      # apps (website, platform, wingcommander-reference) keep a hard
-      # `npm audit --audit-level=moderate` gate.
-      - name: Legacy app install, audit, lint, build
-        working-directory: apps/legacy-app
-        run: |
-          npm ci
-          npm audit --audit-level=moderate || true
-          npm run lint
-          npm run build
+      # legacy-app / automated-website-builder were REFERENCE_ONLY (never
+      # deployed) and are now archived entirely (archive/apps/legacy-app,
+      # archive/tools/automated-website-builder, 2026-09-10) -- dropped from
+      # CI since archived code isn't actively maintained or tested going
+      # forward. See servermemory.md, 2026-09-10, for the full reasoning.
 
       # wingcommander-reference (Ditto Wingman) is NOT reference-only: its
       # Cloudflare Worker backs the live "weapon" tools on apps/website
@@ -102,13 +93,6 @@ jobs:
           npm ci
           npm audit --audit-level=moderate || true
           npm run build
-
-      - name: Builder install, audit, typecheck
-        working-directory: tools/automated-website-builder
-        run: |
-          npm ci
-          npm audit --audit-level=moderate || true
-          npm test
 
       - name: Pipeline syntax check (services/pipeline, dormant)
         working-directory: services/pipeline
