@@ -1,20 +1,24 @@
 /**
- * Scheduled worker: reads KPI data from kpihub-backend (Cloud Run, separate
- * Postgres) and publishes global decision-feed signals into Supabase
- * module_snapshots. See ../SIGNAL_WIRING_DESIGN_20260713.md for the full design and rationale
- * (recreated 2026-09-10 — the original was never committed to this repo; see that file's own
- * header note).
+ * Scheduled worker: reads KPI data from this project's own Supabase database
+ * (public.kpis / kpi_values / kpi_targets) and publishes global decision-feed
+ * signals into Supabase module_snapshots. See ../SIGNAL_WIRING_DESIGN_20260713.md
+ * for the full design and rationale.
+ *
+ * Rewritten 2026-09-10 to read directly from Supabase instead of an external
+ * "kpihub-backend" HTTP API + JWT — that backend was never deployed, and the
+ * KPI data now lives in this same database (see apps/platform's own
+ * dashboard/kpi-monitor UI + /api/kpis routes) instead of a separate service.
+ * This removes the KPIHUB_API_URL / KPIHUB_SERVICE_JWT env vars entirely.
  *
  * Deliberately standalone (not part of the Next.js app's build/runtime) so
  * it can be run from a GitHub Actions workflow with its own scoped
- * credentials. Requires migration 0003 to be applied before real writes
- * will succeed (dry-run mode works without it).
+ * credentials. Requires migration 0004 (kpis/kpi_values/kpi_targets) to be
+ * applied before real writes will succeed (dry-run mode still needs read
+ * access, since signals are computed from real rows either way).
  *
  * Env vars:
- *   KPIHUB_API_URL              kpihub-backend base URL
- *   KPIHUB_SERVICE_JWT          Bearer token, kpis:read only, scoped to one org
  *   SUPABASE_URL                same as NEXT_PUBLIC_SUPABASE_URL
- *   SUPABASE_ANON_KEY           same as NEXT_PUBLIC_SUPABASE_ANON_KEY
+ *   SUPABASE_ANON_KEY            same as NEXT_PUBLIC_SUPABASE_ANON_KEY
  *   SUPABASE_WORKER_EMAIL       dedicated Supabase Auth user for this worker
  *   SUPABASE_WORKER_PASSWORD    that user's password
  *   DRY_RUN                     "true" to log computed signals without writing (default: true)
@@ -64,19 +68,18 @@ function requireEnv(name: string): string {
   return value;
 }
 
-const KPIHUB_API_URL = requireEnv("KPIHUB_API_URL");
-const KPIHUB_SERVICE_JWT = requireEnv("KPIHUB_SERVICE_JWT");
 const DRY_RUN = (process.env.DRY_RUN ?? "true").toLowerCase() !== "false";
 
-async function kpihubGet<T>(path: string): Promise<T> {
-  const response = await fetch(`${KPIHUB_API_URL}${path}`, {
-    headers: { Authorization: `Bearer ${KPIHUB_SERVICE_JWT}` },
+function getSupabaseClient() {
+  return createClient(requireEnv("SUPABASE_URL"), requireEnv("SUPABASE_ANON_KEY"));
+}
+
+async function signInWorker(supabase: ReturnType<typeof getSupabaseClient>): Promise<void> {
+  const { error } = await supabase.auth.signInWithPassword({
+    email: requireEnv("SUPABASE_WORKER_EMAIL"),
+    password: requireEnv("SUPABASE_WORKER_PASSWORD"),
   });
-  if (!response.ok) {
-    throw new Error(`kpihub-backend ${path} failed: ${response.status} ${await response.text()}`);
-  }
-  const body = (await response.json()) as { data: T };
-  return body.data;
+  if (error) throw new Error(`Supabase sign-in failed: ${error.message}`);
 }
 
 /** Rule 1: latest value is on the wrong side of the nearest past-due target. */
@@ -146,17 +149,54 @@ function checkTrendReversal(kpi: KpiListItem, trend: KpiTrendPoint[]): DecisionF
   };
 }
 
-async function computeSignals(): Promise<DecisionFeedEntry[]> {
-  const kpis = await kpihubGet<KpiListItem[]>("/api/kpis?limit=200&status=active");
+/** Builds a change_percentage-annotated trend series from ascending-ordered raw values. */
+function toTrendPoints(rawValues: { value: number; period_start: string }[]): KpiTrendPoint[] {
+  return rawValues.map((point, index) => {
+    const prevValue = index > 0 ? rawValues[index - 1].value : null;
+    const change_percentage =
+      prevValue !== null && prevValue !== 0 ? ((point.value - prevValue) / Math.abs(prevValue)) * 100 : null;
+    return { value: point.value, change_percentage, period_start: point.period_start };
+  });
+}
+
+async function computeSignals(supabase: ReturnType<typeof getSupabaseClient>): Promise<DecisionFeedEntry[]> {
+  const { data: kpiRows, error: kpisError } = await supabase
+    .from("kpis")
+    .select("id, name, direction")
+    .eq("status", "active")
+    .limit(200);
+  if (kpisError) throw new Error(`Failed to read kpis: ${kpisError.message}`);
+
   const entries: DecisionFeedEntry[] = [];
 
-  for (const kpi of kpis) {
-    const [targets, trend] = await Promise.all([
-      kpihubGet<KpiTarget[]>(`/api/kpis/${kpi.id}/targets`),
-      kpihubGet<KpiTrendPoint[]>(`/api/kpis/${kpi.id}/trend?months=3`),
+  for (const kpiRow of kpiRows ?? []) {
+    const [{ data: valueRows, error: valuesError }, { data: targetRows, error: targetsError }] = await Promise.all([
+      supabase
+        .from("kpi_values")
+        .select("value, period_start")
+        .eq("kpi_id", kpiRow.id)
+        .order("period_start", { ascending: true })
+        .limit(6),
+      supabase
+        .from("kpi_targets")
+        .select("id, target_value, target_date")
+        .eq("kpi_id", kpiRow.id),
     ]);
+    if (valuesError) throw new Error(`Failed to read kpi_values for ${kpiRow.id}: ${valuesError.message}`);
+    if (targetsError) throw new Error(`Failed to read kpi_targets for ${kpiRow.id}: ${targetsError.message}`);
 
-    const missedTarget = checkMissedTarget(kpi, targets);
+    const trend = toTrendPoints(valueRows ?? []);
+    const latest = trend[trend.length - 1];
+
+    const kpi: KpiListItem = {
+      id: kpiRow.id,
+      name: kpiRow.name,
+      direction: kpiRow.direction,
+      current_value: latest?.value ?? null,
+      change_percentage: latest?.change_percentage ?? null,
+    };
+
+    const missedTarget = checkMissedTarget(kpi, (targetRows ?? []) as KpiTarget[]);
     if (missedTarget) entries.push(missedTarget);
 
     const trendReversal = checkTrendReversal(kpi, trend);
@@ -166,15 +206,7 @@ async function computeSignals(): Promise<DecisionFeedEntry[]> {
   return entries;
 }
 
-async function publish(entries: DecisionFeedEntry[]): Promise<void> {
-  const supabase = createClient(requireEnv("SUPABASE_URL"), requireEnv("SUPABASE_ANON_KEY"));
-
-  const { error: signInError } = await supabase.auth.signInWithPassword({
-    email: requireEnv("SUPABASE_WORKER_EMAIL"),
-    password: requireEnv("SUPABASE_WORKER_PASSWORD"),
-  });
-  if (signInError) throw new Error(`Supabase sign-in failed: ${signInError.message}`);
-
+async function publish(supabase: ReturnType<typeof getSupabaseClient>, entries: DecisionFeedEntry[]): Promise<void> {
   const snapshotDate = new Date().toISOString().slice(0, 10);
   const { error: upsertError } = await supabase
     .from("module_snapshots")
@@ -192,7 +224,10 @@ async function publish(entries: DecisionFeedEntry[]): Promise<void> {
 }
 
 async function main() {
-  const entries = await computeSignals();
+  const supabase = getSupabaseClient();
+  await signInWorker(supabase);
+
+  const entries = await computeSignals(supabase);
 
   if (DRY_RUN) {
     console.log(`[dry-run] computed ${entries.length} signal(s), not writing:`);
@@ -200,7 +235,7 @@ async function main() {
     return;
   }
 
-  await publish(entries);
+  await publish(supabase, entries);
   console.log(`Published ${entries.length} signal(s) to module_snapshots.`);
 }
 

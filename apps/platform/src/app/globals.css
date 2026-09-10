@@ -141,7 +141,8 @@ select {
   font-size: 0.95rem;
 }
 
-.field input {
+.field input,
+.field select {
   background: rgba(255, 255, 255, 0.03);
   color: var(--text);
   border: 1px solid var(--border);
@@ -149,7 +150,8 @@ select {
   padding: 14px 16px;
 }
 
-.field input:focus {
+.field input:focus,
+.field select:focus {
   outline: 1px solid rgba(233, 161, 35, 0.5);
   border-color: rgba(233, 161, 35, 0.45);
 }
