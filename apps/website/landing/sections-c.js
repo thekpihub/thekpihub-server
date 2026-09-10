@@ -61,10 +61,10 @@ function SectionPricing() {
   }, {
     name: 'Growth',
     for: 'Ongoing KPI tracking & monthly intelligence for growing teams.',
-    tag: '₹5,999 / mo · coming Q3 2026',
+    tag: '₹5,999 / mo',
     pop: false,
-    cta: 'Express Interest',
-    href: 'get-audit.html',
+    cta: 'Upgrade to Growth →',
+    href: 'upgrade.html',
     feats: ['Monthly KPI intelligence feed', 'Ongoing benchmarking updates', 'AI synthesis reports', 'Slack integration', 'Quarterly strategy calls', 'Priority support']
   }, {
     name: 'Enterprise',
@@ -91,7 +91,7 @@ function SectionPricing() {
     className: "lp-h2 mt-4"
   }, "One audit, priced once. ", /*#__PURE__*/React.createElement("em", null, "No retainer, no lock-in.")), /*#__PURE__*/React.createElement("p", {
     className: "lp-lead mx-auto mt-5 max-w-2xl"
-  }, "The \u20B92,999 KPI Audit is live today \u2014 it is the only plan you can buy right now. Growth and Enterprise are still being built; register interest and you\u2019ll hear first.")), /*#__PURE__*/React.createElement("div", {
+  }, "The \u20B92,999 KPI Audit and the \u20B95,999/mo Growth plan are both live today. Enterprise is custom pricing \u2014 reach out and we\u2019ll talk through your needs.")), /*#__PURE__*/React.createElement("div", {
     className: "mt-12 grid items-start gap-6 lg:grid-cols-3"
   }, tiers.map(t => /*#__PURE__*/React.createElement("div", {
     key: t.name,

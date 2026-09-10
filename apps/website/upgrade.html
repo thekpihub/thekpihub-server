@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Choose Your Plan · The KPI Hub</title>
   <meta name="robots" content="noindex, nofollow">
-  <meta http-equiv="refresh" content="2;url=https://thekpihub-platform.vercel.app/dashboard/billing">
+  <!-- No meta-refresh: the destination depends on whether a session hand-off is possible
+       (see script below), and a static refresh can't carry that decision. The noscript
+       fallback link below covers the no-JS case. -->
   <link rel="icon" href="assets/favicon-new.svg?v=d6470a38" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -98,18 +100,48 @@
 
 <div class="card">
   <div class="spinner"></div>
-  <h1>Plans moved</h1>
-  <p>Billing now lives in The KPI Hub platform. Taking you there now — sign in if asked, then pick Growth or reach out for Enterprise.</p>
-  <a class="btn" href="https://thekpihub-platform.vercel.app/dashboard/billing">Go to Billing →</a>
+  <h1 id="upgradeTitle">Plans moved</h1>
+  <p id="upgradeMessage">Billing now lives in The KPI Hub platform. Taking you there now — sign in if asked, then pick Growth or reach out for Enterprise.</p>
+  <a class="btn" id="upgradeFallbackLink" href="https://app.thekpihub.com/dashboard/billing">Go to Billing →</a>
 </div>
 
 <noscript>
-  <p style="margin-top:16px;">JavaScript is off, so this page can't redirect automatically —
-  use the button above, or wait a couple seconds for the meta-refresh.</p>
+  <p style="margin-top:16px;">JavaScript is off, so this page can't sign you in automatically —
+  use the button above, then sign in on the platform if asked.</p>
 </noscript>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 <script>
-  window.location.replace('https://thekpihub-platform.vercel.app/dashboard/billing');
+  // Session hand-off to app.thekpihub.com: this site (thekpihub.com) uses a plain
+  // localStorage-based Supabase client; app.thekpihub.com uses @supabase/ssr cookies.
+  // Neither storage mechanism crosses subdomains on its own, but both apps share the
+  // same Supabase project, so a valid access/refresh token pair from a session here is
+  // a portable credential there too -- pass it through app.thekpihub.com/auth/handoff
+  // instead of dropping the session on a dumb redirect (which is what this page did
+  // before, silently sending signed-in users to a second, separate login).
+  (async () => {
+    const { createClient } = supabase;
+    const sb = createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+    const { data: { session } } = await sb.auth.getSession();
+
+    if (!session) {
+      // Not signed in here either -- go through this site's own login first,
+      // same as every other cross-app entry point (e.g. WingCommander's).
+      document.getElementById('upgradeTitle').textContent = 'Sign in to continue';
+      document.getElementById('upgradeMessage').textContent = 'Redirecting you to sign in...';
+      window.location.replace(CONFIG.app.loginUrl);
+      return;
+    }
+
+    const hash = new URLSearchParams({
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
+    });
+    const dest = 'https://app.thekpihub.com/auth/handoff?redirect=%2Fdashboard%2Fbilling#' + hash.toString();
+    document.getElementById('upgradeFallbackLink').href = dest;
+    window.location.replace(dest);
+  })();
 </script>
 <script src="/gk-shortcut.js?v=9fc0c955"></script>
 </body>
