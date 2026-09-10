@@ -3263,3 +3263,69 @@ actual live consumer, `apps/platform`.
 deliberately deferred per the 2026-09-10 `kpihub-backend` decision above) is ever revisited — at
 that point it would need its own real remediation pass, same treatment the live paths already
 got.
+
+---
+
+## 2026-09-10 (cont. 4) — publish-signals.yml: full required/recommended-steps audit (PR #41)
+
+Per user's request ("check and verify each and every required and recommended steps to be taken
+to fix this"), did a full live investigation rather than reasoning from the existing docs, which
+turned out to be actively wrong in one place.
+
+**Workflow env vars traced one by one**: `gh secret list` / `gh variable list` on the repo
+confirmed **none** of the 6 required (`KPIHUB_API_URL`, `KPIHUB_SERVICE_JWT`, `SUPABASE_URL`,
+`SUPABASE_ANON_KEY`, `SUPABASE_WORKER_EMAIL`, `SUPABASE_WORKER_PASSWORD`) existed at repo level.
+Confirmed via `gh run list`/`gh run view --log` that the one real scheduled run since the PR #36
+fix (2026-09-10T08:05:18Z) failed exactly as expected, at the first `requireEnv("KPIHUB_API_URL")`
+check — fails fast and safely, writes nothing.
+
+**The surprising find**: queried the live `eeuwkislidznpgdbvvbo` Supabase project directly via
+the Management API (`SUPABASE_ACCESS_TOKEN` + `SUPABASE_THEKPIHUB_PROJECT_REF` from
+`Credentials/.env`) rather than trusting `supabase/migrations/0003_module_snapshots_worker_write.sql`,
+which was checked in as `DRAFT — NOT YET APPLIED` with a literal `WORKER_SUPABASE_USER_ID`
+placeholder. Direct `pg_policies`/`pg_indexes` queries showed the opposite: the worker
+insert/update RLS policies and the unique daily index are **live in production**, with a real
+UUID (`2ef527c0-0bf6-408e-a31a-ede0055de3b4`) baked into the policy `with check` clauses — not
+the placeholder. A follow-up existence-only query (`select exists(select 1 from auth.users
+where id = ...)`, deliberately not selecting the email — a full `select *`/email query on
+`auth.users` was blocked by the auto-mode classifier as PII-shaped, and that block wasn't
+worked around) confirmed a real Supabase Auth user with that id exists. None of this — the
+migration actually being applied, or the worker account's existence — was recorded anywhere in
+this repo, `servermemory.md`, or `mistakesdone.md` before this session. Someone applied it
+outside of any tracked Claude Code session and never updated the source file.
+
+**Also found**: `SIGNAL_WIRING_DESIGN_20260713.md`, cited by `publish-signals.yml`,
+`publish-signals.ts`, and migration `0003`, does not exist anywhere in this repo's git history
+(`git log --all --full-history` + full-repo filename search, both empty). Not lost in the
+archive pass either — checked there too.
+
+**`archive/apps/legacy-app/backend`'s route guards re-verified directly** (not just cited from
+the 2026-09-10 `kpihub-backend` investigation): `router.get('/', requirePermission('kpis:read'),
+...)` etc. on exactly `/api/kpis`, `/api/kpis/:id/targets`, `/api/kpis/:id/trend` — confirms a
+`kpis:read`-only service role is actually implementable there, not aspirational. Also checked
+`src/utils/jwt.js`: access tokens default to a 15-minute expiry, issuer `thekpihub.com`, audience
+`kpihub-api`, payload `{id, email, role, orgId}` signed from a DB row — meaning `KPIHUB_SERVICE_JWT`
+can't just be a hand-crafted static secret; it needs either a custom long-lived mint or a
+refresh mechanism added to the workflow, once a backend + DB actually exist to mint it from.
+
+**Fixed (PR #41, docs-only, no behavior change)**: corrected migration `0003`'s header + replaced
+the placeholder UUID with the real one; recreated `apps/platform/SIGNAL_WIRING_DESIGN_20260713.md`
+capturing the actual design, live-vs-missing status of every piece, and the full 7-step ordered
+checklist; fixed the two remaining bare-filename doc references to real relative paths.
+
+**Also done (via `gh variable set`, outside the PR diff)**: set `SUPABASE_URL` and
+`SUPABASE_ANON_KEY` repo variables — both values already known and non-sensitive
+(`SUPABASE_THEKPIHUB_URL`/`SUPABASE_THEKPIHUB_PUBLISHABLE_KEY` in `Credentials/.env`), no
+decision required. Resolves 2 of the 7 checklist items.
+
+**Still blocked, needs the user, not done here**: `kpihub-backend` deployment (the real root
+blocker — same deferred decision as the earlier `kpihub-backend` entry, not separable from it);
+the worker Supabase Auth account's actual login credentials (not found anywhere — either the
+user has them from however this was set up, or it needs a deliberate password reset, which
+wasn't done unprompted); `KPIHUB_SERVICE_JWT` minting (blocked on both of the above).
+
+**Separately, also traced to ground this same session**: the "22 Dependabot vulnerabilities on
+`main`" that `git push` started surfacing after PR #40 — confirmed via `gh api
+repos/.../dependabot/alerts` that all 22 open alerts are under `archive/apps/legacy-app/` or
+`archive/tools/automated-website-builder/` only, zero in any live path. Not a regression; see
+the dedicated entry just above this one in this file for full detail.

@@ -433,6 +433,24 @@ found while fixing it — no root `package.json` exists, so the workflow's `npm 
 compiles clean, failing only at its first real `requireEnv("KPIHUB_API_URL")` check — confirmed
 `active` in `gh workflow list` after merge (first time ever).
 
+**Full "what's actually needed to make this write real data" investigation done 2026-09-10
+(PR #41, docs-only), with one genuinely surprising finding.** Queried the live
+`eeuwkislidznpgdbvvbo` Supabase project directly rather than trusting the checked-in migration
+file: `supabase/migrations/0003_module_snapshots_worker_write.sql` had been sitting in the repo
+as `DRAFT — NOT YET APPLIED` with a placeholder UUID, but its effects (the worker RLS
+insert/update policies + the unique daily index on `module_snapshots`) are **actually live in
+production**, with a real dedicated Supabase Auth worker user already existing (uuid
+`2ef527c0-0bf6-408e-a31a-ede0055de3b4`) — none of it recorded anywhere in this repo or
+`servermemory.md` before now. Fixed the migration file to say so. Also found
+`SIGNAL_WIRING_DESIGN_20260713.md`, cited by 3 files, was **never actually committed to this
+repo's git history** at all — recreated a minimal, accurate version at
+`apps/platform/SIGNAL_WIRING_DESIGN_20260713.md`. Set `SUPABASE_URL`/`SUPABASE_ANON_KEY` repo
+variables (both values already known/non-sensitive, no decision needed). **Still blocked**:
+`kpihub-backend` isn't deployed (see below — the real root blocker), and the existing worker
+Supabase Auth account's login credentials aren't recorded anywhere found — needed as
+`SUPABASE_WORKER_EMAIL`/`SUPABASE_WORKER_PASSWORD` repo secrets before the workflow can write
+for real, even once a backend exists. Full 7-step checklist in that recreated design doc.
+
 **Deploying `kpihub-backend` investigated 2026-09-10, then deliberately deferred — not a small
 task, and the underlying data doesn't exist yet regardless.** `apps/legacy-app/backend` (not
 the app's Next.js root, which really is an empty scaffold per its own `MEMORY.md`) turned out
