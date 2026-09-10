@@ -214,7 +214,11 @@ force-push blocked, deletion blocked. Status checks deliberately NOT required ye
 Dependabot note below for why).
 
 Monorepo layout: `apps/website` (live public site), `apps/platform` (canonical Next.js +
-Supabase app), `apps/legacy-app` (reference-only), `apps/wingcommander-reference` (**NOT
+Supabase app), `apps/legacy-app` (not deployed anywhere and not currently planned to be — but
+**"reference-only" undersold it**: its `backend/` subfolder is a complete, separate SaaS
+implementation (auth, RBAC, Stripe+Razorpay billing, admin panel, a real 12-migration schema),
+not inert boilerplate; see the `kpihub-backend` deployment-investigation entry below before
+assuming it's safe to delete or ignore casually), `apps/wingcommander-reference` (**NOT
 reference-only — see Ditto Wingman correction below**), `services/pipeline` (Python KPI
 pipeline), `tools/automated-website-builder`. A prior session (2026-08-24→29) surveyed ~13
 KPI-Hub-related repos and merged 6 in with provenance — see `docs/provenance/source-manifest.md`
@@ -420,15 +424,39 @@ found while fixing it — no root `package.json` exists, so the workflow's `npm 
 `npm run publish-signals` needed `working-directory: apps/platform` added (same pattern
 `daily-pipeline.yml`/`premium-pipeline.yml` use for `apps/website`). Verified locally: runs and
 compiles clean, failing only at its first real `requireEnv("KPIHUB_API_URL")` check — confirmed
-`active` in `gh workflow list` after merge (first time ever). **Still blocked, genuinely
-unsolved**: it depends on a separate `kpihub-backend` (Cloud Run + Postgres) that doesn't exist
-anywhere live — `apps/legacy-app` is the actual candidate code (its own CI even Docker-builds an
-image literally named `kpihub-backend`), but it has never been deployed. Standing it up is a
-real, scoped decision (new GCP resource, new secrets, ongoing cost) for the user to make, not
-something to do unprompted. The other 9 agents in that same MindStudio workspace span
-Lumina-SaaS and two projects with no prior record in this repo at all ("AI-ForgeStream",
-"Interview Integrity Lab" — user-confirmed to be other projects of theirs, not investigated
-further here).
+`active` in `gh workflow list` after merge (first time ever).
+
+**Deploying `kpihub-backend` investigated 2026-09-10, then deliberately deferred — not a small
+task, and the underlying data doesn't exist yet regardless.** `apps/legacy-app/backend` (not
+the app's Next.js root, which really is an empty scaffold per its own `MEMORY.md`) turned out
+to be a **complete, separate SaaS backend** — real user auth (JWT + Google/GitHub OAuth via
+Passport), RBAC, an admin panel, **both Stripe and Razorpay billing integrations**, Redis-backed
+sessions/queues, and a 12-migration Postgres schema (users, organizations, billing, invoices,
+audit logs, dashboards, KPIs) — not a small KPI-data reader as the design doc's "Cloud Run +
+Postgres" phrasing implied. `app.js` mounts every route (`/api/auth`, `/api/kpis`, `/api/admin`,
+`/api/billing`, `/api/ai`) unconditionally — no way to deploy just the KPI-reading part without
+code changes. It already has real Cloud Build (`asia-south1`, image `kpihub-backend`) and
+Railway configs drafted, but has never actually been deployed to either.
+
+**More importantly**: `apps/platform`'s actual production Supabase schema (all 3 real
+migrations, checked directly) has **zero KPI-related tables** — no user anywhere in the live
+product has ever tracked a KPI. `apps/legacy-app/backend`'s migration 008 is the only place a
+`kpis` table schema exists in this entire repo. So deploying this backend wholesale would stand
+up a second live user/billing system alongside `apps/platform`'s existing one, for a database
+that would start (and likely stay) empty — the MindStudio agents would still have nothing real
+to summarize regardless of which backend serves `/api/kpis`, because the underlying product
+capability (users entering KPIs) doesn't exist yet.
+
+**Decision (user agreed with this recommendation 2026-09-10): hold off entirely.** Don't deploy
+`apps/legacy-app`'s backend, don't stand up new GCP infrastructure for this, until there's a
+real product answer for where KPI data actually gets entered — that's a product decision, not
+an infra one. If/when that exists, revisit with a right-sized backend (possibly new API routes
+added to the already-live `apps/platform`, reusing its existing database, rather than deploying
+this specific parallel-SaaS codebase) instead of standing up `apps/legacy-app` wholesale.
+
+The other 9 agents in that same MindStudio workspace span Lumina-SaaS and two projects with no
+prior record in this repo at all ("AI-ForgeStream", "Interview Integrity Lab" — user-confirmed
+to be other projects of theirs, not investigated further here).
 
 **Also surfaced, not investigated further**: a GCP organization (`nitro0dust-org`) with a
 dedicated **"thekpihub" GCP project** (real spend, ₹18.31 in August 2026) and a

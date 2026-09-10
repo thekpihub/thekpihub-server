@@ -2932,3 +2932,54 @@ executed the one zero-decision item immediately:
   environment.
 - Updated `CLAUDE.md` and the global `/thekpihub` skill to close out this item with the same
   detail.
+
+---
+
+## 2026-09-10 (cont.) — kpihub-backend deployment investigated in full, deliberately declined
+
+Per the user's request to deploy `apps/legacy-app` as `kpihub-backend`, did a full investigation
+before touching any infrastructure — and the findings changed the recommendation entirely:
+
+- **`apps/legacy-app/backend` is a complete, separate SaaS backend, not a small KPI-data
+  reader.** Real Express API with: JWT auth + Passport OAuth (Google, GitHub), RBAC
+  (`requirePermission`), an admin panel (`/api/admin`), **both Stripe and Razorpay billing**
+  (`/api/billing`), Redis-backed sessions (`connect-redis`) and queues (`bull`/`ioredis`,
+  gracefully degrades if Redis is unavailable), Winston logging, and a real 12-migration
+  Postgres schema (schemas/extensions/roles/users/sessions/organizations/billing/kpis/
+  dashboards/audit_logs/invoices/admin). `app.js` mounts `/api/auth`, `/api/kpis`, `/api/admin`,
+  `/api/billing`, `/api/ai` all unconditionally — no way to deploy just the KPI-reading surface
+  without code changes.
+- **The routes DO match `publish-signals.ts`'s expectations exactly** (`kpiController` has
+  `getTrend`/`getTargets`/`list` matching `/api/kpis?...`, `/api/kpis/:id/targets`,
+  `/api/kpis/:id/trend`) — confirming this genuinely is the intended backend for that script,
+  not a coincidence of naming.
+- **Already has drafted (never-used) deploy configs for both targets**: `backend/cloudbuild.yaml`
+  (GCP Cloud Build → Cloud Run, region `asia-south1`, image `kpihub-backend`,
+  `--allow-unauthenticated` at the Cloud Run/IAM level — the app's own internal auth still gates
+  actual data access, so this isn't as alarming as it first read, but it does mean the whole
+  API surface, including billing webhooks and the admin panel, would be publicly reachable) and
+  `backend/railway.toml` (health check path `/health`, Dockerfile-based). Neither has ever
+  actually been used — confirmed via the known Railway project list (no matching service) and no
+  evidence of any live Cloud Run service anywhere in this session's GCP findings.
+- **The `apps/legacy-app` root's own `MEMORY.md` is stale/wrong for this folder** — it claims
+  "this repo itself has had no feature work yet (it's the default `create-next-app` scaffold),"
+  which is true for the Next.js frontend at the root but does not account for `backend/`'s real
+  scope at all. Whoever/whatever added `backend/` never updated that memory file.
+- **The decisive finding**: `apps/platform`'s actual production Supabase schema (all 3 real
+  migration files, checked directly) has **zero KPI-related tables** — confirmed via direct
+  grep, not assumed. No user has ever tracked a KPI anywhere in the live product.
+  `apps/legacy-app/backend`'s migration 008 is the only place a `kpis` table schema exists in
+  this entire repo. This means deploying the backend wholesale would stand up a second live
+  user/billing system next to `apps/platform`'s existing one, for a database that would start
+  (and likely stay) completely empty — the 3 MindStudio KPI-signal agents would have nothing
+  real to summarize regardless of which backend serves `/api/kpis`, because the underlying
+  product capability (users actually entering KPIs somewhere) doesn't exist yet.
+- **Recommendation given, and the user explicitly agreed with it rather than the original
+  "deploy it" instruction**: hold off entirely. Don't deploy `apps/legacy-app`'s backend, don't
+  stand up new GCP infrastructure for this, until there's a real product answer for where KPI
+  data actually gets entered — that's a product decision, not an infra one. If/when that exists,
+  a right-sized backend (new API routes on the already-live `apps/platform`, reusing its real
+  database) is the better path than deploying this specific parallel-SaaS codebase wholesale.
+- Updated `CLAUDE.md` and the global `/thekpihub` skill to correct the "reference-only" label on
+  `apps/legacy-app` (undersold its actual `backend/` content) and to record this decision so it
+  isn't re-litigated from scratch in a future session.
