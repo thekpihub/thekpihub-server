@@ -9,7 +9,7 @@ import os
 import glob
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
-GA4_ID = "G-DZPCCPEP1J"
+GA4_ID = "G-1XJCJ3X004"
 
 GA4_SNIPPET = f"""
   <!-- ====== KPI Hub Analytics: GA4 ====== -->
