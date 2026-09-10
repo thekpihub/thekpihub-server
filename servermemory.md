@@ -3044,3 +3044,25 @@ that as the standing lesson here, not a formality):
   `apps/legacy-app`/`tools/automated-website-builder` paths (they're a point-in-time log,
   accurate for when they were written) — only appended this new entry, per the established
   "append, don't rewrite history" convention for this file specifically.
+
+---
+
+## 2026-09-10 (cont.) — Archive PR #37 merged, live site re-verified unaffected
+
+PR #37 merged clean (all 8 checks passed: both language analyzers, actions analyzer, CodeQL,
+`validate`, both Vercel deployments, Vercel Preview Comments). Confirmed the archive move had
+zero production impact by curling all 3 live surfaces directly after merge, not just trusting
+green CI: `thekpihub.com` → 200, `blog.thekpihub.com` → 200, `wingcommander.thekpihub.com` → 200.
+
+Final root-level structure: `apps/` (website, platform, wingcommander-reference — legacy-app
+moved out), `archive/` (apps/legacy-app, tools/automated-website-builder, session-docs/),
+`docs/`, `scripts/` (live Hostinger deploy tooling — correctly left alone, confirmed it's
+referenced by `deploy-website-hostinger.yml`), `services/` (pipeline, llm_gateway), plus the 4
+actively-maintained standing docs (`CLAUDE.md`, `README.md`, `servermemory.md`,
+`mistakesdone.md`). Down from ~74 loose root files to 4.
+
+Note for whoever next runs `npm ci`/`npm audit` against `archive/apps/legacy-app` or
+`archive/tools/automated-website-builder`: their Dependabot alerts will still show up under
+their new `archive/...` manifest paths — archiving moves files, it doesn't fix or dismiss their
+existing vulnerability findings. That's expected and intentional; the point of this pass was
+organizational clarity (what's live vs. dead), not a vulnerability fix for code nobody runs.
