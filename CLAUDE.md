@@ -496,21 +496,32 @@ this wasn't pursued, not because it's a dead end.
   nameserver risk). A one-time scheduled reminder routine fires **2026-11-10** (~12 days before
   expiry) to nudge a manual renewal check — see `claude.ai/code/routines` (routine id
   `trig_01M6RPgGqKKmTUBjoXLJ3t7V`), a plain reminder with no credentials embedded in it.
-- ~~Dependabot reports 55 vulnerabilities...~~ — **MASSIVELY REDUCED 2026-09-09, PRs #31-#34.**
-  Was 61 (4 critical, 36 high, 18 moderate, 3 low) at the start of that session's remediation
-  pass; now ~24 open, **zero critical/high in any actually-live code path**. Fixed: `apps/platform`
-  (critical Next.js RCE + `sharp` + `baseline-browser-mapping`, PR #31), `apps/wingcommander-
-  reference` (`qs`/`express` override + **9** separate high-severity `multer` 1.x DoS CVEs
-  resolved by one version bump to 2.3.0, PRs #32/#33), `services/pipeline` (`requests` +
-  `python-dotenv`, PR #34). Deliberately left open, tracked: `react-router` in
-  `wingcommander-reference` (major-version breaking change on a live frontend — `6.26.0` →
-  `7.18.3`, needs real regression testing, not a blind force-fix). Everything else remaining is
-  now 100% concentrated in `apps/legacy-app` and `tools/automated-website-builder` — both
-  already correctly documented as genuinely reference-only with a deliberately non-blocking
-  gate; not worth chasing. **This is also when the stale "no Node/npm in this environment"
+- ~~Dependabot reports 55 vulnerabilities...~~ — **FULLY RESOLVED for every live code path,
+  2026-09-09/10, PRs #31-#35.** Was 61 (4 critical, 36 high, 18 moderate, 3 low) at the start of
+  that remediation pass; **zero vulnerabilities of any severity now remain in
+  `apps/website`/`apps/platform`/`apps/wingcommander-reference`/`services/pipeline`/
+  `services/llm_gateway`** — everything actually live is clean. Fixed: `apps/platform` (critical
+  Next.js RCE + `sharp` + `baseline-browser-mapping`, PR #31), `apps/wingcommander-reference`
+  (`qs`/`express` override + **9** separate high-severity `multer` 1.x DoS CVEs resolved by one
+  version bump to 2.3.0, PRs #32/#33; **then `react-router` 6.26.0 → 7.18.3, PR #35** — the one
+  major-version item initially deferred, closed properly rather than force-fixed blind: audited
+  every usage site first [only classic `<BrowserRouter>`/`<Routes>`/`<Route>` + basic hooks, none
+  of the data-router APIs that actually changed], then went beyond the green build and actually
+  ran the app with real Supabase credentials wired into a local-only gitignored `.env.local`,
+  clicking through every route in a live browser — landing, `/auth`, back-nav, the protected
+  `/workspace/:id` route's auth redirect, and the catch-all splat, zero console errors), and
+  `services/pipeline` (`requests` + `python-dotenv`, PR #34). What's left (`apps/legacy-app`,
+  `tools/automated-website-builder`) is 100% in the two paths already correctly documented as
+  genuinely reference-only with a deliberately non-blocking gate — not worth chasing since
+  neither runs anywhere. **This is also when the stale "no Node/npm in this environment"
   premise was finally re-checked and found wrong** — Node v24.19.0/npm 11.17.0 are both
-  available, which is what made all 4 fixes possible in one session instead of needing a
+  available, which is what made all 5 fixes possible in one session instead of needing a
   different environment. Full detail: `servermemory.md`, 2026-09-09 entries.
+- ~~`hsharmagxi-debug/thekpihub-server` credential-exposure repo~~ — **CLOSED 2026-09-09
+  (cont.).** User's decision: archived (`gh repo archive`, confirmed `isArchived: true`), not
+  deleted, not continued — "review later." The credential-rotation checklist in
+  [[rocketnew-thekpihub-server-credential-exposure]] is unaffected by the archive and was not
+  re-verified complete this session.
 
 ## Session log — 2026-09-05 → 2026-09-07 (full detail in `thekpihub-server/servermemory.md`,
 these are pointers, not the full record)

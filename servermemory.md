@@ -2854,3 +2854,45 @@ afterward. Its credential-rotation checklist (see the
 `rocketnew-thekpihub-server-credential-exposure` memory file) is unaffected by the archive and
 was NOT re-verified as complete this session — still worth a real check next time, not an
 assumption.
+
+---
+
+## 2026-09-10 — react-router bumped to v7, PR #35 merged — Dependabot fully clean across every
+live path
+
+Closed the one deliberately-deferred item from the earlier vulnerability sweep, properly this
+time rather than force-fixing blind:
+
+- **Audited usage first**: only classic `<BrowserRouter>`/`<Routes>`/`<Route>` +
+  `useNavigate`/`useLocation`/`useParams`/`Link` across all 7 files using react-router in
+  `apps/wingcommander-reference/frontend` — none of the data-router APIs
+  (`createBrowserRouter`, `useLoaderData`, `Form`, `redirect`) that actually differ between v6
+  and v7. Flat route table (`App.tsx`), one top-level catch-all splat — none of the nested/
+  relative-splat-path cases v7's default-behavior changes affect.
+- Bumped `react-router-dom` `^6.26.0` → `^7.18.3`. Same clean-reinstall requirement as the other
+  two wingcommander fixes this session (`rm -rf node_modules` + lockfile) for the bump to
+  actually apply. `npm audit`: **0 vulnerabilities** — this was the repo's last 2 findings.
+- **Went beyond the green build**, per this repo's own standard: ran the actual Vite dev
+  server, hit the pre-existing `supabaseUrl is required` crash (missing local env vars — a
+  pre-existing local-dev gap, confirmed unrelated to the react-router change via the exact
+  error), fixed it by writing a **local-only, gitignored `.env.local`** with real
+  `SUPABASE_THEKPIHUB_URL`/`SUPABASE_THEKPIHUB_PUBLISHABLE_KEY` values (verified `.gitignore`
+  covers `.env.local` at both the frontend and repo level before creating it; deleted
+  immediately after testing). Clicked through every route in a real browser: landing page,
+  `/auth` (Link navigation), `useNavigate("/")` back-to-home, the protected `/workspace/:id`
+  route correctly redirecting an unauthenticated session to `/auth`, and the catch-all splat
+  correctly redirecting an unknown path to `/`. Zero console errors across the whole session
+  (the one exception logged was from the pre-fix attempt on the wrong port, before the env vars
+  were wired in — not from the actual verified run).
+- PR #35 merged, fully green (CodeQL, both language analyzers, `validate`, both Vercel
+  deployments). **Net result: zero Dependabot findings of any severity remain in any actually-
+  live code path** (`apps/website`, `apps/platform`, `apps/wingcommander-reference`,
+  `services/pipeline`, `services/llm_gateway`) — only `apps/legacy-app`/
+  `tools/automated-website-builder` (genuinely reference-only, correctly non-blocking) have
+  anything left.
+- Updated `CLAUDE.md` and the global `/thekpihub` skill to reflect this closure, and caught/
+  removed one accidental duplicate PAT-revocation bullet introduced while editing CLAUDE.md
+  earlier the same session (the item was already correctly closed once; a second edit pass
+  re-added it without checking for the existing one first — small self-caught slip, not a real
+  mistake requiring a `mistakesdone.md` entry, but worth noting the "check before you add"
+  discipline here).
