@@ -8,11 +8,20 @@ Wing Commander reference material with source provenance.
 ## Architecture
 
 - `apps/website`: live public TheKPIHub.com static/PHP website from `thekpihub/thekpihub-website`.
-- `apps/platform`: canonical long-term Next.js + Supabase platform app from `thekpihub/thekpihub-platform`.
-- `apps/legacy-app`: archived Next.js/Express/Prisma implementation from `thekpihub/thekpihub-app`.
-- `apps/wingcommander-reference`: related Wing Commander/Ditto application reference from the design-sync repo.
-- `services/pipeline`: KPI Hub Python pipeline from `thekpihub/thekpihub-pipeline`.
-- `tools/automated-website-builder`: autonomous website build tooling from `thekpihub/automated-website-builder`.
+- `apps/platform`: live Next.js + Supabase KPI Hub product (dashboard, billing) from
+  `thekpihub/thekpihub-platform` — real and deployed, but not domain-mapped to thekpihub.com
+  (Vercel-generated URLs only) and not linked from the live site. See `docs/ARCHITECTURE.md`.
+- `apps/wingcommander-reference`: **NOT** reference-only despite the name — Ditto Wingman,
+  load-bearing for `apps/website`'s free tools (via a Cloudflare Worker) and the live
+  WingCommander premium feature at wingcommander.thekpihub.com.
+- `services/pipeline`: KPI Hub Python pipeline from `thekpihub/thekpihub-pipeline` (dormant,
+  `workflow_dispatch`-only — see `docs/ARCHITECTURE.md`; `apps/website/pipeline.py` is the
+  active scheduled one).
+- `services/llm_gateway`: shared resilient Claude-calling module (Anthropic → OpenRouter →
+  MindStudio.ai fallback chain), used by the pipelines and `apps/website/pages/api/ai-gateway.php`.
+- `archive/apps/legacy-app`: archived Next.js/Express/Prisma implementation from `thekpihub/thekpihub-app` — confirmed dead 2026-09-10, not deployed, see `docs/ARCHITECTURE.md`.
+- `archive/tools/automated-website-builder`: autonomous website build tooling from `thekpihub/automated-website-builder` — confirmed a local, never-deployed experiment.
+- `archive/session-docs`: ~65 historical planning/status markdown files, moved out of the repo root 2026-09-10 (zero code/CI references, pure documentation).
 - `docs`: assembly, deployment, recovery, environment, and provenance records.
 
 ## Required Runtimes
@@ -31,7 +40,7 @@ from the relevant component directory.
 ```bash
 cd apps/website && npm install
 cd apps/platform && npm install
-cd apps/legacy-app && npm install
+cd archive/apps/legacy-app && npm install
 cd services/pipeline && pip install -r requirements.txt
 ```
 
@@ -43,9 +52,9 @@ Do not commit secrets.
 - Website build: `cd apps/website && npm run build`
 - Platform dev: `cd apps/platform && npm run dev`
 - Platform typecheck: `cd apps/platform && npm run typecheck`
-- Legacy app dev: `cd apps/legacy-app && npm run dev`
+- Legacy app dev: `cd archive/apps/legacy-app && npm run dev`
 - Pipeline compile smoke check: `cd services/pipeline && python -m py_compile pipeline.py`
-- Builder typecheck: `cd tools/automated-website-builder && npm test`
+- Builder typecheck: `cd archive/tools/automated-website-builder && npm test`
 
 ## Environment Variables
 
@@ -56,12 +65,15 @@ and `credentials.md` were intentionally excluded during assembly.
 
 Database evidence stays in its owning component path to avoid duplicate copies.
 The canonical platform uses Supabase. The archived legacy application contains
-Prisma and SQL migration history under `apps/legacy-app`.
+Prisma and SQL migration history under `archive/apps/legacy-app`.
 
 ## Deployment
 
-The live website points to `https://thekpihub.com`. The platform app points to
-`https://thekpihub-platform.vercel.app`. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+The live website points to `https://thekpihub.com`. The platform app is deployed on Vercel but
+has no thekpihub.com domain attached (verified 2026-09-10 via the Vercel API — only
+Vercel-generated URLs like `platform-hs-debugs.vercel.app` exist; the old
+`thekpihub-platform.vercel.app` claim here was stale/wrong). See
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Source Provenance
 

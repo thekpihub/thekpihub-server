@@ -6,9 +6,9 @@ Date: 2026-08-24
 
 - `apps/website`: `npm ci` passed.
 - `apps/platform`: `npm ci` passed after upgrading Next.js to 16.3.2.
-- `apps/legacy-app`: `npm ci` passed after upgrading Next.js to 16.3.2.
+- `archive/apps/legacy-app`: `npm ci` passed after upgrading Next.js to 16.3.2.
 - `apps/wingcommander-reference`: `npm ci` passed after upgrading React Router to 7.18.2.
-- `tools/automated-website-builder`: `npm ci` passed.
+- `archive/tools/automated-website-builder`: `npm ci` passed.
 - `services/pipeline`: Python syntax validation passed.
 
 ## Security Audit
@@ -17,22 +17,22 @@ Date: 2026-08-24
 
 - `apps/website`
 - `apps/platform`
-- `apps/legacy-app`
+- `archive/apps/legacy-app`
 - `apps/wingcommander-reference`
-- `tools/automated-website-builder`
+- `archive/tools/automated-website-builder`
 
 ## Lint / TypeScript
 
 - `apps/platform`: `npm run typecheck` passed.
-- `apps/legacy-app`: `npm run lint` passed.
-- `tools/automated-website-builder`: `npm test` (`tsc --noEmit`) passed.
+- `archive/apps/legacy-app`: `npm run lint` passed.
+- `archive/tools/automated-website-builder`: `npm test` (`tsc --noEmit`) passed.
 - `apps/wingcommander-reference`: TypeScript passed as part of `npm run build`.
 
 ## Build
 
 - `apps/website`: `npm run build` passed; Babel compiled 8 landing files.
 - `apps/platform`: `npm run build` passed on Next.js 16.3.2.
-- `apps/legacy-app`: `npm run build` passed on Next.js 16.3.2.
+- `archive/apps/legacy-app`: `npm run build` passed on Next.js 16.3.2.
 - `apps/wingcommander-reference`: `npm run build` passed for frontend and backend workspaces on React Router 7.18.2.
 
 ## Runtime
@@ -44,16 +44,16 @@ Runtime startup was not kept running because the request is repository assembly 
 Database files remain in component-owned source paths:
 
 - `apps/platform/supabase`
-- `apps/legacy-app/prisma/schema.prisma`
-- `apps/legacy-app/backend/migrations`
-- `apps/legacy-app/backend/supabase-schema.sql`
+- `archive/apps/legacy-app/prisma/schema.prisma`
+- `archive/apps/legacy-app/backend/migrations`
+- `archive/apps/legacy-app/backend/supabase-schema.sql`
 - `apps/website/docs/supabase-schema.sql`
 
 No live Supabase/PostgreSQL connection validation was performed because no real production credentials are committed or configured as GitHub secrets.
 
 ## Redis
 
-Legacy backend Redis client/config exists under `apps/legacy-app/backend/src/config/redis.js`. Live Redis validation was not performed because no Redis secret is configured.
+Legacy backend Redis client/config exists under `archive/apps/legacy-app/backend/src/config/redis.js`. Live Redis validation was not performed because no Redis secret is configured.
 
 ## Deployment Configuration
 

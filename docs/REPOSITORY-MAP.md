@@ -4,9 +4,9 @@
 |---|---|---|---|
 | thekpihub/thekpihub-website | main / cb572897579a4f242be8e9a4795e254870de37bb | apps/website | KEEP |
 | thekpihub/thekpihub-platform | main / 3f23ee117a6c696f3ed1b0134c46ffc4e1088e7c | apps/platform | KEEP |
-| thekpihub/thekpihub-app | main / f61cf59393763f94f733e65edc78266a09d082d4 | apps/legacy-app | MERGE |
+| thekpihub/thekpihub-app | main / f61cf59393763f94f733e65edc78266a09d082d4 | archive/apps/legacy-app (moved 2026-09-10, was apps/legacy-app) | MERGE → **ARCHIVED** |
 | thekpihub/thekpihub-pipeline | main / d79d8495a91920d811f804c082cc714a9d4f1ec8 | services/pipeline | KEEP |
-| thekpihub/automated-website-builder | main / 44298f072131c662a1538e592188e7f8df1d2005 | tools/automated-website-builder | KEEP |
+| thekpihub/automated-website-builder | main / 44298f072131c662a1538e592188e7f8df1d2005 | archive/tools/automated-website-builder (moved 2026-09-10, was tools/automated-website-builder) | KEEP → **ARCHIVED** |
 | thekpihub/thekpihub-wingcommander-design-sync | main / 3a4f186e46500e2bbf1f43e7800a4b7f2579d0bc | apps/wingcommander-reference | REFERENCE |
 | thekpihub/thekpihub-wing-commander | claude/eager-knuth-WXAr4 / 12d31b31d39680cd8957775dcd19ad6cb3ccc11a | docs/provenance only | REFERENCE |
 | thekpihub/ditto-wingman | main / d1eaf8bd085f942060f11369a07d87187013146f | docs/provenance only | REFERENCE |
