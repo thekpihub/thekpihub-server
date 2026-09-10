@@ -2812,3 +2812,14 @@ entire remaining critical/high count now concentrated in the two paths already c
 triaged as reference-only, non-blocking. Zero critical/high vulnerabilities remain in any
 actually-live code path (apps/website, apps/platform, apps/wingcommander-reference,
 services/pipeline, services/llm_gateway).
+
+---
+
+## 2026-09-09 (cont.) — CLAUDE.md brought current with the full session
+
+Per user request ("update each and every step taken till now in today's session to the
+relevant .md files"), did a full pass over `CLAUDE.md` rather than just appending — corrected
+3 stale claims in place (repo visibility, "no Node/npm in this environment," the pre-remediation
+Dependabot count) instead of leaving them alongside newer contradicting notes, plus a proper
+session-log section tying today's work together. Dependabot's count settled at exactly 24 (2
+critical, 9 high, 12 moderate, 1 low) after this push — matches what's now documented.
