@@ -3186,3 +3186,51 @@ independently verified live (Supabase Admin API mint+verify flow worked up to a 
 otp_expired` on the *test* token itself — a token-freshness issue in the manual test, not a
 code defect), and a natural real end-to-end confirmation once the account owner actually clicks
 through the live flow. Worth a follow-up if friction is reported.
+
+---
+
+## 2026-09-10 (cont. 2) — GA4 tag swapped to G-1XJCJ3X004 site-wide (PR #40, `5fcc519`), deployed and live-verified
+
+User pasted Google's standard gtag.js snippet for a new/different property, `G-1XJCJ3X004`,
+asking it be added after `<head>` on every page. Site already had a *different* GA4 ID
+(`G-DZPCCPEP1J`) live on 29 of 31 pages (wired in originally via `tools/add_ga4.py`, though the
+actually-injected live snippet is the plain 5-line gtag.js form, not that script's fuller
+custom-event version — a pre-existing inconsistency, not touched this pass). Rather than assume
+intent, asked the user directly: replace, or keep both (e.g. if this were a second product like
+Google Ads). **User's answer: replace** — old ID's historical data stays under that ID, new data
+accrues under `G-1XJCJ3X004` going forward.
+
+**What was done:**
+- 29 pages already carrying `G-DZPCCPEP1J`: ID swapped in place via `sed`, existing snippet
+  placement left untouched (each page had it in a slightly different spot inside `<head>` —
+  moving all 29 to be "immediately after `<head>`" per Google's generic boilerplate wording
+  would've been pure diff noise for zero functional gain; gtag works anywhere inside `<head>`).
+- 2 pages found with **no** GA tag at all (`404.html`, `account/integrations.html` — found by
+  diffing the full live `.html` file list against which ones matched the old ID pattern): added
+  fresh, immediately after `<head>`, using Google's exact snippet verbatim.
+- `tools/add_ga4.py`'s `GA4_ID` constant updated to match, so a future run of that script
+  doesn't reintroduce the old ID on some new page.
+- `tools/index.shell.html` (the actual source `index.html` is generated from — editing
+  `index.html` directly would be silently discarded on the next `npm run build:site`, a mistake
+  this repo already made once before) updated, then the real build run
+  (`npm run build:site` — babel + tailwind + prerender + version-assets) so `index.html` and the
+  asset-fingerprint stamps in `sections-c.js`/`sections-d.js` are consistent with a real build,
+  not hand-edited.
+- `archive/static-article-generator/article-template.html` deliberately left on the old ID —
+  archived reference material from the 2026-09-10 archive pass, not a live served page.
+
+**Shipped and verified live, not just green CI:** PR #40 (all checks green, incl. the
+login-nav/OpenRouter-fallback/PHP-syntax CI gates from the 2026-09-05 session), squash-merged as
+`5fcc519`. Deployed via the required explicit `workflow_dispatch` (`mode=dry-run` first, clean,
+then `mode=deploy`) — all 4 jobs green, no SSH-timeout retry needed this run. `curl`-verified
+directly against production afterward on 6 pages (homepage, pricing, about, 404, the two
+previously-tagless pages, login): all HTTP 200, all show exactly 2 occurrences of
+`G-1XJCJ3X004` (script src + `gtag('config', ...)`), zero occurrences of the old ID anywhere.
+
+**Surfaced, not investigated further — flagged in the PR body for separate follow-up:** `git
+push` on this session's branch reported GitHub Dependabot now shows **22 vulnerabilities on
+`main`** (2 critical, 9 high, 10 moderate, 1 low). This repo's own history has Dependabot at
+**zero** as of the 2026-09-09/10 remediation pass (PRs #31-#35, see CLAUDE.md). This is either a
+new regression (a dependency version currently pinned has a newly-disclosed CVE) or Dependabot
+re-scanning turned up something the last pass's manifest didn't cover — not diagnosed this
+session, purely out of scope for a GA-tag change. Worth a fresh look.
