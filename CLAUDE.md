@@ -583,6 +583,20 @@ this wasn't pursued, not because it's a dead end.
   deleted, not continued — "review later." The credential-rotation checklist in
   [[rocketnew-thekpihub-server-credential-exposure]] is unaffected by the archive and was not
   re-verified complete this session.
+- **UPDATE 2026-09-13**: its matching Vercel project (`prj_nYjRHCK4wUpgUpstx9KjH16NLsmg`, the
+  one still holding all 27 `Credentials/.env` secret names as env vars) was showing a "No
+  Deployment" warning in the user's own dashboard. Confirmed via `get_project` it was still the
+  same flagged project (`live: false`, one failed production deployment, linked to
+  `hsharmagxi-debug/thekpihub-server`) before touching anything. User's explicit choice, given
+  three options (delete / deploy live / leave as-is): **delete**. Deleted via
+  `DELETE https://api.vercel.com/v9/projects/{id}` using `VERCEL_ACCESS_TOKEN` from
+  `Credentials/.env` — confirmed gone via a follow-up `get_project` returning `404`. This
+  removes the Vercel-side exposure entirely (no more live project holding those env var names).
+  **Still open, per user instruction "credentials are good for now"**: the archived GitHub repo
+  itself still exists (archived, not deleted), and the credential-rotation checklist in
+  [[rocketnew-thekpihub-server-credential-exposure]] is still only partially done (only
+  `SUPABASE_DB_PASSWORD` confirmed rotated, as of 2026-09-05) — explicitly deferred, not
+  forgotten; do not rotate anything here without being asked again.
 
 ## Session log — 2026-09-05 → 2026-09-07 (full detail in `thekpihub-server/servermemory.md`,
 these are pointers, not the full record)
