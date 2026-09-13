@@ -3490,3 +3490,25 @@ signup/"Get Started" CTA — only a `login.html` link, which goes to `apps/websi
 Supabase-backed login, a *different* system from the actual live KPI Monitor product at
 `app.thekpihub.com`. Directly relevant to the 0→100 customer question asked this session — see
 the status report given to the user for the full recommended plan.
+
+## 2026-09-13 (cont. 2) — publish-signals worker credential bug fixed and verified live
+
+Per user's go-ahead on the specific credential change identified above. Fetched the project's
+`service_role` API key via the Supabase Management API (`GET /v1/projects/{ref}/api-keys?reveal=true`),
+generated a fresh random password locally (never logged/printed), and reset it directly on the
+`publish-signals-worker@thekpihub.com` account via `PUT /auth/v1/admin/users/{id}` (Auth Admin
+API) — `200`, confirmed against the correct account by its returned email/id. Updated the
+`SUPABASE_WORKER_PASSWORD` GitHub secret to match (`gh secret set`, value piped in, never echoed).
+`SUPABASE_WORKER_EMAIL` was left untouched — it was already correct (the failure was password-only,
+confirmed by the dry-run success below authenticating with no other change).
+
+**Live-verified, not just assumed fixed**: manually dispatched `publish-signals.yml`
+(run `34736298545`) — completed `success` in ~15s, log shows
+`[dry-run] computed 0 signal(s), not writing: []` with no sign-in error. `0 signal(s)` is
+expected and correct (no KPI data exists yet in `kpis`/`kpi_values`), not a new problem — the
+sign-in step that was failing on every run since 2026-09-10 now passes cleanly.
+
+This closes the one concrete remaining technical blocker on `publish-signals.yml` identified
+earlier in this session. The only genuinely remaining gap on this feature is the underlying
+product-usage one (no user has entered KPI data via `/dashboard/kpi-monitor` yet) — infra-side,
+this is now fully working.
