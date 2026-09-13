@@ -432,6 +432,10 @@
       <!-- KPIs -->
       <div class="section" id="kpis">
         <div class="section-title">Key Performance Indicators</div>
+        <div style="background:linear-gradient(135deg,rgba(14,165,233,.15),rgba(99,102,241,.15));border:1px solid rgba(14,165,233,.3);border-radius:10px;padding:14px;margin-bottom:16px;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">📊 The cards below are illustrative examples, not your real numbers. Track your actual KPIs — free — in The KPI Hub's real KPI Monitor.</div>
+          <button onclick="openRealKpiMonitor()" style="padding:8px 16px;border-radius:10px;background:var(--accent);color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;">Open Real KPI Monitor →</button>
+        </div>
         <div class="grid" id="kpisGrid"></div>
       </div>
 
@@ -1136,6 +1140,21 @@
       btn.disabled = false;
       btn.textContent = 'Open WingCommander ↗';
     }
+  }
+
+  // Session hand-off to app.thekpihub.com's real, data-backed KPI Monitor — same
+  // access/refresh-token pattern upgrade.html already uses for billing (see that
+  // file's own comment for why a plain redirect can't carry the session here).
+  // The KPIs cards above this button are illustrative demo data only; this is the
+  // real thing.
+  async function openRealKpiMonitor() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = CONFIG.app.loginUrl; return; }
+    const hash = new URLSearchParams({
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
+    });
+    window.open('https://app.thekpihub.com/auth/handoff?redirect=%2Fdashboard%2Fkpi-monitor#' + hash.toString(), '_blank');
   }
 
   init();
