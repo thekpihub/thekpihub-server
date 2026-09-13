@@ -3613,3 +3613,30 @@ this point forward. Already-published posts with the old dead `#waitlist` link w
 the earlier hubspot/semrush CTA fix, which did patch existing posts, needed a real DB client at
 the time). Follow-up: either wire in a client, or use a one-off SSH+PyMySQL diagnostic workflow
 (established pattern in this repo) to do a `REPLACE()` on `wp_posts.post_content` for the old URL.
+
+## 2026-09-13 (cont. 6) — Blog CTA backfill applied and live-verified (all 38 published posts)
+
+Per user's explicit go-ahead on the specific write dispatch (the harness's own classifier
+correctly blocked the first attempt at `dry_run=false` as a production DB modification — not
+worked around, user asked directly instead). PR #46 added `fix-blog-waitlist-cta.yml`
+(dry-run-by-default, parameterized queries only).
+
+**Dry-run first**: reported 38/38 published posts affected — every single currently-active
+content series (India SaaS Brief, Funding & M&A Digest, Founder's KPI Brief), not the ~43% (3/7
+categories) estimated in the Phase 3 entry. Turned out the daily pipeline's actual category
+rotation only runs these 3 recurring series, and all 3 map to the `email_signup`/`newsletter`
+CTA slots — so this bug was hitting 100% of live content, not a minority.
+
+**Applied** (`dry_run=false`, user-approved): 25 rows matched the "Subscribe Free" anchor
+variant, 13 matched "Join Free", 38 total — remaining count after: 0.
+
+**Live-verified on a real post, not just the DB**: `blog.thekpihub.com/?p=49` → 301 →
+`india_saas_brief-2026-09-02/` → 200, page now contains `app.thekpihub.com/register` and
+"Start Free", zero occurrences of the old `#waitlist` string.
+
+Workflow moved to `docs/diagnostics/fix-blog-waitlist-cta.yml` per repo convention (used, kept as
+record, no longer dispatchable from `.github/workflows/`).
+
+**Growth plan status after this session's work**: Phases 1-3 are now fully done, including this
+retroactive backfill closing the gap Phase 3's forward-only fix left open. Phase 4 (first 10 real
+users) remains the user's own outreach work, not code.
