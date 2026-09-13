@@ -3640,3 +3640,25 @@ record, no longer dispatchable from `.github/workflows/`).
 **Growth plan status after this session's work**: Phases 1-3 are now fully done, including this
 retroactive backfill closing the gap Phase 3's forward-only fix left open. Phase 4 (first 10 real
 users) remains the user's own outreach work, not code.
+
+## 2026-09-13 (cont. 7) — Dashboard fake-KPI-data issue closed, without merging the login systems
+
+Per user's "yes of course" to digging into the two-login-system question flagged earlier.
+Re-verified directly (not assumed) that `apps/platform`'s dashboard still lacks WingCommander
+access/Team/Reports (only Overview/Intelligence Hub/Recommendation Engine/KPI Monitor/Billing in
+its sidebar nav) — the 2026-09-05 decision to keep the two apps separate still holds; a full
+login-system merge/redirect would cut off the real, tested WingCommander feature and was
+correctly NOT done.
+
+**PR #47 (squash-merged), deployed and live-verified**: instead of merging systems, fixed the
+actually-misleading part — `apps/website/dashboard.html`'s "KPIs" section showed hardcoded demo
+numbers with zero indication they weren't real. Added a banner labeling them as illustrative
+plus an "Open Real KPI Monitor" button that hands the current session off to
+`app.thekpihub.com`'s real, data-backed KPI Monitor — reusing `upgrade.html`'s existing
+access/refresh-token handoff pattern (both apps share one Supabase project). Deployed via
+`deploy-website-hostinger.yml`; curled `thekpihub.com/dashboard.html` afterward — all 3 expected
+markers ("Open Real KPI Monitor", "illustrative examples", `openRealKpiMonitor`) present, 200.
+
+**This closes every item from this session's 0→100 growth-plan report except Phase 4** (first 10
+real users — the user's own outreach work, not code). Phases 1-3 plus this dashboard fix are all
+shipped, merged, and independently verified live, not just green CI.
