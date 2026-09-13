@@ -822,13 +822,24 @@ work through its gaps one by one rather than treating this as a one-off request.
   forward** — already-published posts with the dead link were not patched (no MySQL client
   available in this environment; needs either a client or a one-off SSH+PyMySQL diagnostic
   workflow, same pattern as past DB fixes).
-- **Not started, and not code work**: Phase 4 (get 10 real people using the product manually,
-  before spending on acquisition) — this needs the user's own outreach, not something to execute
-  from this session. Also still open, deliberately not acted on unilaterally: the two-separate-
-  login-systems UX tax (apps/website's own account system vs apps/platform's) — worth revisiting
-  now that apps/website's own dashboard is confirmed to show fake demo data (see above), but
-  that's a bigger, more invasive change than Phases 1-3 and needs an explicit decision, not an
-  assumption.
+- **Blog CTA backfill (all 38 published posts) — done, PR #46, live-verified.** Phase 3's fix
+  only covered new articles; the dry-run first (user-approved go-ahead) found the dead
+  `#waitlist` link on literally all 38 published posts, not the ~43% estimated — the daily
+  pipeline's actual category rotation turned out to only run the 3 series that had this bug.
+  Applied via a one-off `docs/diagnostics/fix-blog-waitlist-cta.yml` workflow (parameterized
+  `REPLACE()`, dry-run-by-default). 25+13=38 rows patched, 0 remaining, curl-verified on a real
+  post (`india_saas_brief-2026-09-02`).
+- **Two-login-system question — investigated, deliberately NOT merged, PR #47 shipped instead.**
+  Re-verified directly (not assumed) that `apps/platform`'s dashboard still lacks WingCommander/
+  Team/Reports — merging or redirecting the two login systems would cut off the real, tested
+  WingCommander feature, so the 2026-09-05 decision to keep them separate stands. Instead, fixed
+  the actually-misleading part: `dashboard.html`'s hardcoded-demo "KPIs" section now carries a
+  clear "illustrative examples" banner plus an "Open Real KPI Monitor" button that hands the
+  session off to `app.thekpihub.com`'s real KPI Monitor (reusing `upgrade.html`'s existing
+  access/refresh-token handoff — both apps share one Supabase project). Deployed, live-verified.
+- **Only Phase 4 remains from this session's growth-plan work**: get 10 real people using the
+  product — the user's own outreach, not code. Every other item from the original status report
+  is now shipped, merged, and independently verified live.
 
 ## Standing rule for thekpihub-server specifically
 
