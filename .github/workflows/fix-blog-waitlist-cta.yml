@@ -1,0 +1,97 @@
+name: One-off - Repoint dead #waitlist blog CTAs to real product signup
+
+# One-off write. PR #45 (2026-09-13) fixed apps/website/pipeline.py's CTA_BLOCKS so future
+# articles no longer link to https://thekpihub.com/#waitlist (a section confirmed missing from
+# the current site - grep found zero matches anywhere in apps/website), but that fix only
+# affects newly-generated articles. This workflow patches already-published wp_posts rows that
+# still have the old dead anchor baked into post_content, replacing both old CTA anchor variants
+# ("Subscribe Free" and "Join Free") with the same real-product-signup anchor pipeline.py now
+# generates. Read-only count/report first, then the UPDATE, then a verification re-count.
+# Per repo convention, move this file to docs/diagnostics/ after use.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true = report only, no UPDATE. false = apply the fix."
+        required: true
+        default: "true"
+
+jobs:
+  fix-cta:
+    runs-on: ubuntu-latest
+    environment: hostinger-production
+    env:
+      WP_DB_HOST:     ${{ secrets.WP_DB_HOST }}
+      WP_DB_HOST_IP:  ${{ secrets.WP_DB_HOST_IP }}
+      WP_DB_PORT:     ${{ secrets.WP_DB_PORT }}
+      WP_DB_NAME:     ${{ secrets.WP_DB_NAME }}
+      WP_DB_USER:     ${{ secrets.WP_DB_USER }}
+      WP_DB_PASSWORD: ${{ secrets.WP_DB_PASSWORD }}
+      DRY_RUN:        ${{ inputs.dry_run }}
+    steps:
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyMySQL
+        run: pip install pymysql
+
+      - name: Repoint dead waitlist CTA anchors
+        run: |
+          python3 - <<'PYEOF'
+          import os, pymysql
+
+          DRY_RUN = os.environ.get("DRY_RUN", "true").lower() != "false"
+
+          OLD_SUBSCRIBE = '<a href="https://thekpihub.com/#waitlist" style="color:#E9A123;font-weight:bold;">Subscribe Free →</a>'
+          OLD_JOIN       = '<a href="https://thekpihub.com/#waitlist" style="color:#E9A123;font-weight:bold;">Join Free →</a>'
+          NEW_ANCHOR     = '<a href="https://app.thekpihub.com/register" style="color:#E9A123;font-weight:bold;">Start Free →</a>'
+
+          conn = pymysql.connect(
+              host=os.environ.get("WP_DB_HOST_IP") or os.environ["WP_DB_HOST"],
+              port=int(os.environ["WP_DB_PORT"]),
+              user=os.environ["WP_DB_USER"],
+              password=os.environ["WP_DB_PASSWORD"],
+              database=os.environ["WP_DB_NAME"],
+              connect_timeout=15,
+          )
+          try:
+              with conn.cursor() as cur:
+                  cur.execute(
+                      "SELECT COUNT(*) FROM wp_posts WHERE post_content LIKE %s AND post_status = 'publish'",
+                      ("%thekpihub.com/#waitlist%",),
+                  )
+                  before_count = cur.fetchone()[0]
+                  print(f"Posts with dead #waitlist CTA (published): {before_count}")
+
+                  cur.execute(
+                      "SELECT ID, post_title FROM wp_posts WHERE post_content LIKE %s AND post_status = 'publish'",
+                      ("%thekpihub.com/#waitlist%",),
+                  )
+                  rows = cur.fetchall()
+                  for pid, title in rows:
+                      print(f"  - #{pid}: {title}")
+
+                  if DRY_RUN:
+                      print("\nDRY_RUN=true - no UPDATE executed. Re-run with dry_run=false to apply.")
+                  else:
+                      for old in (OLD_SUBSCRIBE, OLD_JOIN):
+                          cur.execute(
+                              "UPDATE wp_posts SET post_content = REPLACE(post_content, %s, %s) "
+                              "WHERE post_content LIKE %s",
+                              (old, NEW_ANCHOR, f"%{old}%"),
+                          )
+                          print(f"Replaced {cur.rowcount} row(s) containing: {old[:60]}...")
+                      conn.commit()
+
+                      cur.execute(
+                          "SELECT COUNT(*) FROM wp_posts WHERE post_content LIKE %s AND post_status = 'publish'",
+                          ("%thekpihub.com/#waitlist%",),
+                      )
+                      after_count = cur.fetchone()[0]
+                      print(f"\nPosts with dead #waitlist CTA remaining: {after_count}")
+          finally:
+              conn.close()
+          PYEOF
