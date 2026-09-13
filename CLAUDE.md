@@ -781,6 +781,44 @@ surfacing. Roughly in order:
   exposure decision). Routine build/fix/PR/merge work proceeded without per-step confirmation
   once the overall direction was set.
 
+## Session log — 2026-09-13 — 0→100 customer growth plan, made the standing top priority
+
+User's explicit instruction: this growth plan is "the one and only priority" going forward —
+work through its gaps one by one rather than treating this as a one-off request.
+
+- **Phase 1 (prove the product works) — done, with real cited data, not fabricated.** User had
+  no real KPI data of their own (0 customers yet) and asked for "the recommended best possible
+  and proven method to obtain the current market data" instead of invented numbers. Sourced 5
+  real figures from ChartMogul (2,500+ real SaaS businesses) and OpenView/High Alpha SaaS
+  Benchmarks, entered via the real `/dashboard/kpi-monitor` UI (browser automation, user signed
+  in themselves — a passwordless Supabase magic-link approach was correctly blocked by the
+  harness's own classifier and not worked around). Verified live in the database. `kpis`/
+  `kpi_values` are no longer empty. `publish-signals.yml` still computes 0 signals — confirmed
+  via the actual rule code (`trend.length < 2`) that this is correct/expected with only one
+  reading per KPI so far, not a bug; a second real reading over time is what's actually needed,
+  and none was fabricated to force a signal artificially. Full detail: `servermemory.md`,
+  "Phase 1" entry.
+- **Phase 2 (fix the funnel) — done, deployed, live-verified.** Only 1 of 29 `apps/website`
+  pages linked to `app.thekpihub.com`; homepage nav had no signup CTA at all, only "Login" (a
+  *different*, hardcoded-demo dashboard — see below). PR #44 added a "Start Free" nav link
+  (→ `app.thekpihub.com/register`, the real product) to all 19 pages sharing the standard nav
+  pattern; deployed via `deploy-website-hostinger.yml`, curl-verified live on 4 pages incl.
+  homepage. Self-caught and fixed two real bugs mid-task before they shipped: a Perl-based edit
+  attempt mojibake-corrupted every em-dash across all 19 files (caught via `git diff` before
+  committing, reverted, redone with Node's UTF-8-safe I/O); a first `prerender.mjs`-only rebuild
+  of the homepage silently dropped asset cache-busting `?v=` query strings (caught the same way,
+  fixed by also running `version-assets`). Full detail: `servermemory.md`, "Phase 2" entry.
+- **New finding from Phase 2 investigation**: `apps/website/dashboard.html`'s own "KPIs" section
+  (`getKPICards()`) is **entirely hardcoded demo data** (fixed "$18.2M ARR", "2.1% churn" etc.
+  per role) — not connected to any database. This is why the new CTA deliberately points at
+  `apps/platform`'s real `/dashboard/kpi-monitor` and not this site's own `register.html`/
+  `dashboard.html` — routing new signups there would have landed them on fake numbers.
+- **Not yet started**: Phase 3 (blog posts ending in the new CTA instead of just internal links)
+  and Phase 4 (get 10 real people using the product before spending on acquisition). Also still
+  open from the original report: the two-separate-login-systems UX tax, and the fact that the
+  worker's `publish-signals.yml` credential bug (fixed same session — see servermemory) means
+  infra is now fully sound, but real usage is still the actual bottleneck.
+
 ## Standing rule for thekpihub-server specifically
 
 After every commit made locally or pushed, both `servermemory.md` and `mistakesdone.md` (repo
