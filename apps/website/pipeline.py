@@ -429,15 +429,15 @@ CTA_BLOCKS = {
 </div>""",
     "email_signup": """
 <div style="background:#0A1628;padding:20px;border-radius:8px;border-left:4px solid #E9A123;margin:30px 0;">
-<strong style="color:#E9A123">📧 Get This Daily</strong><br>
-<p style="color:#94A3B8;margin:10px 0;">This brief lands in your inbox every morning at 6 AM IST. Zero fluff. Just the KPI signals that matter for your business today.</p>
-<a href="https://thekpihub.com/#waitlist" style="color:#E9A123;font-weight:bold;">Subscribe Free →</a>
+<strong style="color:#E9A123">📧 Track This Yourself</strong><br>
+<p style="color:#94A3B8;margin:10px 0;">The KPI Hub's free KPI Monitor tracks the exact signals covered in this article — no spreadsheets, no guesswork.</p>
+<a href="https://app.thekpihub.com/register" style="color:#E9A123;font-weight:bold;">Start Free →</a>
 </div>""",
     "newsletter": """
 <div style="background:#0A1628;padding:20px;border-radius:8px;border-left:4px solid #E9A123;margin:30px 0;">
-<strong style="color:#E9A123">📬 The KPI Hub Weekly</strong><br>
-<p style="color:#94A3B8;margin:10px 0;">Every Friday: the week's top SaaS KPI movements, benchmark shifts, and actionable intelligence in under 5 minutes.</p>
-<a href="https://thekpihub.com/#waitlist" style="color:#E9A123;font-weight:bold;">Join Free →</a>
+<strong style="color:#E9A123">📬 Stop Missing This</strong><br>
+<p style="color:#94A3B8;margin:10px 0;">The KPI Hub's free KPI Monitor surfaces movements like this one automatically, as they happen — not after the fact.</p>
+<a href="https://app.thekpihub.com/register" style="color:#E9A123;font-weight:bold;">Start Free →</a>
 </div>""",
 }
 
