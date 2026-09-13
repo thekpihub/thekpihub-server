@@ -409,12 +409,14 @@ billing relationship — proven live via a real API call that hit MindStudio's o
 `insufficient_credits/balance` error, never the Anthropic account). Calls a dedicated agent,
 "KPI Hub Pipeline Generic Completion" (MindStudio appId `2b72f155-d841-4957-971b-3bcdd30e3648`),
 built specifically as a generic prompt-in/text-out passthrough since none of the workspace's
-other pre-built MindStudio agents (see below) accept arbitrary prompts. **Still not actually
-usable yet** — MindStudio's own workspace balance is unfunded (-$0.30 as of 2026-09-09); the
-tier fails through cleanly (same contract as an unconfigured OpenRouter tier) until the user
-tops it up at `app.mindstudio.ai/services/balance` (I cannot do this myself — entering payment
-details is a hard-prohibited action). `MINDSTUDIO_API_KEY`/`MINDSTUDIO_APP_ID` are set as real
-repo secrets and wired into all 3 pipeline workflows.
+other pre-built MindStudio agents (see below) accept arbitrary prompts. **Was unfunded
+(-$0.30) at first — RESOLVED same day, 2026-09-09 (cont.).** User topped up the balance at
+`app.mindstudio.ai/services/balance`; re-ran the exact same test call afterward and got a real
+result ("PIPELINE FALLBACK WORKS", billed $0.000210) — confirming this tier is genuinely usable
+now, not just correctly wired. (This file's own earlier "still not actually usable yet" note
+went stale after that same-day top-up and was corrected here 2026-09-13 — the more current
+`/thekpihub` skill digest had already caught it.) `MINDSTUDIO_API_KEY`/`MINDSTUDIO_APP_ID` are
+set as real repo secrets and wired into all 3 pipeline workflows.
 
 **A pre-existing MindStudio.ai workspace was discovered with 12 agents already built
 2026-08-12** — a full month before this was found, by some other means (not this session, not
@@ -478,6 +480,31 @@ real product answer for where KPI data actually gets entered — that's a produc
 an infra one. If/when that exists, revisit with a right-sized backend (possibly new API routes
 added to the already-live `apps/platform`, reusing its existing database, rather than deploying
 this specific parallel-SaaS codebase) instead of standing up `apps/legacy-app` wholesale.
+
+**SUPERSEDED 2026-09-11 (PR #42/#43) — the "revisit" clause above already happened, `kpihub-backend`
+is now moot, not just deferred.** Per explicit user request ("must be fixed," not left paused),
+built exactly the right-sized path this entry recommended: `kpis`/`kpi_values`/`kpi_targets`
+tables added directly to `apps/platform`'s own Supabase project
+(`supabase/migrations/0004_kpis_core.sql`), a `/dashboard/kpi-monitor` page + `/api/kpis` routes
+reusing the platform's existing auth, and `scripts/publish-signals.ts` rewritten to read those
+tables directly via Supabase instead of ever calling `kpihub-backend` over HTTP+JWT.
+`apps/legacy-app` stays archived and undeployed — it's no longer the plan at all, not just
+paused. **Re-verified live 2026-09-13**: migration 0004 (and the worker-account-repoint
+migrations 0005/0006 from PR #43) confirmed actually applied in production — `kpis`, `kpi_values`,
+`kpi_targets`, `module_snapshots` all exist and a dedicated `publish-signals-worker@thekpihub.com`
+Supabase Auth account exists. **But the worker still can't sign in**: every scheduled
+`publish-signals.yml` run since 2026-09-10 fails with `Error: Supabase sign-in failed: Invalid
+login credentials` — `SUPABASE_WORKER_EMAIL`/`SUPABASE_WORKER_PASSWORD` repo secrets exist but
+don't match the worker account's actual current password (consistent with PR #43's own note that
+this account was deleted and recreated once after a lost password — the GitHub secret likely
+still holds a stale value from before that recreation, or was never set to match it). **This is
+the one concrete remaining technical blocker on real KPI data flowing** — fix is a Supabase Auth
+password reset for that one worker account + updating the two GitHub secrets to match; needs
+explicit go-ahead first since it's a real credential change on a production auth account, not
+something to do unprompted. Separately, and just as real a blocker: the single actual production
+user (the account owner) still hasn't entered any KPI data via `/dashboard/kpi-monitor` — `kpis`/
+`kpi_values` are both empty — so even a fixed worker would have nothing to compute signals from
+yet.
 
 The other 9 agents in that same MindStudio workspace span Lumina-SaaS and two projects with no
 prior record in this repo at all ("AI-ForgeStream", "Interview Integrity Lab" — user-confirmed

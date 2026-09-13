@@ -3427,3 +3427,66 @@ now. Still genuinely open for a future session, only when asked:
 
 This closes the "No Deployment" dashboard warning permanently (there's no project left to warn
 about) without rotating anything, matching the explicit instruction.
+
+## 2026-09-13 (cont.) — Legacy-app-backend "pause" reversed on request; live status re-verified,
+one real bug found (publish-signals worker sign-in), one doc inconsistency corrected
+
+User explicitly overrode the 2026-09-10 "hold off" decision on the KPI Monitor / legacy-app-
+backend item: "must be Fixed (Recommended)," not left paused. Before doing more build work,
+checked whether the recommended fix already existed — it did: PR #42 (2026-09-11) had already
+built KPI tables + API + UI directly in `apps/platform` and rewired `publish-signals.ts`,
+exactly superseding the need to ever deploy `apps/legacy-app`'s backend. PR #43 fixed a Node
+version issue and repointed the worker RLS policies to a genuinely dedicated Supabase Auth
+account (`publish-signals-worker@thekpihub.com`) after finding migrations 0003/0004 had
+mistakenly pointed "worker" policies at the account owner's own personal login.
+
+**Live-verified via direct Supabase Management API queries (read-only), not assumed from the
+docs:**
+- `kpis`/`kpi_values`/`kpi_targets`/`module_snapshots` tables all exist in production — migration
+  0004 (and 0005/0006) are actually applied, contradicting the older "not yet applied" note.
+- `SUPABASE_WORKER_EMAIL`/`SUPABASE_WORKER_PASSWORD` GitHub secrets exist (set 2026-09-10).
+- **But `publish-signals.yml` has failed on every run since 2026-09-10** (`gh run list` — 5/5
+  failures, latest 2026-09-12T07:53Z) with `Error: Supabase sign-in failed: Invalid login
+  credentials`. The dedicated worker account exists in `auth.users`, but the two GitHub secrets
+  don't authenticate against it — most likely stale from before PR #43's account
+  delete-and-recreate (its own commit message: "the first dedicated account's password was lost
+  to a clipboard overwrite... deleted and recreated cleanly"). This is the one concrete remaining
+  blocker on real signal data — a Supabase Auth password reset for that one account + updating
+  the two secrets. **Not executed** — this is a real production-auth credential change and needs
+  explicit go-ahead first, consistent with this repo's standing precaution rule.
+- `profiles` has exactly 2 rows: the account owner (`hsharma.gxi@gmail.com`, plan `starter`) and
+  the worker service account itself. `kpis`/`kpi_values` are both empty — zero real KPI data
+  entered yet, confirming the underlying product-usage gap noted in the 2026-09-11 PR #42 entry
+  is still open regardless of the worker bug.
+- Two other `auth.users` rows (`ceo@thekpihub.com`, `ceo@bhasad.org`) checked and ruled out as a
+  concern: both created/confirmed/signed-in once on 2026-05-26 — predating the account owner's
+  own profile (2026-08-14) and the current platform build — pre-launch test artifacts, not
+  abandoned real signups. No profile-creation bug found here.
+- All other scheduled workflows green (`WordPress - scheduled post publishing`,
+  `Daily Intelligence Pipeline`, CI) — `publish-signals.yml` is the only broken automation
+  right now.
+
+**Documentation inconsistency found and fixed**: this file's/`CLAUDE.md`'s own MindStudio.ai
+entry still said "still not actually usable yet (balance unfunded)" — stale; the `/thekpihub`
+global skill digest already had the correct, more current close-out ("DONE 2026-09-09, verified
+live" after the user topped up the balance same day). This assistant repeated the stale claim
+in this session's own first status report before catching it here — corrected in `CLAUDE.md`
+directly, flagged to the user as a self-caught correction rather than silently fixed.
+
+**New Dependabot alerts (22: 2 critical, 9 high, 10 moderate, 1 low) surfaced on this session's
+own push** (branch-protection bypass message) — checked directly via
+`gh api repos/.../dependabot/alerts`, not assumed: **100% of all 22 are in `archive/apps/
+legacy-app` or `archive/tools/automated-website-builder`** (next/js-yaml/browserslist/sharp/
+nodemailer/qs/morgan/body-parser/brace-expansion/baseline-browser-mapping, all in old
+`package-lock.json` files under those two paths). Same situation as the 2026-09-10 close-out —
+new CVEs get published against old pinned versions over time even with zero code change; neither
+path runs anywhere live, so this is not a live-site risk, just an unchanged reference-code
+inventory. No action taken, consistent with the existing "non-blocking gate, not worth chasing"
+call on these two paths.
+
+**Growth-relevant finding, not previously documented**: only 1 of 29 top-level `apps/website`
+HTML pages (`upgrade.html`) links to `app.thekpihub.com` at all, and the homepage nav has no
+signup/"Get Started" CTA — only a `login.html` link, which goes to `apps/website`'s own
+Supabase-backed login, a *different* system from the actual live KPI Monitor product at
+`app.thekpihub.com`. Directly relevant to the 0→100 customer question asked this session — see
+the status report given to the user for the full recommended plan.
