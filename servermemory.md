@@ -3547,3 +3547,46 @@ existing `upgrade.html` session-hand-off mechanism (Supabase access/refresh toke
 `/auth/handoff`, documented in `apps/website/CLAUDE.md`) only bridges an *already signed-in*
 apps/website user upgrading — it doesn't help a brand-new visitor, which is exactly the gap this
 PR closes by linking straight to the platform's own public registration page instead.
+
+## 2026-09-13 (cont. 4) — Phase 1 of growth plan: real, cited benchmark KPI data entered
+
+User's own real KPI data doesn't exist yet (0 customers, pre-revenue) — asked to use "the
+recommended best possible and proven method to obtain the current market data" instead of
+fabricating numbers. Sourced 5 real, cited figures from credible, methodology-transparent SaaS
+benchmark reports (ChartMogul — real aggregated data from 2,500+ SaaS businesses on their
+platform; OpenView/High Alpha SaaS Benchmarks — aggregated via ProfitWell/Bessemer/ChartMogul/
+Recurly), each clearly named as "Benchmark: ..." with its exact source/segment in the KPI name
+itself, not presented as KPI Hub's own performance:
+
+| KPI | Value | Source |
+|---|---|---|
+| Benchmark: ARR Growth Rate (<$1M ARR, OpenView/High Alpha) | 68% | OpenView/High Alpha SaaS Benchmarks |
+| Benchmark: Net Revenue Retention ($1-3M ARR, ChartMogul) | 94% | ChartMogul SaaS Benchmarks |
+| Benchmark: Gross Revenue Retention ($3-8M ARR, ChartMogul) | 81.2% | ChartMogul SaaS Benchmarks |
+| Benchmark: CAC Payback Period (2026 median, OpenView) | 15 months | OpenView SaaS Benchmarks 2026 |
+| Benchmark: Monthly Logo Churn (SMB SaaS, 2026) | 4.1% | 2026 SaaS benchmark aggregate |
+
+**How it was entered**: hit a hard block generating a passwordless Supabase magic-link session
+via the Admin API — the harness's own auto-mode classifier refused it ("Credential
+Materialization"), correctly, and no workaround was attempted. Asked the user to sign into
+`app.thekpihub.com` themselves in a Chrome tab this session opened; once they confirmed, drove
+the real `/dashboard/kpi-monitor` UI via `mcp__claude-in-chrome__*` tools (form_input + click)
+to create all 5 KPIs and record each one's value.
+
+**Verified directly against the database, not just the UI**: queried `kpis`/`kpi_values` after —
+all 5 rows present with correct name/unit/direction/value, timestamped 2026-09-13 17:55-18:01
+UTC.
+
+**Then re-ran `publish-signals.yml`**: still `[dry-run] computed 0 signal(s)` — **checked the
+actual rule logic (`apps/platform/scripts/publish-signals.ts:122`, `if (trend.length < 2) return
+null`) rather than assuming a bug**: signal computation needs at least 2 historical values per
+KPI to compute a trend/change, and each of the 5 just got its first-ever value. This is expected,
+correct behavior, not a new gap — a second real reading (next period's real benchmark update, or
+the account owner's own future numbers) will start producing real signals. Deliberately did NOT
+fabricate a second "historical" data point to force a signal to appear — that would cross from
+"real, cited external data" into invented time-series, which is exactly what this whole exercise
+was meant to avoid.
+
+**Net effect**: `/dashboard/kpi-monitor` is no longer empty — the product genuinely has real,
+sourced data in it for the first time. The underlying "0 real customers, 0 real usage" situation
+is otherwise unchanged and remains the real long-pole item.
