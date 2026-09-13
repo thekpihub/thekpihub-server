@@ -813,11 +813,22 @@ work through its gaps one by one rather than treating this as a one-off request.
   per role) — not connected to any database. This is why the new CTA deliberately points at
   `apps/platform`'s real `/dashboard/kpi-monitor` and not this site's own `register.html`/
   `dashboard.html` — routing new signups there would have landed them on fake numbers.
-- **Not yet started**: Phase 3 (blog posts ending in the new CTA instead of just internal links)
-  and Phase 4 (get 10 real people using the product before spending on acquisition). Also still
-  open from the original report: the two-separate-login-systems UX tax, and the fact that the
-  worker's `publish-signals.yml` credential bug (fixed same session — see servermemory) means
-  infra is now fully sound, but real usage is still the actual bottleneck.
+- **Phase 3 (blog posts end in the real CTA) — done, PR #45.** Found a real pre-existing bug
+  while implementing this: 3 of 7 article categories (`email_signup` x2, `newsletter` x1, ~43%
+  of published articles) ended every post with a CTA linking to `thekpihub.com/#waitlist` — a
+  section that doesn't exist anywhere in the current site, promising a newsletter that was never
+  backed by any real subscription mechanism. Repointed both to `app.thekpihub.com/register`.
+  Left the 2 affiliate CTA blocks (hubspot/semrush) untouched. **Only affects new articles going
+  forward** — already-published posts with the dead link were not patched (no MySQL client
+  available in this environment; needs either a client or a one-off SSH+PyMySQL diagnostic
+  workflow, same pattern as past DB fixes).
+- **Not started, and not code work**: Phase 4 (get 10 real people using the product manually,
+  before spending on acquisition) — this needs the user's own outreach, not something to execute
+  from this session. Also still open, deliberately not acted on unilaterally: the two-separate-
+  login-systems UX tax (apps/website's own account system vs apps/platform's) — worth revisiting
+  now that apps/website's own dashboard is confirmed to show fake demo data (see above), but
+  that's a bigger, more invasive change than Phases 1-3 and needs an explicit decision, not an
+  assumption.
 
 ## Standing rule for thekpihub-server specifically
 
