@@ -3590,3 +3590,26 @@ was meant to avoid.
 **Net effect**: `/dashboard/kpi-monitor` is no longer empty — the product genuinely has real,
 sourced data in it for the first time. The underlying "0 real customers, 0 real usage" situation
 is otherwise unchanged and remains the real long-pole item.
+
+## 2026-09-13 (cont. 5) — Phase 3 of growth plan: dead blog CTAs repointed to real signup
+
+PR #45 (squash-merged): found and fixed a real, pre-existing bug while implementing Phase 3
+("blog posts should end in the real CTA, not just internal links"). 3 of 7 article categories
+in `apps/website/pipeline.py`'s `CTA_BLOCKS` (`email_signup` x2, `newsletter` x1 — roughly 43%
+of all published articles) ended every post with a CTA promising a daily/weekly email digest via
+`https://thekpihub.com/#waitlist`. Confirmed via grep that `#waitlist` doesn't exist anywhere in
+the current site source, and that `brevo-subscribe.php` (the only real email-capture mechanism
+in the repo) is wired exclusively to `get-audit.html`'s lead form, not this — the "daily brief"/
+"Friday newsletter" being promised was never backed by a real subscription mechanism at all.
+
+Repointed both CTA blocks to `https://app.thekpihub.com/register` with copy matching what the
+link actually does now. Deliberately left the 2 affiliate CTA blocks (`affiliate_hubspot`,
+`affiliate_semrush`) untouched — separate, already-working monetization, same precedent as
+leaving "Get My KPI Audit" alone in Phase 2.
+
+**Scope, flagged honestly rather than silently narrowed**: only affects articles generated from
+this point forward. Already-published posts with the old dead `#waitlist` link were NOT patched
+— this environment has no MySQL client to reach the WordPress DB directly (the pattern used for
+the earlier hubspot/semrush CTA fix, which did patch existing posts, needed a real DB client at
+the time). Follow-up: either wire in a client, or use a one-off SSH+PyMySQL diagnostic workflow
+(established pattern in this repo) to do a `REPLACE()` on `wp_posts.post_content` for the old URL.
