@@ -3512,3 +3512,38 @@ This closes the one concrete remaining technical blocker on `publish-signals.yml
 earlier in this session. The only genuinely remaining gap on this feature is the underlying
 product-usage one (no user has entered KPI data via `/dashboard/kpi-monitor` yet) — infra-side,
 this is now fully working.
+
+## 2026-09-13 (cont. 3) — Phase 2 of growth plan shipped: "Start Free" nav CTA, live-verified
+
+Per user's "make this the one and only priority" directive on the 0→100 customer plan. PR #44
+(squash-merged as `982de98`): added a "Start Free" link (→ `https://app.thekpihub.com/register`,
+the real, live, data-backed product) to the nav on all 19 website pages sharing the standard
+nav-links pattern. Deliberately left the existing "Get My KPI Audit" nav-cta (₹2,999 Razorpay
+lead-gen, 9 free-tool pages) untouched — separate funnel, not competing.
+
+**Self-caught and fixed a real mistake mid-task**: a first Perl-based (`perl -0pi -e`) edit
+mangled every em-dash across all 19 files into mojibake (UTF-8 bytes double-encoded through an
+implicit Latin-1/CP1252 roundtrip — `perl -i` without explicit `:encoding(UTF-8)` on Windows).
+Caught via `git diff` *before* committing or deploying anything — reverted all 19 files with
+`git checkout --`, redid the identical edit with a small Node.js script (UTF-8-safe by default),
+verified zero mojibake bytes remained. Separately caught that a first `node tools/prerender.mjs`
+run alone (skipping `npm run version-assets`) silently dropped every asset cache-busting `?v=`
+query string from the regenerated `index.html` — re-ran `version-assets`, confirmed the final
+diff against `main` was exactly the intended 20 single-line insertions, nothing else.
+
+**Deployed and independently verified live** (not just green CI): `deploy-website-hostinger.yml`
+dispatched with `mode=deploy`, completed `success`; curled `thekpihub.com`, `/auditor.html`,
+`/pricing.html`, `/today.html` afterward — "Start Free" present and pointing correctly on all 4,
+all 200.
+
+**New finding surfaced while investigating where to route the CTA, not previously documented**:
+`apps/website/dashboard.html`'s own "KPIs" section (`getKPICards()`) is **entirely hardcoded
+demo data** — fixed numbers like "$18.2M ARR", "2.1% churn", "NPS 67" per role, not read from any
+database at all. This confirmed the CTA must point to `apps/platform`'s real
+`/dashboard/kpi-monitor` (the actual data-backed feature from PR #42), not to this site's own
+`register.html`/`dashboard.html` account system, which would have funneled new signups into a
+dead-end fake dashboard. Also confirmed `apps/platform`'s `/register` is public (200) and the
+existing `upgrade.html` session-hand-off mechanism (Supabase access/refresh token pair via
+`/auth/handoff`, documented in `apps/website/CLAUDE.md`) only bridges an *already signed-in*
+apps/website user upgrading — it doesn't help a brand-new visitor, which is exactly the gap this
+PR closes by linking straight to the platform's own public registration page instead.
