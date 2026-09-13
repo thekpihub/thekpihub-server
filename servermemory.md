@@ -3662,3 +3662,24 @@ markers ("Open Real KPI Monitor", "illustrative examples", `openRealKpiMonitor`)
 **This closes every item from this session's 0→100 growth-plan report except Phase 4** (first 10
 real users — the user's own outreach work, not code). Phases 1-3 plus this dashboard fix are all
 shipped, merged, and independently verified live, not just green CI.
+
+## 2026-09-14 — Phase 4 (first 10 users) support: launch kit built, no outreach sent
+
+Phase 4 of the growth plan is inherently the user's own outreach, not code — nothing to build/
+deploy/verify here in the usual sense. Instead, built a concrete enablement deliverable:
+
+- **Checked the real existing warm audience directly** (Brevo API, `GET /v3/contacts`): exactly
+  2 real captured leads from `get-audit.html`'s KPI Audit lead form. Small, but real.
+- **Published an artifact** ("First Ten",
+  https://claude.ai/code/artifact/ea2bf579-9548-475b-8229-9caa8c1fd5c2): a ranked warm→cold
+  channel list (the 2 Brevo leads and founders already covered in the blog's Funding & M&A
+  Digest series ranked above cold channels like Indie Hackers/Reddit/Product Hunt), 3 ready-to-
+  send outreach templates for the 3 realistic situations, and a 10-slot progress tracker (slot 1
+  = the account owner, dogfooding since 2026-08-14).
+- **Deliberately did not send, post, or contact anyone** — that needs the user's own accounts/
+  relationships and per-message explicit approval regardless of the standing "make this the
+  priority" instruction. The kit is theirs to execute.
+
+**Current real baseline, confirmed via direct query**: 1 real profile (the account owner,
+`starter` plan), 0 paying, 2 warm leads on file. This is the actual "0" the "0→100" plan starts
+counting from.
