@@ -6,6 +6,34 @@ or pushed, from 2026-09-02 onward, for as long as this repo exists.** Newest ent
 
 ---
 
+## 2026-09-13 — Repeated a stale MindStudio.ai claim in my own status report to the user
+
+**What happened:** Asked "Status of thekpihub.com" at the start of the session, I gave a
+report that included "MindStudio.ai fallback tier wired in but **unfunded**" — pulled from
+`CLAUDE.md`'s own text, which still said "still not actually usable yet (balance unfunded, -$0.30
+as of 2026-09-09)." That was wrong: the user had actually topped up the balance later the same
+day, and the *global* `/thekpihub` skill digest already had the correct, more current close-out
+("DONE 2026-09-09, verified live... billed $0.000210"). I read and reported from `CLAUDE.md`
+without cross-checking it against the skill digest that was sitting right alongside it, and gave
+the user outdated information as current fact.
+
+**Why it happened:** `CLAUDE.md` is the file explicitly described (by its own header, and by the
+skill file that points to it) as "kept current and more authoritative" — a reasonable default to
+trust first. But two docs describing the same fact had actually drifted out of sync with each
+other (a same-day "(cont.)" update landed in the skill digest but never made it back into
+`CLAUDE.md`), and I didn't notice the discrepancy until directly investigating the KPI Monitor
+status later in the same session, at which point I caught and corrected it in my next message to
+the user.
+
+**Correction:** Fixed the stale text in `CLAUDE.md` itself so the two docs agree, and told the
+user directly that I'd repeated wrong information rather than quietly patching it. **Standing
+rule this reinforces:** when a project has more than one doc describing the same fact (here,
+`CLAUDE.md` and the global skill digest), and they disagree, don't default to trusting whichever
+one is "supposed to be" more authoritative — check both before reporting a live-status fact to
+the user, especially for anything with a real go/no-go implication (funded vs. not).
+
+---
+
 ## 2026-09-13 — This file itself went unupdated for a full session of commits
 
 **What happened:** During the 2026-09-13 growth-plan session (Rocket.new Vercel deletion, PR
