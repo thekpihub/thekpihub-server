@@ -6,6 +6,92 @@ or pushed, from 2026-09-02 onward, for as long as this repo exists.** Newest ent
 
 ---
 
+## 2026-09-13 — This file itself went unupdated for a full session of commits
+
+**What happened:** During the 2026-09-13 growth-plan session (Rocket.new Vercel deletion, PR
+#42-47 doc reconciliation, the Start Free CTA, the blog CTA fixes, the WP backfill, the
+dashboard fake-data fix), `servermemory.md` was updated after every commit as required, but
+this file — `mistakesdone.md` — was not touched at all, despite two real mistakes happening in
+that session (both entries below). The standing rule requires **both** files updated after
+every commit; only checking one silently drifted for an entire session's worth of work until
+the user asked directly whether everything was actually up to date.
+
+**Why it happened:** No hook or check enforces `mistakesdone.md` specifically distinct from
+`servermemory.md` — the PostToolUse hook reminds generically after `git commit`/`git push`, and
+without a real mistake occurring *in the same breath* as a commit, it's easy to log the
+work-log half and skip the mistakes half by default, especially across a long multi-commit
+session where the mistakes happened several commits before the ones being actively logged.
+
+**Correction:** Backfilled both real mistakes from that session below, out of commit order
+(newest-first is preserved for future entries, but these two are being added together,
+after the fact). **Standing rule this reinforces:** when asked to verify docs are current, or
+at the end of any multi-commit working session, explicitly check `mistakesdone.md` against the
+session's actual commit list — not just whether *a* doc update happened — since it's the file
+most likely to be silently skipped.
+
+---
+
+## 2026-09-13 — A `prerender.mjs`-only homepage rebuild silently dropped cache-busting
+
+**What happened:** While shipping the "Start Free" nav CTA (PR #44), the homepage needed
+regenerating from its `tools/index.shell.html` source. Ran `node tools/prerender.mjs --src .
+--write-hydrate` directly instead of the full `npm run build:site` chain
+(`build && build:css && prerender && version-assets`). The regenerated `index.html` built and
+looked correct, but a `git diff` against `main` showed every asset URL (favicon, CSS, JS,
+logo) had lost its `?v=<hash>` cache-busting query string — `version-assets` is a separate,
+later step in the real build chain that this direct invocation skipped entirely.
+
+**Why it happened:** `tools/PRERENDER.md`'s own documented run command is
+`node tools/prerender.mjs --src . --out index.prerendered.html --write-hydrate` — a
+standalone-looking invocation — and I reached for it directly because it was the specific step
+relevant to my nav edit, without first checking `package.json`'s `scripts.build:site` to see it
+was actually one stage of a longer required chain.
+
+**Correction:** Caught via `git diff --stat main -- apps/website/index.html` showing far more
+changed lines than the single nav-line edit could explain, *before* committing. Ran
+`node tools/version-assets.mjs --src .` immediately after, confirmed the diff against `main`
+collapsed to exactly the intended one-line insertion, then amended the not-yet-pushed commit
+rather than adding a separate fix-up commit. **Standing rule this reinforces:** when a
+one-off doc (like `PRERENDER.md`) shows a single command for a step that's actually part of a
+multi-step `package.json` script, check the full script chain before running just the step
+that looks relevant — and always diff a regenerated build artifact against its pre-change
+version before committing, not just against "does it look right."
+
+---
+
+## 2026-09-13 — A Perl in-place edit mojibake-corrupted every em-dash across 19 files
+
+**What happened:** To add the same "Start Free" nav link across 19 website HTML pages, used
+`perl -0pi -e 's{...}{...}m'` with a replacement string containing `\x{2192}` (→) across all
+19 files in one loop. Every file's *other*, pre-existing non-ASCII characters (em-dashes in
+titles/copy, unrelated to the edit) came out corrupted into `Ã¢`-style mojibake — a UTF-8
+sequence double-encoded through an implicit Latin-1/CP1252 roundtrip.
+
+**Why it happened:** Using `\x{2192}` inside the replacement string put Perl's internal
+representation of that one variable into "wide character" (Unicode) mode. Without an explicit
+`:encoding(UTF-8)` I/O layer (`-CSD` or `use open ':encoding(UTF-8)'`), the `-i` in-place
+rewrite of the *entire slurped file* — not just the matched substring — went through Perl's
+default output encoding on this Windows environment (effectively Latin-1/ANSI for byte output),
+mangling every pre-existing multi-byte UTF-8 character in the file, not only near the edit
+point.
+
+**Correction:** Caught via `git diff` on the shell template *before* committing or deploying
+anything — spotted `—` (em-dash) turning into `â` in unrelated `<title>`/meta lines nowhere
+near the intended change. Reverted all 19 files with `git checkout --`, then redid the
+identical edit with a small Node.js script (`fs.readFileSync(f, 'utf8')` /
+`writeFileSync(f, out, 'utf8')` — UTF-8-safe by default, no encoding flags needed). Verified
+zero mojibake bytes (`grep -c $'\xc3\xa2'`) remained across all 19 files afterward, then
+re-ran the fixed edit's own regeneration step. **Standing rule this reinforces:** never use
+Perl's `-i` in-place file editing on this Windows environment for any content containing (or
+whose replacement contains) non-ASCII characters, unless an explicit UTF-8 I/O layer is set —
+prefer Node.js (`fs.readFileSync`/`writeFileSync` with `'utf8'`) for any multi-file text edit
+that isn't pure ASCII, since it is UTF-8-correct by default with no flags to remember. Always
+`git diff` a batch text edit across *all* touched files before committing, not just the file(s)
+directly relevant to the intended change — corruption elsewhere in the same file is invisible
+if you only check the lines you meant to touch.
+
+---
+
 ## 2026-09-04 — Wrote a new SSRF vulnerability while fixing PayPal's missing capture step
 
 While wiring the real Razorpay/PayPal billing flow (PR #12), I added `PayPalProcessor.

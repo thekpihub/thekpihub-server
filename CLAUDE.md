@@ -447,11 +447,13 @@ production**, with a real dedicated Supabase Auth worker user already existing (
 `SIGNAL_WIRING_DESIGN_20260713.md`, cited by 3 files, was **never actually committed to this
 repo's git history** at all — recreated a minimal, accurate version at
 `apps/platform/SIGNAL_WIRING_DESIGN_20260713.md`. Set `SUPABASE_URL`/`SUPABASE_ANON_KEY` repo
-variables (both values already known/non-sensitive, no decision needed). **Still blocked**:
-`kpihub-backend` isn't deployed (see below — the real root blocker), and the existing worker
-Supabase Auth account's login credentials aren't recorded anywhere found — needed as
-`SUPABASE_WORKER_EMAIL`/`SUPABASE_WORKER_PASSWORD` repo secrets before the workflow can write
-for real, even once a backend exists. Full 7-step checklist in that recreated design doc.
+variables (both values already known/non-sensitive, no decision needed). **Still blocked, as of
+this 2026-09-10 entry**: `kpihub-backend` isn't deployed (see below — the real root blocker), and
+the existing worker Supabase Auth account's login credentials aren't recorded anywhere found —
+needed as `SUPABASE_WORKER_EMAIL`/`SUPABASE_WORKER_PASSWORD` repo secrets before the workflow can
+write for real, even once a backend exists. Full 7-step checklist in that recreated design doc.
+**Both of these are now resolved as of 2026-09-11/13 — see the SUPERSEDED note directly below,
+and the 2026-09-13 session log further down.**
 
 **Deploying `kpihub-backend` investigated 2026-09-10, then deliberately deferred — not a small
 task, and the underlying data doesn't exist yet regardless.** `apps/legacy-app/backend` (not
@@ -840,6 +842,32 @@ work through its gaps one by one rather than treating this as a one-off request.
 - **Only Phase 4 remains from this session's growth-plan work**: get 10 real people using the
   product — the user's own outreach, not code. Every other item from the original status report
   is now shipped, merged, and independently verified live.
+
+### 2026-09-14 — Phase 4 enablement: real baseline checked, launch kit built, nothing sent
+
+Confirmed the real baseline directly rather than assume: `profiles` has exactly 1 real row (the
+account owner, `starter` plan), 0 paying; Brevo (`GET /v3/contacts`) has exactly 2 real captured
+leads from `get-audit.html`'s KPI Audit form. That's the actual "0" this plan counts up from.
+
+Since Phase 4 is inherently the user's own outreach, built and published an enablement artifact
+instead of code: **"First Ten"**
+(https://claude.ai/code/artifact/ea2bf579-9548-475b-8229-9caa8c1fd5c2) — a warm→cold ranked
+channel list (the 2 real Brevo leads and founders already covered in the blog's Funding & M&A
+Digest series ranked above cold channels like Indie Hackers/Reddit/Product Hunt), 3 ready-to-send
+outreach templates for the 3 realistic situations, and a 10-slot progress tracker. **Sent
+nothing, posted nothing, contacted no one** — that needs the user's own accounts/relationships
+and explicit per-message approval regardless of the standing growth-plan priority; the kit is
+theirs to execute.
+
+**Doc-freshness audit done same day, on direct user request** ("check everything is updated
+inside the relevant .md files before proceeding further"): found `mistakesdone.md` had gone
+unupdated for the entire 2026-09-13 session despite two real mistakes occurring in it (a Perl
+UTF-8 mojibake corruption and a dropped-cache-busting build-step miss, both self-caught before
+shipping) — `servermemory.md` was kept current throughout, but the standing rule requires both
+files after every commit, and only one half was actually being done. Backfilled both entries in
+`mistakesdone.md`, plus a third entry about the gap itself. Cross-checked the full session's
+commit list (`git log df4b77d..HEAD`) against `servermemory.md` to confirm every commit has a
+corresponding entry — all 17 did.
 
 ## Standing rule for thekpihub-server specifically
 
