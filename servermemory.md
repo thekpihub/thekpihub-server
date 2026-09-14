@@ -3683,3 +3683,27 @@ deploy/verify here in the usual sense. Instead, built a concrete enablement deli
 **Current real baseline, confirmed via direct query**: 1 real profile (the account owner,
 `starter` plan), 0 paying, 2 warm leads on file. This is the actual "0" the "0→100" plan starts
 counting from.
+
+## 2026-09-14 (cont.) — Doc-freshness audit, on direct user request
+
+User asked directly to verify everything is updated in the relevant .md files before proceeding
+further. Findings:
+
+- **`mistakesdone.md` had gone unupdated for the entire 2026-09-13 session** despite two real
+  mistakes occurring in it (the Perl UTF-8 mojibake corruption and the dropped-cache-busting
+  build-step miss from Phase 2, both already documented here but never backfilled into
+  `mistakesdone.md`). Backfilled both, plus a third entry documenting the gap itself so it's
+  visible for future sessions. This file specifically is the one most likely to be silently
+  skipped, since there's no hook distinguishing it from `servermemory.md` — only a generic
+  post-commit reminder.
+- **Cross-checked the full session's commit list** (`git log df4b77d..HEAD`, 17 commits) against
+  `servermemory.md` entries — every commit has a corresponding entry, confirmed rather than
+  assumed.
+- **Fixed a stale-reading pointer** in `CLAUDE.md`'s older `kpihub-backend` section (a "Still
+  blocked as of 2026-09-10" claim that's actually resolved) to explicitly point forward to its
+  own SUPERSEDED note and the 2026-09-13 session log — a reader stopping mid-paragraph would
+  otherwise see contradictory state.
+- Synced the global `/thekpihub` skill digest's date and Phase 4 content to match.
+
+This commit is itself logged here specifically so the doc-freshness audit doesn't immediately
+recreate the exact gap it just fixed.
