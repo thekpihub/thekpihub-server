@@ -3707,3 +3707,20 @@ further. Findings:
 
 This commit is itself logged here specifically so the doc-freshness audit doesn't immediately
 recreate the exact gap it just fixed.
+
+## 2026-09-14 (cont. 2) — One more real mistake found: MindStudio stale-info repeat, now logged
+
+User asked directly: "is there anything still left due to your mistakes... or the recent real
+gap you have fixed as well?" Re-auditing specifically for this turned up one more mistake that
+had been fixed in `CLAUDE.md` and mentioned in this file, but never actually added as a
+mistake+correction entry to `mistakesdone.md` itself: repeating `CLAUDE.md`'s stale "MindStudio
+still unfunded" claim in this session's very first status report, when it had actually been
+funded and verified live since 2026-09-09 (the global `/thekpihub` skill digest already had the
+correct version). Backfilled the entry.
+
+**Full answer given to the user**: no outstanding functional/technical debt from either of the
+two engineering mistakes this session (both caught and fully corrected before anything was
+committed or deployed — verified via `git diff` and byte-level checks, not assumed). The only
+outstanding items were documentation-compliance gaps (the `mistakesdone.md` freshness gap itself,
+and this one missed entry within it), both now fixed. Nothing currently deployed, committed, or
+live carries any unresolved trace of a mistake from this session.
